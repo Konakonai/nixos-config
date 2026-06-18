@@ -9,6 +9,8 @@ pkgs.stdenvNoCC.mkDerivation rec {
     hash = "sha256-XHxBIUPhDc02WWjRno0mXkRpEbWV/dGk6AxHX1b36JM=";
   };
 
+  sourceRoot = ".";
+
   installPhase = ''
     runHook preInstall
 

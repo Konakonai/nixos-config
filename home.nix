@@ -110,6 +110,105 @@ in
     setAsDefaultBrowser = true;
   };
 
+  xdg.configFile."zen/i41yvfec.Default Profile/user.js".text = ''
+    user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+    user_pref("browser.tabs.allow_transparent_browser", true);
+    user_pref("widget.transparent-windows", true);
+    user_pref("widget.wayland.opaque-region.enabled", false);
+    user_pref("zen.widget.linux.transparency", true);
+  '';
+  xdg.configFile."zen/i41yvfec.Default Profile/user.js".force = true;
+
+  xdg.configFile."zen/i41yvfec.Default Profile/chrome/userChrome.css".text = ''
+    @import "/home/lilya/.cache/noctalia/zen-browser/zen-userChrome.css";
+
+    :root {
+      --lilya-zen-glass: transparent !important;
+      --zen-main-browser-background: transparent !important;
+      --zen-themed-toolbar-bg: transparent !important;
+      --zen-themed-toolbar-bg-transparent: transparent !important;
+      --toolbar-bgcolor: transparent !important;
+      --toolbox-bgcolor: transparent !important;
+      --toolbox-bgcolor-inactive: transparent !important;
+      --lwt-accent-color: transparent !important;
+      --lwt-accent-color-inactive: transparent !important;
+      --lwt-sidebar-background-color: transparent !important;
+      --sidebar-background-color: transparent !important;
+    }
+
+    #main-window,
+    #browser,
+    #appcontent,
+    #tabbrowser-tabbox,
+    #tabbrowser-tabpanels,
+    #zen-appcontent-wrapper,
+    #zen-appcontent-navbar-container,
+    #zen-tabbox-wrapper,
+    #navigator-toolbox,
+    #PersonalToolbar,
+    #titlebar,
+    #TabsToolbar,
+    #nav-bar,
+    #sidebar-box,
+    #sidebar-main,
+    .sidebar-panel {
+      background: transparent !important;
+      background-color: transparent !important;
+      appearance: none !important;
+    }
+
+    browser[type="content"],
+    browser[primary="true"] {
+      background: transparent !important;
+      background-color: transparent !important;
+    }
+
+    .tab-background[selected],
+    .tabbrowser-tab:hover > .tab-stack > .tab-background,
+    #urlbar-background,
+    .urlbar-background,
+    #zen-workspaces-button {
+      background-color: color-mix(in srgb, #eff1f5 28%, transparent) !important;
+      border-color: color-mix(in srgb, #7287fd 35%, transparent) !important;
+    }
+
+    menupopup,
+    panel,
+    panelview,
+    arrowpanel {
+      --arrowpanel-background: color-mix(in srgb, #eff1f5 72%, transparent) !important;
+      --panel-background: color-mix(in srgb, #eff1f5 72%, transparent) !important;
+    }
+  '';
+  xdg.configFile."zen/i41yvfec.Default Profile/chrome/userChrome.css".force = true;
+
+  xdg.configFile."zen/i41yvfec.Default Profile/chrome/userContent.css".text = ''
+    @import "/home/lilya/.cache/noctalia/zen-browser/zen-userContent.css";
+
+    @-moz-document url("about:newtab"), url("about:home"), url("about:blank") {
+      html,
+      body,
+      #root,
+      .outer-wrapper,
+      main {
+        background: transparent !important;
+        background-color: transparent !important;
+      }
+
+      :root {
+        --newtab-background-color: transparent !important;
+        --newtab-background-color-secondary: color-mix(in srgb, #eff1f5 30%, transparent) !important;
+      }
+
+      .search-wrapper,
+      .top-site-outer,
+      .card-outer {
+        background-color: color-mix(in srgb, #eff1f5 34%, transparent) !important;
+      }
+    }
+  '';
+  xdg.configFile."zen/i41yvfec.Default Profile/chrome/userContent.css".force = true;
+
   # GitHub CLI
   programs.gh = {
     enable = true;
