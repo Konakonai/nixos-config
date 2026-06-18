@@ -1,0 +1,17 @@
+result
+result-*
+
+# Local source caches and upstream tarballs used while packaging.
+sources/
+
+# Local/editor noise.
+.direnv/
+.env
+.env.*
+*.swp
+*.swo
+*~
+
+# Logs and temporary files.
+*.log
+tmp/
