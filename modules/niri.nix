@@ -10,15 +10,8 @@ in
 
     // 普通应用只保留一点点轻透感，避免文字和图标被 compositor 一起淡化。
     window-rule {
-        exclude app-id="^(kitty|zen|zen-beta|zen-browser)$"
+        exclude app-id="^kitty$"
         opacity ${lilyaGlass.opacity.windows}
-        draw-border-with-background false
-    }
-
-    // Zen 透明交给浏览器自身的 CSS 和透明窗口 prefs 处理，避免网页文字被整体淡化。
-    window-rule {
-        match app-id="^(zen|zen-beta|zen-browser)$"
-        opacity 1.0
         draw-border-with-background false
     }
 
