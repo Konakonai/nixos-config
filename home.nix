@@ -2,6 +2,25 @@
 
 let
   lilyaGlass = import ./modules/glass-settings.nix;
+  zenNiriFix = pkgs.writeShellScriptBin "zen-beta-niri-fix" ''
+    ${lib.getExe config.programs.zen-browser.package} "$@" &
+    zen_pid=$!
+
+    (
+      for delay in 0.20 0.45 0.80 1.20 1.80; do
+        sleep "$delay"
+        niri msg -j windows 2>/dev/null \
+          | ${pkgs.jq}/bin/jq -r '.[] | select(.app_id == "zen-beta") | .id' \
+          | while read -r id; do
+              [ -n "$id" ] || continue
+              niri msg action reset-window-height --id "$id" >/dev/null 2>&1 || true
+              niri msg action set-window-height --id "$id" 100% >/dev/null 2>&1 || true
+            done
+      done
+    ) >/dev/null 2>&1 &
+
+    wait "$zen_pid"
+  '';
 in
 {
   imports = [
@@ -108,6 +127,38 @@ in
   programs.zen-browser = {
     enable = true;
     setAsDefaultBrowser = true;
+  };
+
+  xdg.dataFile."applications/zen-beta.desktop" = {
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Version=1.5
+      Type=Application
+      Name=Zen Browser
+      GenericName=Web Browser
+      Comment=Browse the Web
+      Exec=${lib.getExe zenNiriFix} --name zen-beta %U
+      Icon=zen-browser
+      StartupWMClass=zen-beta
+      StartupNotify=true
+      Terminal=false
+      Categories=Network;WebBrowser;
+      MimeType=text/html;text/xml;application/xhtml+xml;application/vnd.mozilla.xul+xml;x-scheme-handler/http;x-scheme-handler/https;
+      Actions=new-private-window;new-window;profile-manager-window;
+
+      [Desktop Action new-private-window]
+      Name=New Private Window
+      Exec=${lib.getExe zenNiriFix} --private-window %U
+
+      [Desktop Action new-window]
+      Name=New Window
+      Exec=${lib.getExe zenNiriFix} --new-window %U
+
+      [Desktop Action profile-manager-window]
+      Name=Profile Manager
+      Exec=${lib.getExe zenNiriFix} --ProfileManager
+    '';
   };
 
   xdg.configFile."zen/i41yvfec.Default Profile/user.js".text = ''
@@ -358,6 +409,7 @@ in
     resources
     localsend
     zed-editor
+    zenNiriFix
 
     # niri 相关
     cliphist
