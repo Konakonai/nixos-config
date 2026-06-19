@@ -28,7 +28,7 @@
   };
 
   radius = {
-    windows = 22.0;
+    windows = 12.0;
     panels = 24;
     capsules = 18.0;
   };
