@@ -110,6 +110,14 @@ in
     setAsDefaultBrowser = true;
   };
 
+  xdg.configFile."zen/i41yvfec.Default Profile/user.js".text = ''
+    user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+    user_pref("browser.tabs.allow_transparent_browser", false);
+    user_pref("widget.wayland.opaque-region.enabled", true);
+    user_pref("zen.widget.linux.transparency", false);
+  '';
+  xdg.configFile."zen/i41yvfec.Default Profile/user.js".force = true;
+
   # GitHub CLI
   programs.gh = {
     enable = true;
