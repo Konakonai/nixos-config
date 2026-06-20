@@ -86,6 +86,9 @@ in
       iifname { "mihomo" } accept comment "trusted interface"
     '';
 
+    # 开放 OpenList 端口以允许局域网内其他设备访问
+    allowedTCPPorts = [ 5244 ];
+
     # KDE Connect 端口放行
     allowedTCPPortRanges = [
       { from = 1714; to = 1764; }
@@ -197,6 +200,20 @@ in
     after = [ "power-profiles-daemon.service" ];
     script = "${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced";
     serviceConfig.Type = "oneshot";
+  };
+
+  # OpenList 聚合网盘 WebDAV 服务（常驻后台运行）
+  systemd.services.openlist = {
+    description = "OpenList Service";
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.openlist}/bin/OpenList server --data /home/lilya/.config/openlist";
+      Restart = "always";
+      User = "lilya";
+      Group = "users";
+    };
   };
 
   # Printing
@@ -353,6 +370,7 @@ in
     vim
     wget
     curl
+    openlist
     git
     pciutils
     usbutils
