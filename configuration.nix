@@ -179,6 +179,9 @@ in
     pulse.enable = true;
   };
 
+  # 启用 gvfs 以支持 Nemo/Nautilus 文件管理器挂载 WebDAV 等网络位置
+  services.gvfs.enable = true;
+
   # Bluetooth
   hardware.bluetooth = {
     enable = true;
