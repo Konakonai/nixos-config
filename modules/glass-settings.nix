@@ -11,7 +11,7 @@
   };
 
   opacity = {
-    windows = "0.96";
+    windows = "1.0";
     terminal = "0.78";
     noctaliaPanels = 0.0;
     noctaliaPopups = 0.68;
