@@ -371,6 +371,7 @@ in
     wget
     curl
     openlist
+    vlc
     git
     pciutils
     usbutils
