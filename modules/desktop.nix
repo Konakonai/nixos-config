@@ -81,6 +81,19 @@
       "application/pdf" = "zen-beta.desktop";
       "inode/directory" = "nemo.desktop";
 
+      # 视频关联 (MPV)
+      "video/mp4" = "mpv.desktop";
+      "video/x-matroska" = "mpv.desktop";
+      "video/webm" = "mpv.desktop";
+      "video/mpeg" = "mpv.desktop";
+      "video/avi" = "mpv.desktop";
+      "video/quicktime" = "mpv.desktop";
+      "video/x-flv" = "mpv.desktop";
+      "video/3gp" = "mpv.desktop";
+      "video/3gpp" = "mpv.desktop";
+      "video/x-ms-wmv" = "mpv.desktop";
+      "video/x-msvideo" = "mpv.desktop";
+
       # 归类解压缩工具关联 (File Roller)
       "application/zip" = "org.gnome.FileRoller.desktop";
       "application/x-tar" = "org.gnome.FileRoller.desktop";
