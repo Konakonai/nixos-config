@@ -365,5 +365,8 @@ in
 
     # 引用重归类的 antigravity 包
     (import ./pkgs/antigravity.nix { inherit pkgs lib; })
+
+    # 引用重归类的 splayer 包
+    (import ./pkgs/splayer.nix { inherit pkgs lib; })
   ];
 }
