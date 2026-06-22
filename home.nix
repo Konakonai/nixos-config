@@ -32,7 +32,7 @@ in
       theme = {
         mode = "light";
         source = "builtin";
-        builtin = "Catppuccin";
+        builtin = "Nord";
       };
 
       shell = {
