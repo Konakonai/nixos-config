@@ -142,6 +142,16 @@ in
     copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}-xhdpi" "$HOME/.local/share/themes/${gtkThemeName}-xhdpi"
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
     copy_theme_dir "${iconThemePackage}/share/icons/${qtIconThemeName}" "$HOME/.local/share/icons/${qtIconThemeName}"
+
+    # 用自定义 rime 图标覆盖 Colloid 主题自带的（复制后执行，避免被覆盖）
+    RIME_ICON="${../assets/fcitx-rime.svg}"
+    for d in "$HOME/.local/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${qtIconThemeName}"; do
+      for s in 16 22 24; do
+        if [ -d "$d/status/$s" ]; then
+          cp -f "$RIME_ICON" "$d/status/$s/fcitx-rime.svg"
+        fi
+      done
+    done
     # 光标由 home-manager 的 home.pointerCursor 管理，不在这里复制
 
     if ${pkgs.flatpak}/bin/flatpak --user remotes >/dev/null 2>&1; then
