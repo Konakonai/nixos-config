@@ -47,5 +47,9 @@ in
       open_url_with = "zen-beta";
 
     };
+
+    extraConfig = ''
+      include themes/noctalia.conf
+    '';
   };
 }
