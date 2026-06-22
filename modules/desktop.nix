@@ -1,5 +1,36 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  fontMappings = [
+    # 无衬线字体 (黑体/Sans-serif) 映射到 Noto Sans
+    { from = "微软雅黑"; to = "Noto Sans CJK SC"; }
+    { from = "Microsoft YaHei"; to = "Noto Sans CJK SC"; }
+    { from = "黑体"; to = "Noto Sans CJK SC"; }
+    { from = "SimHei"; to = "Noto Sans CJK SC"; }
+    { from = "华文细黑"; to = "Noto Sans CJK SC"; }
+    { from = "STXihei"; to = "Noto Sans CJK SC"; }
+    { from = "Arial"; to = "Noto Sans CJK SC"; }
+    { from = "Calibri"; to = "Noto Sans CJK SC"; }
+
+    # 衬线字体 (宋体/楷体/仿宋/Serif) 映射到 Noto Serif
+    { from = "宋体"; to = "Noto Serif CJK SC"; }
+    { from = "SimSun"; to = "Noto Serif CJK SC"; }
+    { from = "新宋体"; to = "Noto Serif CJK SC"; }
+    { from = "NSimSun"; to = "Noto Serif CJK SC"; }
+    { from = "仿宋"; to = "Noto Serif CJK SC"; }
+    { from = "FangSong"; to = "Noto Serif CJK SC"; }
+    { from = "楷体"; to = "Noto Serif CJK SC"; }
+    { from = "KaiTi"; to = "Noto Serif CJK SC"; }
+    { from = "Times New Roman"; to = "Noto Serif CJK SC"; }
+  ];
+
+  fontConfigXml = lib.concatStringsSep "\n" (map (m: ''
+      <match target="pattern">
+        <test qual="any" name="family"><string>${m.from}</string></test>
+        <edit name="family" mode="assign" binding="same"><string>${m.to}</string></edit>
+      </match>
+  '') fontMappings);
+in
 {
   # XDG 桌面快捷方式 (Desktop Entry)
   xdg.desktopEntries."antigravity" = {
@@ -175,77 +206,7 @@
     <?xml version="1.0"?>
     <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
     <fontconfig>
-      <!-- 无衬线字体 (黑体/Sans-serif) 映射到 Noto Sans -->
-      <match target="pattern">
-        <test qual="any" name="family"><string>微软雅黑</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>Microsoft YaHei</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>黑体</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>SimHei</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>华文细黑</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>STXihei</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>Arial</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>Calibri</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
-      </match>
-
-      <!-- 衬线字体 (宋体/楷体/仿宋/Serif) 映射到 Noto Serif -->
-      <match target="pattern">
-        <test qual="any" name="family"><string>宋体</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>SimSun</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>新宋体</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>NSimSun</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>仿宋</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>FangSong</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>楷体</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>KaiTi</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
-      </match>
-      <match target="pattern">
-        <test qual="any" name="family"><string>Times New Roman</string></test>
-        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
-      </match>
+      ${fontConfigXml}
     </fontconfig>
   '';
 
