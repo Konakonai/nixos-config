@@ -2,16 +2,9 @@
 
 let
   lilyaGlass = import ./glass-settings.nix;
-  gtkThemePackage = pkgs.catppuccin-gtk.override {
-    variant = "mocha";
-    accents = [ "lavender" ];
-    size = "standard";
-    tweaks = [ "rimless" ];
-  };
-  iconThemePackage = pkgs.colloid-icon-theme.override {
-    colorVariants = [ "purple" ];
-  };
-  cursorThemePackage = pkgs.catppuccin-cursors.mochaLavender;
+  gtkThemePackage = pkgs.nordic;
+  iconThemePackage = pkgs.nordzy-icon-theme;
+  cursorThemePackage = pkgs.nordzy-cursor-theme;
   gtkThemeName = lilyaGlass.gtkThemeName;
   iconThemeName = lilyaGlass.iconThemeName;
   qtIconThemeName = lilyaGlass.qtIconThemeName;
@@ -44,6 +37,15 @@ let
   };
 in
 {
+  # 全局光标配置以确保 Wayland/X11 兼容性
+  home.pointerCursor = {
+    gtk.enable = true;
+    x11.enable = true;
+    package = cursorThemePackage;
+    name = cursorThemeName;
+    size = 48;
+  };
+
   # GTK 与主题配置
   gtk = {
     enable = true;
