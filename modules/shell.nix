@@ -52,14 +52,7 @@
     enable = true;
 
     settings = {
-      format = ''
-        $nix_shell\
-        $directory\
-        $git_branch\
-        $git_status\
-        $cmd_duration\
-        $line_break\
-        $character'';
+      format = "$nix_shell$directory$git_branch$git_status$cmd_duration$line_break$character";
 
       palette = "noctalia";
 
