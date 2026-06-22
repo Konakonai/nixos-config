@@ -194,9 +194,9 @@ in
       ui_font_size = 16;
       buffer_font_size = 15;
       theme = {
-        mode = "system";
+        mode = "light";
         light = "Noctalia Light";
-        dark = "Noctalia Dark Transparent";
+        dark = "Noctalia Light";
       };
     };
   };

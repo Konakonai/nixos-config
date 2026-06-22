@@ -13,7 +13,7 @@
   opacity = {
     windows = "1.0";
     terminal = "0.78";
-    noctaliaPanels = 0.0;
+    noctaliaPanels = 0.55;
     noctaliaPopups = 0.68;
     noctaliaCapsules = 0.22;
     layerShell = "1.0";
@@ -34,10 +34,11 @@
   };
 
   gtkThemeName = "Nordic-Polar";
-  iconThemeName = "Colloid-Purple-Light";
-  qtIconThemeName = "Colloid-Purple";
+  iconThemeName = "Colloid-Grey-Light";
+  qtIconThemeName = "Colloid-Grey";
   cursorThemeName = "Nordzy-cursors";
-  qtStyleName = "adwaita";
+  qtStyleName = "kvantum";
+  kvantumThemeName = "KvNordLight";
 
   fonts = {
     sans = "Noto Sans CJK SC";

@@ -3,30 +3,34 @@
 let
   lilyaGlass = import ./modules/glass-settings.nix;
 
-  # 自定义 SDDM 主题：覆写圆角与 Colloid 状态图标
+  # 自定义 SDDM 主题：Catppuccin Latte 基底 + Nord 配色覆写
+  colloidGrey = pkgs.colloid-icon-theme.override {
+    colorVariants = [ "grey" ];
+  };
   custom-sddm-theme = ((pkgs.catppuccin-sddm.override {
     flavor = "latte";
-    accent = "lavender";
+    accent = "blue";
     font = "JetBrains Maple Mono";
     fontSize = "11";
     background = "/etc/sddm-wallpaper.jpg";
   }).overrideAttrs (old: {
     postInstall = (old.postInstall or "") + ''
-      for f in $out/share/sddm/themes/catppuccin-latte-lavender/Components/*.qml; do
-        substituteInPlace $f --replace-quiet 'radius: 3' 'radius: 15'
-        substituteInPlace $f --replace-quiet 'radius: 5.4' 'radius: 20'
-        substituteInPlace $f --replace-quiet 'radius: 5' 'radius: 20'
+      for f in $out/share/sddm/themes/catppuccin-latte-blue/Components/*.qml; do
+        substituteInPlace $f --replace-quiet 'radius: 3' 'radius: 12'
+        substituteInPlace $f --replace-quiet 'radius: 5.4' 'radius: 12'
+        substituteInPlace $f --replace-quiet 'radius: 5' 'radius: 12'
       done
 
-      # 使用系统 Colloid 图标主题的 symbolic 图标
-      cp ${pkgs.colloid-icon-theme}/share/icons/Colloid-Light/actions/symbolic/system-shutdown-symbolic.svg $out/share/sddm/themes/catppuccin-latte-lavender/icons/power.svg
-      cp ${pkgs.colloid-icon-theme}/share/icons/Colloid-Light/actions/symbolic/system-reboot-symbolic.svg $out/share/sddm/themes/catppuccin-latte-lavender/icons/reboot.svg
-      cp ${pkgs.colloid-icon-theme}/share/icons/Colloid-Light/actions/symbolic/system-suspend-symbolic.svg $out/share/sddm/themes/catppuccin-latte-lavender/icons/sleep.svg
-      cp ${pkgs.colloid-icon-theme}/share/icons/Colloid-Light/actions/symbolic/settings-symbolic.svg $out/share/sddm/themes/catppuccin-latte-lavender/icons/settings.svg
-      # 替换颜色为 Catppuccin Latte 薰衣草色
-      for f in $out/share/sddm/themes/catppuccin-latte-lavender/icons/*.svg; do
-        substituteInPlace $f --replace-quiet '#363636' '#7287fd'
-        substituteInPlace $f --replace-quiet 'fill="currentColor"' 'fill="#7287fd"'
+      # 使用 Colloid-Grey 图标主题的 symbolic 图标
+      cp ${colloidGrey}/share/icons/Colloid-Grey-Light/actions/symbolic/system-shutdown-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/power.svg
+      cp ${colloidGrey}/share/icons/Colloid-Grey-Light/actions/symbolic/system-reboot-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/reboot.svg
+      cp ${colloidGrey}/share/icons/Colloid-Grey-Light/actions/symbolic/system-suspend-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/sleep.svg
+      cp ${colloidGrey}/share/icons/Colloid-Grey-Light/actions/symbolic/settings-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/settings.svg
+      # 替换颜色为 Nord Frost 蓝
+      for f in $out/share/sddm/themes/catppuccin-latte-blue/icons/*.svg; do
+        substituteInPlace $f --replace-quiet '#363636' '#5e81ac'
+        substituteInPlace $f --replace-quiet '#1e66f5' '#5e81ac'
+        substituteInPlace $f --replace-quiet 'fill="currentColor"' 'fill="#5e81ac"'
       done
     '';
   }));
@@ -129,19 +133,22 @@ in
     LC_TIME = "zh_CN.UTF-8";
   };
 
-  # SDDM + Catppuccin Latte 主题
+  # SDDM + Nord 配色主题
   services.xserver.enable = true;
   services.displayManager.sddm = {
     enable = true;
     wayland.enable = true;
-    theme = "catppuccin-latte-lavender";
+    theme = "catppuccin-latte-blue";
     settings = {
       Theme = {
-        CursorTheme = "catppuccin-latte-lavender-cursors";
+        CursorTheme = lilyaGlass.cursorThemeName;
         CursorSize = "48";
       };
     };
   };
+
+  # SDDM 壁纸声明式管理
+  environment.etc."sddm-wallpaper.jpg".source = ./assets/sddm-wallpaper.jpg;
 
   services.xserver.xkb = {
     layout = "us";
@@ -231,7 +238,6 @@ in
         fcitx5-gtk
         kdePackages.fcitx5-qt
         kdePackages.fcitx5-configtool
-        catppuccin-fcitx5
         fcitx5-nord
 
         (fcitx5-rime.override {
@@ -247,20 +253,10 @@ in
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
     ELECTRON_OZONE_PLATFORM_HINT = "wayland";
-    QT_QPA_PLATFORMTHEME = "qt5ct";
-    QT_STYLE_OVERRIDE = lilyaGlass.qtStyleName;
-    QT_QPA_PLATFORM = "wayland;xcb";
-    GDK_BACKEND = "wayland,x11";
-    GTK_THEME = lilyaGlass.gtkThemeName;
-    GTK_USE_PORTAL = "1";
 
     XMODIFIERS = "@im=fcitx";
     SDL_IM_MODULE = "fcitx";
     GLFW_IM_MODULE = "fcitx";
-
-    # Cursor 主题
-    XCURSOR_THEME = lilyaGlass.cursorThemeName;
-    XCURSOR_SIZE = "48";
   };
 
   # Fonts
@@ -396,11 +392,11 @@ in
     (callPackage ./pkgs/cc-switch-cli/default.nix {})
     (callPackage ./pkgs/codex.nix {})
     
-    libsForQt5.qt5ct
-    qt6Packages.qt6ct
-    adwaita-qt
+    libsForQt5.qtstyleplugin-kvantum
+    kdePackages.qtstyleplugin-kvantum
     custom-sddm-theme
-    catppuccin-cursors.latteLavender
+    colloidGrey
+    nordzy-cursor-theme
     opencode
   ];
 

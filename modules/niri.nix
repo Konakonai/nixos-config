@@ -30,15 +30,41 @@ in
         draw-border-with-background false
     }
 
-    // 不匹配 noctalia-bar-main/noctalia-dock/noctalia-screen-corner，
-    // 避免把自动隐藏的 dock/panel 背景画出来；也不做 compositor blur，减少发灰和眩晕。
+    // Noctalia 面板：半透明 + 毛玻璃模糊效果
     layer-rule {
-        match namespace="^(noctalia-panel|notifications|swaync-control-center|launcher|vicinae|waybar)$"
+        match namespace="^noctalia-bar-main$"
         opacity ${lilyaGlass.opacity.layerShell}
-        geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
+        geometry-corner-radius ${builtins.toString lilyaGlass.radius.panels}
+        background-effect {
+            blur true
+            noise 0.0
+            saturation 1.0
+        }
         popups {
             opacity ${lilyaGlass.opacity.layerPopups}
             geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
+            background-effect {
+                blur true
+            }
+        }
+    }
+
+    // Noctalia dock / 控制中心 / 启动器等 layer-shell
+    layer-rule {
+        match namespace="^(noctalia-dock|noctalia-control-center|noctalia-launcher|noctalia-session|noctalia-clipboard|notifications|swaync-control-center|launcher|vicinae|waybar)$"
+        opacity ${lilyaGlass.opacity.layerShell}
+        geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
+        background-effect {
+            blur true
+            noise 0.0
+            saturation 1.0
+        }
+        popups {
+            opacity ${lilyaGlass.opacity.layerPopups}
+            geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
+            background-effect {
+                blur true
+            }
         }
     }
 
@@ -84,12 +110,11 @@ in
         GTK_THEME = lilyaGlass.gtkThemeName;
         GTK_USE_PORTAL = "1";
         NIXOS_OZONE_WL = "1";
-        QT_QPA_PLATFORMTHEME = "qt5ct";
+        QT_QPA_PLATFORMTHEME = "kvantum";
         QT_STYLE_OVERRIDE = lilyaGlass.qtStyleName;
         ELECTRON_OZONE_PLATFORM_HINT = "wayland";
         XCURSOR_THEME = lilyaGlass.cursorThemeName;
         XCURSOR_SIZE = "48";
-        PYTHONPATH = "/home/lilya/.local/lib/python3.12/site-packages:\${PYTHONPATH:-}";
       };
 
       # 输入配置

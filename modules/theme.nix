@@ -4,37 +4,32 @@ let
   lilyaGlass = import ./glass-settings.nix;
   gtkThemePackage = pkgs.nordic;
   iconThemePackage = pkgs.colloid-icon-theme.override {
-    colorVariants = [ "purple" ];
+    colorVariants = [ "grey" ];
   };
   cursorThemePackage = pkgs.nordzy-cursor-theme;
   gtkThemeName = lilyaGlass.gtkThemeName;
   iconThemeName = lilyaGlass.iconThemeName;
   qtIconThemeName = lilyaGlass.qtIconThemeName;
   cursorThemeName = lilyaGlass.cursorThemeName;
-  qtctSettings = {
-    Appearance = {
-      custom_palette = true;
-      icon_theme = qtIconThemeName;
-      standard_dialogs = "xdgdesktopportal";
-      style = lilyaGlass.qtStyleName;
-    };
+  kvantumThemeName = lilyaGlass.kvantumThemeName;
 
-    Fonts = {
-      fixed = "\"${lilyaGlass.fonts.mono},${builtins.toString lilyaGlass.fonts.size},-1,5,400,0,0,0,0,0,0,0,0,0,0,1\"";
-      general = "\"${lilyaGlass.fonts.sans},${builtins.toString lilyaGlass.fonts.size},-1,5,400,0,0,0,0,0,0,0,0,0,0,1\"";
-    };
+  # Nord Kvantum 主题（从仓库 assets 安装）
+  kvantumTheme = pkgs.stdenv.mkDerivation {
+    pname = "kvantum-theme-nord-light";
+    version = "1.0";
+    src = ../assets/kvantum/${kvantumThemeName};
 
-    Interface = {
-      activate_item_on_single_click = 1;
-      buttonbox_layout = 0;
-      cursor_flash_time = 1000;
-      dialog_buttons_have_icons = 1;
-      double_click_interval = 400;
-      keyboard_scheme = 4;
-      menus_have_icons = true;
-      show_shortcuts_in_context_menus = true;
-      underline_shortcut = 1;
-      wheel_scroll_lines = 3;
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out/share/Kvantum/${kvantumThemeName}
+      cp ${kvantumThemeName}.kvconfig $out/share/Kvantum/${kvantumThemeName}/
+      cp ${kvantumThemeName}.svg $out/share/Kvantum/${kvantumThemeName}/
+      runHook postInstall
+    '';
+
+    meta = with lib; {
+      description = "Nord Light theme for Kvantum (based on KvAdaptaNordic)";
+      platforms = platforms.linux;
     };
   };
 in
@@ -92,30 +87,26 @@ in
     };
   };
 
+  # Qt 配置：Kvantum + Nord Light 主题
   qt = {
     enable = true;
-    platformTheme.name = "qtct";
-    style = {
-      name = lilyaGlass.qtStyleName;
-      package = pkgs.adwaita-qt;
-    };
+    platformTheme.name = "kvantum";
+    style.name = "kvantum";
   };
 
-  qt.qt5ctSettings = qtctSettings // {
-    Appearance = qtctSettings.Appearance // {
-      color_scheme_path = "${config.home.homeDirectory}/.config/qt5ct/colors/noctalia.conf";
-    };
-  };
+  # Kvantum 主题配置文件
+  xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
+    [General]
+    theme=${kvantumThemeName}
+  '';
 
-  qt.qt6ctSettings = qtctSettings // {
-    Appearance = qtctSettings.Appearance // {
-      color_scheme_path = "${config.home.homeDirectory}/.config/qt6ct/colors/noctalia.conf";
-    };
-  };
+  # 安装 Nord Kvantum 主题到 ~/.local/share/Kvantum/
+  xdg.dataFile."Kvantum/${kvantumThemeName}/${kvantumThemeName}.kvconfig".source = "${kvantumTheme}/share/Kvantum/${kvantumThemeName}/${kvantumThemeName}.kvconfig";
+  xdg.dataFile."Kvantum/${kvantumThemeName}/${kvantumThemeName}.svg".source = "${kvantumTheme}/share/Kvantum/${kvantumThemeName}/${kvantumThemeName}.svg";
 
-
-  xdg.configFile."qt5ct/qt5ct.conf".force = true;
-  xdg.configFile."qt6ct/qt6ct.conf".force = true;
+  # 自定义 Rime (中州韵) 图标 — Nord 风格
+  xdg.dataFile."icons/${iconThemeName}/scalable/apps/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
+  xdg.dataFile."icons/${qtIconThemeName}/scalable/apps/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
 
   dconf.settings."org/gnome/desktop/interface" = {
     color-scheme = "prefer-light";
@@ -153,15 +144,15 @@ in
       ${pkgs.flatpak}/bin/flatpak override --user \
         --filesystem=xdg-config/gtk-3.0:ro \
         --filesystem=xdg-config/gtk-4.0:ro \
-        --filesystem=xdg-config/qt5ct:ro \
-        --filesystem=xdg-config/qt6ct:ro \
+        --filesystem=xdg-config/Kvantum:ro \
         --filesystem=xdg-data/themes:ro \
         --filesystem=xdg-data/icons:ro \
+        --filesystem=xdg-data/Kvantum:ro \
         --env=GTK_THEME=${gtkThemeName} \
         --env=GTK_USE_PORTAL=1 \
         --env=GTK2_RC_FILES=$HOME/.gtkrc-2.0 \
-        --env=QT_QPA_PLATFORMTHEME=qt5ct \
-        --env=QT_STYLE_OVERRIDE=${lilyaGlass.qtStyleName} \
+        --env=QT_QPA_PLATFORMTHEME=kvantum \
+        --env=QT_STYLE_OVERRIDE=kvantum \
         --env=XCURSOR_THEME=${cursorThemeName} \
         --env=XCURSOR_SIZE=48
 
@@ -169,8 +160,8 @@ in
         --env=CHROMIUM_FLAGS=--force-color-profile=srgb \
         --env=ELECTRON_EXTRA_LAUNCH_ARGS=--force-color-profile=srgb \
         --env=QTWEBENGINE_CHROMIUM_FLAGS=--force-color-profile=srgb \
-        --env=QT_QPA_PLATFORMTHEME=qt6ct \
-        --env=QT_STYLE_OVERRIDE=${lilyaGlass.qtStyleName} \
+        --env=QT_QPA_PLATFORMTHEME=kvantum \
+        --env=QT_STYLE_OVERRIDE=kvantum \
         --env=GTK_THEME=${gtkThemeName} \
         --env=GTK_USE_PORTAL=1 \
         --env=XCURSOR_THEME=${cursorThemeName} \
@@ -183,11 +174,10 @@ in
     GTK_THEME = gtkThemeName;
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
-    QT_QPA_PLATFORMTHEME = "qt5ct";
-    QT_STYLE_OVERRIDE = lilyaGlass.qtStyleName;
+    QT_QPA_PLATFORMTHEME = "kvantum";
+    QT_STYLE_OVERRIDE = "kvantum";
     ELECTRON_OZONE_PLATFORM_HINT = "wayland";
     XCURSOR_THEME = cursorThemeName;
     XCURSOR_SIZE = "48";
-    PYTHONPATH = "/home/lilya/.local/lib/python3.12/site-packages:\${PYTHONPATH:-}";
   };
 }

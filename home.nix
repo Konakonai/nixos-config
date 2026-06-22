@@ -58,6 +58,9 @@ in
           control_center_placement = "floating";
           wallpaper_placement = "floating";
           session_placement = "floating";
+          tray = {
+            icon_size = 22;
+          };
         };
       };
 
