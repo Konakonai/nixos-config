@@ -49,9 +49,11 @@ in
         }
     }
 
-    // Noctalia dock / 控制中心 / 启动器等 layer-shell
+    // Noctalia 控制中心 / 启动器 / 通知等弹出式 layer-shell
+    // 注意：noctalia-dock 和 noctalia-screen-corner 不在此列，
+    // 避免给自动隐藏的 dock 画背景导致遮挡。
     layer-rule {
-        match namespace="^(noctalia-dock|noctalia-control-center|noctalia-launcher|noctalia-session|noctalia-clipboard|notifications|swaync-control-center|launcher|vicinae|waybar)$"
+        match namespace="^(noctalia-control-center|noctalia-launcher|noctalia-session|noctalia-clipboard|notifications|swaync-control-center|launcher|vicinae|waybar)$"
         opacity ${lilyaGlass.opacity.layerShell}
         geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
         background-effect {
