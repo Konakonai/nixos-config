@@ -232,6 +232,7 @@ in
         kdePackages.fcitx5-qt
         kdePackages.fcitx5-configtool
         catppuccin-fcitx5
+        fcitx5-nord
 
         (fcitx5-rime.override {
           rimeDataPkgs = with pkgs; [
