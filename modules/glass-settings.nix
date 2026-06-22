@@ -21,8 +21,8 @@
   };
 
   blur = {
-    passes = 1;
-    offset = "1.0";
+    passes = 3;
+    offset = "3.0";
     noise = "0.0";
     saturation = "1.0";
   };
