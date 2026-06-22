@@ -1,9 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22">
- <defs>
-  <style id="current-color-scheme" type="text/css">.ColorScheme-Text {
-                color:#363636;
-            }</style>
- </defs>
-<path fill="currentColor" d="M10.5 5h1v6.982c1.811-.081 2.721-.606 3.262-1.492.59-.965.738-2.51.738-4.49h1c0 2.02-.102 3.725-.887 5.01-.726 1.189-2.063 1.874-4.113 1.97V16h5v1h-11v-1h5v-3.02c-2.05-.096-3.387-.78-4.113-1.97C5.602 9.725 5.5 8.02 5.5 6h1c0 1.98.148 3.525.738 4.49.542.886 1.452 1.41 3.262 1.492z" class="ColorScheme-Text"/>
-<path fill="currentColor" d="M6 3C4.34 3 3 4.338 3 6v10c0 1.662 1.339 3 3 3h10c1.661 0 3-1.338 3-3V6c0-1.662-1.339-3-3-3zm0 1h10c1.107 0 2 .892 2 2v10c0 1.108-.893 2-2 2H6c-1.107 0-2-.892-2-2V6c0-1.108.893-2 2-2" class="ColorScheme-Text"/>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Custom Nord-themed Rime icon — clean "中" with dark strokes -->
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <rect x="2" y="2" width="44" height="44" rx="10" fill="#eceff4" stroke="#363636" stroke-width="1.5"/>
+  <!-- 中 character -->
+  <g fill="none" stroke="#363636" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 口 (outer box) -->
+    <rect x="14" y="16" width="20" height="20" rx="2"/>
+    <!-- 丨 (vertical stroke) -->
+    <line x1="24" y1="6" x2="24" y2="42"/>
+    <!-- 口 horizontal top -->
+    <line x1="14" y1="16" x2="34" y2="16"/>
+  </g>
 </svg>
