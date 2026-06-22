@@ -8,6 +8,8 @@ in
   xdg.configFile.niri-config.source = lib.mkForce (pkgs.writeText "niri-config.kdl" ''
     ${config.programs.niri.finalConfig}
 
+    include "noctalia.kdl"
+
     // 普通应用只保留一点点轻透感，避免文字和图标被 compositor 一起淡化。
     window-rule {
         exclude app-id="^kitty$"
@@ -56,6 +58,8 @@ in
   # Niri 窗口管理器配置
   programs.niri = {
     settings = {
+      prefer-no-csd = true;
+
       # 启动时运行的程序
       spawn-at-startup = [
         { command = [ "noctalia" ]; }
