@@ -3,7 +3,9 @@
 let
   lilyaGlass = import ./glass-settings.nix;
   gtkThemePackage = pkgs.nordic;
-  iconThemePackage = pkgs.nordzy-icon-theme;
+  iconThemePackage = pkgs.colloid-icon-theme.override {
+    colorVariants = [ "purple" ];
+  };
   cursorThemePackage = pkgs.nordzy-cursor-theme;
   gtkThemeName = lilyaGlass.gtkThemeName;
   iconThemeName = lilyaGlass.iconThemeName;
