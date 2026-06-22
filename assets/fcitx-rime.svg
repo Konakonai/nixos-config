@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Custom Nord-themed Rime icon — clean "中" character in Nord Frost -->
+<!-- Custom Nord-themed Rime icon — clean "中" character, deep polar night -->
 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
-  <rect x="2" y="2" width="44" height="44" rx="10" fill="#eceff4" stroke="#81a1c1" stroke-width="1.5"/>
+  <rect x="2" y="2" width="44" height="44" rx="10" fill="#eceff4" stroke="#4c566a" stroke-width="1.5"/>
   <!-- 中 character, simplified geometric style -->
-  <g fill="none" stroke="#5e81ac" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+  <g fill="none" stroke="#2e3440" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
     <!-- 口 (outer box) -->
     <rect x="14" y="16" width="20" height="20" rx="2"/>
     <!-- 丨 (vertical stroke) -->
