@@ -75,7 +75,7 @@ in
 
       # Cursor
       cursor = {
-        theme = "catppuccin-latte-lavender-cursors";
+        theme = lilyaGlass.cursorThemeName;
         size = 48;
       };
 
