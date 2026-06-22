@@ -139,4 +139,116 @@
       "text/csv" = "org.onlyoffice.desktopeditors.desktop";
     };
   };
+
+  # Zed 声明式设置
+  programs.zed-editor = {
+    enable = true;
+    userSettings = {
+      cli_default_open_behavior = "existing_window";
+      proxy = "";
+      agent = {
+        default_model = {
+          provider = "opencode";
+          model = "go/kimi-k2.5";
+          enable_thinking = false;
+        };
+        favorite_models = [];
+        model_parameters = [];
+      };
+      session = {
+        trust_all_worktrees = true;
+      };
+      ui_font_family = "JetBrains Maple Mono";
+      buffer_font_family = "JetBrains Maple Mono";
+      ui_font_size = 16;
+      buffer_font_size = 15;
+      theme = {
+        mode = "system";
+        light = "Noctalia Light";
+        dark = "Noctalia Dark Transparent";
+      };
+    };
+  };
+
+  # OnlyOffice 字体别名映射
+  xdg.configFile."fontconfig/conf.d/99-simsun-alias.conf".text = ''
+    <?xml version="1.0"?>
+    <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+    <fontconfig>
+      <!-- 无衬线字体 (黑体/Sans-serif) 映射到 Noto Sans -->
+      <match target="pattern">
+        <test qual="any" name="family"><string>微软雅黑</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>Microsoft YaHei</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>黑体</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>SimHei</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>华文细黑</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>STXihei</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>Arial</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>Calibri</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Sans CJK SC</string></edit>
+      </match>
+
+      <!-- 衬线字体 (宋体/楷体/仿宋/Serif) 映射到 Noto Serif -->
+      <match target="pattern">
+        <test qual="any" name="family"><string>宋体</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>SimSun</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>新宋体</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>NSimSun</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>仿宋</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>FangSong</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>楷体</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>KaiTi</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
+      </match>
+      <match target="pattern">
+        <test qual="any" name="family"><string>Times New Roman</string></test>
+        <edit name="family" mode="assign" binding="same"><string>Noto Serif CJK SC</string></edit>
+      </match>
+    </fontconfig>
+  '';
+
+  # Scroll 动效配置
+  xdg.configFile."scroll/config".text = "include ~/.config/scroll/noctalia\n";
 }
