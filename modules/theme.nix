@@ -102,13 +102,15 @@ in
   xdg.dataFile."Kvantum/${kvantumThemeName}/${kvantumThemeName}.kvconfig".source = "${kvantumTheme}/share/Kvantum/${kvantumThemeName}/${kvantumThemeName}.kvconfig";
   xdg.dataFile."Kvantum/${kvantumThemeName}/${kvantumThemeName}.svg".source = "${kvantumTheme}/share/Kvantum/${kvantumThemeName}/${kvantumThemeName}.svg";
 
-  # 自定义 Rime (中州韵) 图标 — 深色极夜色调
+  # 自定义 Rime (中州韵) 图标 — 深色填充版，托盘清晰可见
   xdg.dataFile."icons/${iconThemeName}/status/22/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
   xdg.dataFile."icons/${iconThemeName}/status/24/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
   xdg.dataFile."icons/${iconThemeName}/status/16/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
   xdg.dataFile."icons/${qtIconThemeName}/status/22/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
   xdg.dataFile."icons/${qtIconThemeName}/status/24/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
   xdg.dataFile."icons/${qtIconThemeName}/status/16/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
+  # hicolor fallback
+  xdg.dataFile."icons/hicolor/scalable/apps/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
 
   dconf.settings."org/gnome/desktop/interface" = {
     color-scheme = "prefer-light";

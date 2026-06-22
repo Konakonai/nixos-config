@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Custom Nord-themed Rime icon — clean "中" character, deep polar night -->
+<!-- Nord-themed Rime icon — filled "中" character for tray visibility -->
 <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
-  <rect x="2" y="2" width="44" height="44" rx="10" fill="#eceff4" stroke="#4c566a" stroke-width="1.5"/>
-  <!-- 中 character, simplified geometric style -->
-  <g fill="none" stroke="#2e3440" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-    <!-- 口 (outer box) -->
-    <rect x="14" y="16" width="20" height="20" rx="2"/>
-    <!-- 丨 (vertical stroke) -->
-    <line x1="24" y1="6" x2="24" y2="42"/>
-    <!-- 口 horizontal top -->
-    <line x1="14" y1="16" x2="34" y2="16"/>
+  <rect x="1" y="1" width="46" height="46" rx="10" fill="#eceff4" stroke="#2e3440" stroke-width="2"/>
+  <!-- 中 character — filled paths for visibility at small sizes -->
+  <g fill="#2e3440">
+    <!-- 丨 (vertical stroke) — thick -->
+    <rect x="21.5" y="4" width="5" height="40" rx="2.5"/>
+    <!-- 口 (outer box) — as 4 filled bars -->
+    <rect x="12" y="14" width="24" height="4" rx="2"/>
+    <rect x="12" y="14" width="4" height="22" rx="2"/>
+    <rect x="32" y="14" width="4" height="22" rx="2"/>
+    <rect x="12" y="32" width="24" height="4" rx="2"/>
   </g>
 </svg>
