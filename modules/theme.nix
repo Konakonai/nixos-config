@@ -142,7 +142,7 @@ in
     copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}-xhdpi" "$HOME/.local/share/themes/${gtkThemeName}-xhdpi"
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
     copy_theme_dir "${iconThemePackage}/share/icons/${qtIconThemeName}" "$HOME/.local/share/icons/${qtIconThemeName}"
-    copy_theme_dir "${cursorThemePackage}/share/icons/${cursorThemeName}" "$HOME/.local/share/icons/${cursorThemeName}"
+    # 光标由 home-manager 的 home.pointerCursor 管理，不在这里复制
 
     if ${pkgs.flatpak}/bin/flatpak --user remotes >/dev/null 2>&1; then
       ${pkgs.flatpak}/bin/flatpak override --user \
