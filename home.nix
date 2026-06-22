@@ -129,6 +129,13 @@ in
     enableFishIntegration = true;
     enableBashIntegration = true;
 
+    theme = {
+      flavor = {
+        dark = "noctalia";
+        light = "noctalia";
+      };
+    };
+
     plugins = with pkgs.yaziPlugins; {
       "full-border" = {
         package = full-border;
