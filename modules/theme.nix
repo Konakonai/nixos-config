@@ -3,9 +3,7 @@
 let
   lilyaGlass = import ./glass-settings.nix;
   gtkThemePackage = pkgs.nordic;
-  iconThemePackage = pkgs.colloid-icon-theme.override {
-    colorVariants = [ "grey" ];
-  };
+  iconThemePackage = pkgs.colloid-icon-theme;
   cursorThemePackage = pkgs.nordzy-cursor-theme;
   gtkThemeName = lilyaGlass.gtkThemeName;
   iconThemeName = lilyaGlass.iconThemeName;
@@ -105,8 +103,15 @@ in
   xdg.dataFile."Kvantum/${kvantumThemeName}/${kvantumThemeName}.svg".source = "${kvantumTheme}/share/Kvantum/${kvantumThemeName}/${kvantumThemeName}.svg";
 
   # 自定义 Rime (中州韵) 图标 — Nord 风格
-  xdg.dataFile."icons/${iconThemeName}/scalable/apps/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
-  xdg.dataFile."icons/${qtIconThemeName}/scalable/apps/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
+  # fcitx5 在 status/ 目录查找托盘图标，不是 scalable/apps/
+  xdg.dataFile."icons/${iconThemeName}/status/22/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
+  xdg.dataFile."icons/${iconThemeName}/status/24/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
+  xdg.dataFile."icons/${iconThemeName}/status/16/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
+  xdg.dataFile."icons/${qtIconThemeName}/status/22/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
+  xdg.dataFile."icons/${qtIconThemeName}/status/24/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
+  xdg.dataFile."icons/${qtIconThemeName}/status/16/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
+  # hicolor fallback
+  xdg.dataFile."icons/hicolor/scalable/apps/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
 
   dconf.settings."org/gnome/desktop/interface" = {
     color-scheme = "prefer-light";

@@ -33,7 +33,7 @@ in
     // Noctalia 面板：半透明 + 毛玻璃模糊效果
     layer-rule {
         match namespace="^noctalia-bar-main$"
-        opacity ${lilyaGlass.opacity.layerShell}
+        opacity ${lilyaGlass.opacity.noctaliaPanels}
         geometry-corner-radius ${builtins.toString lilyaGlass.radius.panels}
         background-effect {
             blur true

@@ -4,9 +4,7 @@ let
   lilyaGlass = import ./modules/glass-settings.nix;
 
   # 自定义 SDDM 主题：Catppuccin Latte 基底 + Nord 配色覆写
-  colloidGrey = pkgs.colloid-icon-theme.override {
-    colorVariants = [ "grey" ];
-  };
+  colloidDefault = pkgs.colloid-icon-theme;
   custom-sddm-theme = ((pkgs.catppuccin-sddm.override {
     flavor = "latte";
     accent = "blue";
@@ -21,11 +19,11 @@ let
         substituteInPlace $f --replace-quiet 'radius: 5' 'radius: 12'
       done
 
-      # 使用 Colloid-Grey 图标主题的 symbolic 图标
-      cp ${colloidGrey}/share/icons/Colloid-Grey-Light/actions/symbolic/system-shutdown-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/power.svg
-      cp ${colloidGrey}/share/icons/Colloid-Grey-Light/actions/symbolic/system-reboot-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/reboot.svg
-      cp ${colloidGrey}/share/icons/Colloid-Grey-Light/actions/symbolic/system-suspend-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/sleep.svg
-      cp ${colloidGrey}/share/icons/Colloid-Grey-Light/actions/symbolic/settings-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/settings.svg
+      # 使用 Colloid 图标主题的 symbolic 图标
+      cp ${colloidDefault}/share/icons/Colloid-Light/actions/symbolic/system-shutdown-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/power.svg
+      cp ${colloidDefault}/share/icons/Colloid-Light/actions/symbolic/system-reboot-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/reboot.svg
+      cp ${colloidDefault}/share/icons/Colloid-Light/actions/symbolic/system-suspend-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/sleep.svg
+      cp ${colloidDefault}/share/icons/Colloid-Light/actions/symbolic/settings-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/settings.svg
       # 替换颜色为 Nord Frost 蓝
       for f in $out/share/sddm/themes/catppuccin-latte-blue/icons/*.svg; do
         substituteInPlace $f --replace-quiet '#363636' '#5e81ac'
@@ -395,7 +393,7 @@ in
     libsForQt5.qtstyleplugin-kvantum
     kdePackages.qtstyleplugin-kvantum
     custom-sddm-theme
-    colloidGrey
+    colloidDefault
     nordzy-cursor-theme
     opencode
   ];
