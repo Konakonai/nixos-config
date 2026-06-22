@@ -46,6 +46,17 @@ in
     size = 48;
   };
 
+  # 保持并接管原 ~/.Xresources 中的字体与 DPI 配置
+  xresources.properties = {
+    "Xft.dpi" = 144;
+    "Xft.autohint" = 0;
+    "Xft.lcdfilter" = "lcddefault";
+    "Xft.hintstyle" = "hintfull";
+    "Xft.hinting" = 1;
+    "Xft.antialias" = 1;
+    "Xft.rgba" = "rgb";
+  };
+
   # GTK 与主题配置
   gtk = {
     enable = true;
