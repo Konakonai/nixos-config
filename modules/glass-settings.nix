@@ -33,10 +33,10 @@
     capsules = 18.0;
   };
 
-  gtkThemeName = "catppuccin-latte-lavender-standard+rimless";
+  gtkThemeName = "catppuccin-mocha-lavender-standard+rimless";
   iconThemeName = "Colloid-Purple-Light";
   qtIconThemeName = "Colloid-Purple";
-  cursorThemeName = "catppuccin-latte-lavender-cursors";
+  cursorThemeName = "catppuccin-mocha-lavender-cursors";
   qtStyleName = "adwaita";
 
   fonts = {
