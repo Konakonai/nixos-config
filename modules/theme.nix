@@ -3,7 +3,7 @@
 let
   lilyaGlass = import ./glass-settings.nix;
   gtkThemePackage = pkgs.catppuccin-gtk.override {
-    variant = "latte";
+    variant = "mocha";
     accents = [ "lavender" ];
     size = "standard";
     tweaks = [ "rimless" ];
@@ -11,7 +11,7 @@ let
   iconThemePackage = pkgs.colloid-icon-theme.override {
     colorVariants = [ "purple" ];
   };
-  cursorThemePackage = pkgs.catppuccin-cursors.latteLavender;
+  cursorThemePackage = pkgs.catppuccin-cursors.mochaLavender;
   gtkThemeName = lilyaGlass.gtkThemeName;
   iconThemeName = lilyaGlass.iconThemeName;
   qtIconThemeName = lilyaGlass.qtIconThemeName;
@@ -98,17 +98,7 @@ in
     };
   };
 
-  xdg.configFile."qt5ct/colors/noctalia.conf".text = ''
-    [ColorScheme]
-    #https://doc.qt.io/archives/qt-5.15/qpalette.html
-    #https://doc.qt.io/qt-6/qpalette.html - Qt6 didn't add/delete/change any of the color functions or docs
-    # functions that correspond to the colors definition location
-    # windowText,button,light,midlight,dark,mid,text,brightText,buttonText,base,window,shadow,highlight,highlightedText,link,linkVisited,alternateBase,NO_IDEA (just use some sane default),toolTipBase,toolTipText,placeholderText,accent
-    active_colors=#4c4f69, #eff1f5, #ffffff, #cacaca, #9f9f9f, #b8b8b8, #4c4f69, #ffffff, #4c4f69, #eff1f5, #eff1f5, #dce0e8, #d5c0f2, #220647, #fe640b, #8839ef, #ccd0da, #eff1f5, #ccd0da, #4c4f69, #4c4f69, #8839ef
-    disabled_colors=#4c4f69, #eff1f5, #ffffff, #cacaca, #9f9f9f, #b8b8b8, #4c4f69, #ffffff, #4c4f69, #eff1f5, #eff1f5, #dce0e8, #d5c0f2, #220647, #fe640b, #8839ef, #ccd0da, #eff1f5, #ccd0da, #4c4f69, #4c4f69, #8839ef
-    inactive_colors=#4c4f69, #eff1f5, #ffffff, #cacaca, #9f9f9f, #b8b8b8, #4c4f69, #ffffff, #4c4f69, #eff1f5, #eff1f5, #dce0e8, #d5c0f2, #220647, #fe640b, #8839ef, #ccd0da, #eff1f5, #ccd0da, #4c4f69, #4c4f69, #8839ef
-  '';
-  xdg.configFile."qt5ct/colors/noctalia.conf".force = true;
+
   xdg.configFile."qt5ct/qt5ct.conf".force = true;
   xdg.configFile."qt6ct/qt6ct.conf".force = true;
 
