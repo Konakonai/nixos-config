@@ -1,13 +1,13 @@
 {
   palette = {
-    accent = "#8839ef";
-    lavender = "#7287fd";
-    text = "#4c4f69";
-    base = "#eff1f5";
-    mantle = "#e6e9ef";
-    crust = "#dce0e8";
-    overlay = "#9ca0b0";
-    shadow = "#6c6f8533";
+    accent = "#5e81ac";
+    lavender = "#81a1c1";
+    text = "#2e3440";
+    base = "#eceff4";
+    mantle = "#e5e9f0";
+    crust = "#d8dee9";
+    overlay = "#4c566a";
+    shadow = "#3b425233";
   };
 
   opacity = {
@@ -33,10 +33,10 @@
     capsules = 18.0;
   };
 
-  gtkThemeName = "catppuccin-mocha-lavender-standard+rimless";
-  iconThemeName = "Colloid-Purple-Light";
-  qtIconThemeName = "Colloid-Purple";
-  cursorThemeName = "catppuccin-mocha-lavender-cursors";
+  gtkThemeName = "Nordic-Polar";
+  iconThemeName = "Nordzy";
+  qtIconThemeName = "Nordzy";
+  cursorThemeName = "Nordzy-cursors";
   qtStyleName = "adwaita";
 
   fonts = {
