@@ -34,8 +34,8 @@
   };
 
   gtkThemeName = "Nordic-Polar";
-  iconThemeName = "Nordzy";
-  qtIconThemeName = "Nordzy";
+  iconThemeName = "Colloid-Purple-Light";
+  qtIconThemeName = "Colloid-Purple";
   cursorThemeName = "Nordzy-cursors";
   qtStyleName = "adwaita";
 
