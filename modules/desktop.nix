@@ -102,6 +102,7 @@ in
     type = "Application";
     categories = [ "Utility" "System" ];
     terminal = false;
+    noDisplay = true;
   };
 
   # 默认应用关联 (MIME Association)
