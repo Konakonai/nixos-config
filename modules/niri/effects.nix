@@ -28,6 +28,11 @@ in
     window-rule {
         match app-id="^kitty$"
         draw-border-with-background false
+        background-effect {
+            blur true
+            noise ${lilyaGlass.blur.noise}
+            saturation ${lilyaGlass.blur.saturation}
+        }
     }
 
     layer-rule {
