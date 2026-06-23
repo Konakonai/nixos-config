@@ -169,9 +169,19 @@ in
 
     nvidiaSettings = true;
 
-    # 对笔记本休眠/唤醒更友好；如果 suspend 出问题，可以改成 false。
+    # 独显电源管理（RTD3）配置，当没有程序使用独显时，显卡会自动进入深度睡眠状态（0W 功耗）
     powerManagement.enable = true;
-    powerManagement.finegrained = false;
+    powerManagement.finegrained = true;
+
+    # 配置 PRIME 混合显卡架构中的 Bus ID（已核对 lspci 结果）
+    prime = {
+      offload = {
+        enable = true;
+        enableOffloadCmd = true;
+      };
+      intelBusId = "PCI:0:2:0";
+      nvidiaBusId = "PCI:1:0:0";
+    };
 
     package = config.boot.kernelPackages.nvidiaPackages.stable;
   };
@@ -200,12 +210,15 @@ in
   services.upower.enable = true;
   services.power-profiles-daemon.enable = true;
   services.thermald.enable = true;
-  systemd.services.set-balanced-profile = {
-    wantedBy = [ "multi-user.target" ];
-    after = [ "power-profiles-daemon.service" ];
-    script = "${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced";
-    serviceConfig.Type = "oneshot";
-  };
+
+  # 启用 powertop 自动电源优化（自动调整 PCIe/USB/声卡等控制器为最省电状态，对延长续航非常显著）
+  powerManagement.powertop.enable = true;
+
+  # 根据电源状态（插拔电源线）自动切换省电模式 (power-saver) 和平衡模式 (balanced)
+  services.udev.extraRules = ''
+    SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="0", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver"
+    SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
+  '';
 
   # 允许普通用户 lilya 修改 ThinkBook (ideapad_laptop 驱动) 电池养护模式设置
   systemd.services.battery-conservation-permissions = {
