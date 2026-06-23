@@ -12,7 +12,7 @@
 
   opacity = {
     windows = "1.0";
-    terminal = "0.88";
+    terminal = "0.84";
     noctaliaPanels = "0.70";
     noctaliaPopups = 0.82;
     noctaliaCapsules = 0.32;
