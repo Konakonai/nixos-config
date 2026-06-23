@@ -324,6 +324,8 @@ in
     };
   };
 
+  xdg.configFile."yazi/theme.toml".force = true;
+
   # Home Packages
   home.packages = with pkgs; [
     # langs
