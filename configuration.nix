@@ -213,6 +213,17 @@ in
 
   # 启用 powertop 自动电源优化（自动调整 PCIe/USB/声卡等控制器为最省电状态，对延长续航非常显著）
   powerManagement.powertop.enable = true;
+  
+  # 覆盖 powertop 服务，防止其暂停 USB 鼠标和键盘，解决“鼠标休眠睡死/移动延迟”问题
+  systemd.services.powertop.serviceConfig.ExecStartPost = pkgs.writeShellScript "disable-usb-autosuspend" ''
+    for dev in /sys/bus/usb/devices/*; do
+      if [ -d "$dev" ]; then
+        if grep -q "03" "$dev"/*/bInterfaceClass 2>/dev/null; then
+          echo "on" > "$dev/power/control" 2>/dev/null || true
+        fi
+      fi
+    done
+  '';
 
   # 根据电源状态（插拔电源线）自动切换省电模式 (power-saver) 和平衡模式 (balanced)
   services.udev.extraRules = ''
