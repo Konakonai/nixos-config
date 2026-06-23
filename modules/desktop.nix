@@ -49,6 +49,28 @@ let
             "~/.config/mpv-webdav/credentials",
         )
     ).expanduser()
+    LEGACY_WRAPPER_PATH = Path(
+        "~/.local/share/applications/mpv-webdav-wrapper"
+    ).expanduser()
+
+
+    def read_legacy_credentials():
+        username = None
+        password = None
+
+        if not LEGACY_WRAPPER_PATH.exists():
+            return username, password
+
+        for raw_line in LEGACY_WRAPPER_PATH.read_text(
+            encoding="utf-8"
+        ).splitlines():
+            line = raw_line.strip()
+            if line.startswith("username ="):
+                username = line.split("=", 1)[1].strip().strip("\"'")
+            elif line.startswith("password ="):
+                password = line.split("=", 1)[1].strip().strip("\"'")
+
+        return username, password
 
 
     def read_credentials():
@@ -79,6 +101,11 @@ let
                 username = username or values[0]
             if len(values) > 1:
                 password = password or values[1]
+
+        if not password:
+            legacy_username, legacy_password = read_legacy_credentials()
+            username = username or legacy_username
+            password = password or legacy_password
 
         return username or "admin", password
 
