@@ -7,6 +7,7 @@ in
   imports = [
     inputs.zen-browser.homeModules.beta
     inputs.noctalia.homeModules.default
+    inputs.nix-flatpak.homeManagerModules.nix-flatpak
 
     # 导入拆分后的子配置文件
     ./modules/glass.nix
@@ -17,6 +18,7 @@ in
     ./modules/fcitx5.nix
     ./modules/desktop.nix
     ./modules/codex.nix
+    ./modules/flatpak.nix
     ./modules/profile-packages.nix
   ];
 

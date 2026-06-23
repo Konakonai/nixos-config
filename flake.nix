@@ -5,6 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    nix-flatpak.url = "git+https://github.com/gmodena/nix-flatpak.git?ref=refs/tags/v0.7.0";
 
     codex-desktop-linux = {
       url = "github:ilysenko/codex-desktop-linux/0006f4a22657a399a73f8963376943bc9e7fbe9d";
