@@ -262,9 +262,16 @@ in
     after = [ "systemd-modules-load.service" ];
     wantedBy = [ "multi-user.target" ];
     script = ''
+      # 如果检测到 niri 正在运行（活跃的桌面会话），说明当前是 rebuild switch 触发的启动
+      # 此时强行 remove 会因为各种用户态程序（如 Electron 助手环境）占用而卡死，因此直接跳过并退出
+      if ${pkgs.procps}/bin/pgrep -x niri >/dev/null; then
+        echo "Niri session is active. Skipping NVIDIA GPU removal to prevent blocking rebuild switch."
+        exit 0
+      fi
+
       sleep 2
       if [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
-        echo 1 > /sys/bus/pci/devices/0000:01:00.0/remove
+        echo 1 > /sys/bus/pci/devices/0000:01:00.0/remove || true
       fi
     '';
     serviceConfig.Type = "oneshot";
