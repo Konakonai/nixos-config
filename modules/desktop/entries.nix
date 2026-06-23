@@ -36,7 +36,7 @@ in
   xdg.desktopEntries."nemo" = {
     name = "Files";
     genericName = "File Manager";
-    exec = withFcitx "nemo %U";
+    exec = withFcitx "${pkgs.nemo-with-extensions}/bin/nemo %U";
     icon = "system-file-manager";
     terminal = false;
     categories = [ "Utility" "FileTools" "System" "FileManager" ];
