@@ -98,7 +98,7 @@ in
     genericName = "电池充电限制切换";
     comment = "在 80% 养护模式与 100% 满充模式之间进行切换";
     exec = "toggle-battery-limit";
-    icon = "battery-charging";
+    icon = "battery";
     type = "Application";
     categories = [ "Utility" "System" ];
     terminal = false;
