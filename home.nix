@@ -16,6 +16,8 @@ in
     ./modules/theme.nix
     ./modules/fcitx5.nix
     ./modules/desktop.nix
+    ./modules/codex.nix
+    ./modules/profile-packages.nix
   ];
 
   home.username = "lilya";

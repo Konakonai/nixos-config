@@ -17,7 +17,7 @@ pkgs.stdenv.mkDerivation rec {
     chmod +x $out/bin/codex-bin
 
     cat > $out/bin/codex << 'WRAPPER'
-#!/etc/profiles/per-user/lilya/bin/bash
+#!${pkgs.runtimeShell}
 exec @out@/bin/codex-bin "$@"
 WRAPPER
     chmod +x $out/bin/codex

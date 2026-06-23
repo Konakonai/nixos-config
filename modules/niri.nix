@@ -359,7 +359,7 @@ in
 
         # 截图
         "Mod+Shift+S".action.screenshot = [];
-        "Mod+Ctrl+A".action.spawn = [ "/home/lilya/.nix-profile/bin/codex-desktop" "--appshot" ];
+        "Mod+Ctrl+A".action.spawn = [ "codex-desktop" "--appshot" ];
         "Print".action.screenshot = [];
         "Ctrl+Print".action.screenshot-screen = [];
         "Alt+Print".action.screenshot-window = [];
