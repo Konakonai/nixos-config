@@ -18,10 +18,6 @@
   programs.bash = {
     enable = true;
 
-    bashrcExtra = ''
-      export PATH="$HOME/.local/bin:$PATH"
-    '';
-
     shellAliases = {
       ll = "ls -alh";
       la = "ls -A";

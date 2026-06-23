@@ -8,11 +8,17 @@ let
   };
 in
 {
+  programs.gh.enable = true;
+
   home.packages = with pkgs; [
-    aria2
-    chromium
-    mpv
-    python3Packages.ddgs
+    gcc
+    rustup
+    go
+    nodejs
+    python3
+    lua
+    git-lfs
+    zed-editor
 
     inputs.hermes-agent.packages.${system}.default
     unstable.officecli

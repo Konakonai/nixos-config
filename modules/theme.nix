@@ -154,33 +154,7 @@ in
     done
     # 光标由 home-manager 的 home.pointerCursor 管理，不在这里复制
 
-    if ${pkgs.flatpak}/bin/flatpak --user remotes >/dev/null 2>&1; then
-      ${pkgs.flatpak}/bin/flatpak override --user \
-        --filesystem=xdg-config/gtk-3.0:ro \
-        --filesystem=xdg-config/gtk-4.0:ro \
-        --filesystem=xdg-config/Kvantum:ro \
-        --filesystem=xdg-data/themes:ro \
-        --filesystem=xdg-data/icons:ro \
-        --filesystem=xdg-data/Kvantum:ro \
-        --env=GTK_THEME=${gtkThemeName} \
-        --env=GTK_USE_PORTAL=1 \
-        --env=GTK2_RC_FILES=$HOME/.gtkrc-2.0 \
-        --env=QT_QPA_PLATFORMTHEME=kvantum \
-        --env=QT_STYLE_OVERRIDE=kvantum \
-        --env=XCURSOR_THEME=${cursorThemeName} \
-        --env=XCURSOR_SIZE=48
-
-      ${pkgs.flatpak}/bin/flatpak override --user com.tencent.WeChat \
-        --env=CHROMIUM_FLAGS=--force-color-profile=srgb \
-        --env=ELECTRON_EXTRA_LAUNCH_ARGS=--force-color-profile=srgb \
-        --env=QTWEBENGINE_CHROMIUM_FLAGS=--force-color-profile=srgb \
-        --env=QT_QPA_PLATFORMTHEME=kvantum \
-        --env=QT_STYLE_OVERRIDE=kvantum \
-        --env=GTK_THEME=${gtkThemeName} \
-        --env=GTK_USE_PORTAL=1 \
-        --env=XCURSOR_THEME=${cursorThemeName} \
-        --env=XCURSOR_SIZE=48
-    fi
+    # Flatpak filesystem and environment overrides are declared in modules/flatpak.nix.
   '';
 
   # 设置全局环境变量

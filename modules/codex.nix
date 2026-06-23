@@ -1,4 +1,4 @@
-{ pkgs, inputs, ... }:
+{ pkgs, inputs, withFcitx, ... }:
 
 let
   system = pkgs.stdenv.hostPlatform.system;
@@ -56,7 +56,7 @@ in
   xdg.desktopEntries.codex-desktop = {
     name = "Codex Desktop";
     comment = "Run Codex Desktop on Linux";
-    exec = "${codexDesktop}/bin/codex-desktop %u";
+    exec = "${withFcitx "${codexDesktop}/bin/codex-desktop"} %u";
     icon = "codex-desktop";
     terminal = false;
     type = "Application";
@@ -72,7 +72,7 @@ in
     };
     actions.new-window = {
       name = "New Window";
-      exec = "${codexDesktop}/bin/codex-desktop --new-instance";
+      exec = withFcitx "${codexDesktop}/bin/codex-desktop --new-instance";
     };
   };
 }
