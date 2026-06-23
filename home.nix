@@ -326,10 +326,10 @@ in
 
   xdg.configFile."yazi/theme.toml".force = true;
 
-  # Niri 动态显示输出配置文件，默认以 165Hz 满血刷新率启动
+  # Niri 动态显示输出配置文件，默认以 60Hz 刷新率启动（配合外接 60Hz 显示器）
   xdg.configFile."niri/custom-outputs.kdl".text = ''
     output "eDP-1" {
-        mode "3200x2000@165.00"
+        mode "3200x2000@60.00"
         scale 1.75
         position x=0 y=0
     }
@@ -436,11 +436,11 @@ in
           echo 1 > "$STATUS_FILE"
         fi
         
-        # 内置屏幕恢复为 165Hz 高刷
-        echo 'output "eDP-1" { mode "3200x2000@165.00"; scale 1.75; position x=0 y=0; }' > "$NIRI_OUTPUTS_CONFIG"
+        # 内置屏幕保持为 60Hz 刷新率
+        echo 'output "eDP-1" { mode "3200x2000@60.00"; scale 1.75; position x=0 y=0; }' > "$NIRI_OUTPUTS_CONFIG"
         
         echo "performance" > "$STATE_FILE"
-        ${pkgs.libnotify}/bin/notify-send -i video-display "电源管理" "已切换到【插电性能模式】：内置屏幕恢复至 165Hz 高刷，独显已重新加载就绪，充电限制已恢复为 80% 养护电池。"
+        ${pkgs.libnotify}/bin/notify-send -i video-display "电源管理" "已切换到【插电性能模式】：内置屏幕保持 60Hz，独显已重新加载就绪，充电限制已恢复为 80% 养护电池。"
       fi
     '')
   ];
