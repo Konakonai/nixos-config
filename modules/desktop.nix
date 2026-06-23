@@ -93,11 +93,11 @@ in
     mimeType = [ "inode/directory" ];
   };
 
-  xdg.desktopEntries."toggle-battery-limit" = {
-    name = "切换电池充电限制 (80% / 100%)";
-    genericName = "电池充电限制切换";
-    comment = "在 80% 养护模式与 100% 满充模式之间进行切换";
-    exec = "toggle-battery-limit";
+  xdg.desktopEntries."toggle-power-mode" = {
+    name = "切换省电/插电模式";
+    genericName = "电源模式切换";
+    comment = "在一键省电模式与满血插电模式之间进行切换";
+    exec = "toggle-power-mode";
     icon = "battery";
     type = "Application";
     categories = [ "Utility" "System" ];

@@ -255,27 +255,7 @@ in
     serviceConfig.Type = "oneshot";
   };
 
-  # 开机自动从 PCI 总线移除 NVIDIA 独显，确保任何用户态程序（如 Electron 助手环境）都无法占用它，实现终极省电
-  # 运行后服务即刻退出（inactive/dead），耗费 0 系统资源。需要独显时在终端执行 `echo 1 > /sys/bus/pci/rescan` 即可瞬间加载独显。
-  systemd.services.disable-nvidia-on-boot = {
-    description = "Disable NVIDIA GPU on boot to save battery";
-    after = [ "systemd-modules-load.service" ];
-    wantedBy = [ "multi-user.target" ];
-    script = ''
-      # 如果检测到 niri 正在运行（活跃的桌面会话），说明当前是 rebuild switch 触发的启动
-      # 此时强行 remove 会因为各种用户态程序（如 Electron 助手环境）占用而卡死，因此直接跳过并退出
-      if ${pkgs.procps}/bin/pgrep -x niri >/dev/null; then
-        echo "Niri session is active. Skipping NVIDIA GPU removal to prevent blocking rebuild switch."
-        exit 0
-      fi
 
-      sleep 2
-      if [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
-        echo 1 > /sys/bus/pci/devices/0000:01:00.0/remove || true
-      fi
-    '';
-    serviceConfig.Type = "oneshot";
-  };
 
   # OpenList 聚合网盘 WebDAV 服务（常驻后台运行）
   systemd.services.openlist = {

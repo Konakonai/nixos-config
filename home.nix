@@ -326,6 +326,15 @@ in
 
   xdg.configFile."yazi/theme.toml".force = true;
 
+  # Niri 动态显示输出配置文件，默认以 165Hz 满血刷新率启动
+  xdg.configFile."niri/custom-outputs.kdl".text = ''
+    output "eDP-1" {
+        mode "3200x2000@165.00"
+        scale 1.75
+        position x=0 y=0
+    }
+  '';
+
   # Home Packages
   home.packages = with pkgs; [
     # langs
@@ -381,21 +390,57 @@ in
     # 引用重归类的 splayer 包
     (import ./pkgs/splayer.nix { inherit pkgs lib; })
 
-    # 电池养护模式切换脚本
-    (pkgs.writeShellScriptBin "toggle-battery-limit" ''
+    # 极度省电与高性能插电一键切换脚本
+    (pkgs.writeShellScriptBin "toggle-power-mode" ''
       STATUS_FILE="/sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode"
-      if [ ! -f "$STATUS_FILE" ]; then
-        ${pkgs.libnotify}/bin/notify-send -u critical "电池控制" "当前系统不支持该电池限制控制接口。"
-        exit 1
+      NIRI_OUTPUTS_CONFIG="$HOME/.config/niri/custom-outputs.kdl"
+      STATE_FILE="$HOME/.config/niri/power-mode-state"
+
+      CURRENT_STATE="performance"
+      if [ -f "$STATE_FILE" ]; then
+        CURRENT_STATE=$(cat "$STATE_FILE")
       fi
 
-      CURRENT=$(cat "$STATUS_FILE")
-      if [ "$CURRENT" -eq "1" ]; then
-        echo 0 > "$STATUS_FILE"
-        ${pkgs.libnotify}/bin/notify-send -i battery-charging "电池控制" "已关闭限制！现在将充电至 100% 满电。"
+      if [ "$CURRENT_STATE" = "performance" ]; then
+        # ========================================
+        # 1. 切换到【极度省电模式】
+        # ========================================
+        
+        # 放开充电限制到 100%
+        if [ -f "$STATUS_FILE" ]; then
+          echo 0 > "$STATUS_FILE"
+        fi
+        
+        # 内置屏幕降为 60Hz 刷新率
+        echo 'output "eDP-1" { mode "3200x2000@60.00"; scale 1.75; position x=0 y=0; }' > "$NIRI_OUTPUTS_CONFIG"
+        
+        # 物理关闭并从总线上移除独显
+        if [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
+          echo 1 > /sys/bus/pci/devices/0000:01:00.0/remove || true
+        fi
+        
+        echo "powersave" > "$STATE_FILE"
+        ${pkgs.libnotify}/bin/notify-send -i battery-caution "电源管理" "已切换到【电池省电模式】：内置屏幕降至 60Hz，独显已彻底关闭电源，充电限制已临时放开至 100% 准备出门。"
       else
-        echo 1 > "$STATUS_FILE"
-        ${pkgs.libnotify}/bin/notify-send -i battery-good "电池控制" "已开启养护模式！充电限制为 80%。"
+        # ========================================
+        # 2. 切换到【插电高性能模式】
+        # ========================================
+        
+        # 重新扫描 PCI 总线拉回独显
+        if [ -f /sys/bus/pci/rescan ]; then
+          echo 1 > /sys/bus/pci/rescan
+        fi
+        
+        # 恢复 80% 充电限制保护寿命
+        if [ -f "$STATUS_FILE" ]; then
+          echo 1 > "$STATUS_FILE"
+        fi
+        
+        # 内置屏幕恢复为 165Hz 高刷
+        echo 'output "eDP-1" { mode "3200x2000@165.00"; scale 1.75; position x=0 y=0; }' > "$NIRI_OUTPUTS_CONFIG"
+        
+        echo "performance" > "$STATE_FILE"
+        ${pkgs.libnotify}/bin/notify-send -i video-display "电源管理" "已切换到【插电性能模式】：内置屏幕恢复至 165Hz 高刷，独显已重新加载就绪，充电限制已恢复为 80% 养护电池。"
       fi
     '')
   ];

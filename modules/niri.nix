@@ -9,12 +9,11 @@ in
     ${config.programs.niri.finalConfig}
 
     include "noctalia.kdl"
+    include "custom-outputs.kdl"
 
-    // 强制 Niri 渲染主卡使用 Intel 核显，并忽略 NVIDIA 独显设备，避免其占用导致独显无法进入低功耗挂起
+    // 强制 Niri 渲染主卡使用 Intel 核显，以保障基础渲染能效
     debug {
         render-drm-device "/dev/dri/renderD128"
-        ignore-drm-device "/dev/dri/card0"
-        ignore-drm-device "/dev/dri/renderD129"
     }
 
     // 普通应用只保留一点点轻透感，避免文字和图标被 compositor 一起淡化。
@@ -144,18 +143,7 @@ in
       };
 
       outputs = {
-        "eDP-1" = {
-          mode = {
-            width = 3200;
-            height = 2000;
-            refresh = 60.0;
-          };
-          scale = 1.75;
-          position = {
-            x = 0;
-            y = 0;
-          };
-        };
+        # eDP-1（内置屏幕）已移至 ~/.config/niri/custom-outputs.kdl，以便一键脚本动态切换 60Hz / 165Hz
 
         "DP-2" = {
           focus-at-startup = true;
