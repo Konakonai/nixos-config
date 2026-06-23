@@ -1,5 +1,9 @@
 { ... }:
 
+let
+  lilyaGlass = import ../glass-settings.nix;
+in
+
 {
   xdg.desktopEntries."dev.zed.Zed" = {
     name = "Zed";
@@ -42,8 +46,8 @@
         model_parameters = [];
       };
       session.trust_all_worktrees = true;
-      ui_font_family = "JetBrains Maple Mono";
-      buffer_font_family = "JetBrains Maple Mono";
+      ui_font_family = lilyaGlass.fonts.mono;
+      buffer_font_family = lilyaGlass.fonts.mono;
       ui_font_size = 16;
       buffer_font_size = 15;
       theme = {

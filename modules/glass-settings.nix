@@ -12,30 +12,29 @@
 
   opacity = {
     windows = "1.0";
-    terminal = "0.78";
-    noctaliaPanels = "0.55";
-    noctaliaPopups = 0.68;
-    noctaliaCapsules = 0.22;
-    layerShell = "1.0";
-    layerPopups = "1.0";
+    terminal = "0.88";
+    noctaliaPanels = "0.70";
+    noctaliaPopups = 0.82;
+    noctaliaCapsules = 0.32;
+    layerShell = "0.92";
+    layerPopups = "0.94";
   };
 
   blur = {
-    passes = 3;
-    offset = "3.0";
+    passes = 2;
+    offset = "2.0";
     noise = "0.0";
-    saturation = "1.0";
+    saturation = "1.08";
   };
 
   radius = {
-    windows = 12.0;
-    panels = 24;
-    capsules = 18.0;
+    windows = 14.0;
+    panels = 22;
+    capsules = 16.0;
   };
 
   gtkThemeName = "Nordic-Polar";
   iconThemeName = "Colloid-Light";
-  qtIconThemeName = "Colloid";
   cursorThemeName = "Nordzy-cursors";
   qtStyleName = "kvantum";
   kvantumThemeName = "KvNordLight";
@@ -43,7 +42,7 @@
   fonts = {
     sans = "Noto Sans CJK SC";
     serif = "Noto Serif CJK SC";
-    mono = "JetBrains Maple Mono";
+    mono = "Maple Mono Normal NF";
     size = 11;
     terminalSize = 12;
   };

@@ -37,13 +37,15 @@ in
         background-effect {
             blur true
             noise 0.0
-            saturation 1.0
+            saturation ${lilyaGlass.blur.saturation}
         }
         popups {
             opacity ${lilyaGlass.opacity.layerPopups}
             geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
             background-effect {
                 blur true
+                noise ${lilyaGlass.blur.noise}
+                saturation ${lilyaGlass.blur.saturation}
             }
         }
     }
@@ -55,13 +57,15 @@ in
         background-effect {
             blur true
             noise 0.0
-            saturation 1.0
+            saturation ${lilyaGlass.blur.saturation}
         }
         popups {
             opacity ${lilyaGlass.opacity.layerPopups}
             geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
             background-effect {
                 blur true
+                noise ${lilyaGlass.blur.noise}
+                saturation ${lilyaGlass.blur.saturation}
             }
         }
     }

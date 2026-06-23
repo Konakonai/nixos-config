@@ -16,7 +16,7 @@ in
 
       shell = {
         corner_radius_scale = 1.65;
-        font_family = "Noto Sans CJK SC";
+        font_family = lilyaGlass.fonts.sans;
 
         animation = {
           enabled = true;

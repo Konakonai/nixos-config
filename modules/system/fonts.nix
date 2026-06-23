@@ -8,8 +8,7 @@ in
     fontDir.enable = true;
 
     packages = with pkgs; [
-      jetbrains-mono
-      nerd-fonts.jetbrains-mono
+      maple-mono."Normal-NF"
 
       noto-fonts
       noto-fonts-cjk-sans

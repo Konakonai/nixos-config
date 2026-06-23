@@ -7,7 +7,7 @@ let
   sddmTheme = (pkgs.catppuccin-sddm.override {
     flavor = "latte";
     accent = "blue";
-    font = "JetBrains Maple Mono";
+    font = lilyaGlass.fonts.mono;
     fontSize = "11";
     background = "/etc/sddm-wallpaper.jpg";
   }).overrideAttrs (old: {

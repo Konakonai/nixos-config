@@ -7,7 +7,6 @@ let
   cursorThemePackage = pkgs.nordzy-cursor-theme;
   gtkThemeName = lilyaGlass.gtkThemeName;
   iconThemeName = lilyaGlass.iconThemeName;
-  qtIconThemeName = lilyaGlass.qtIconThemeName;
   cursorThemeName = lilyaGlass.cursorThemeName;
   kvantumThemeName = lilyaGlass.kvantumThemeName;
 
@@ -106,9 +105,6 @@ in
   xdg.dataFile."icons/${iconThemeName}/status/22/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
   xdg.dataFile."icons/${iconThemeName}/status/24/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
   xdg.dataFile."icons/${iconThemeName}/status/16/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
-  xdg.dataFile."icons/${qtIconThemeName}/status/22/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
-  xdg.dataFile."icons/${qtIconThemeName}/status/24/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
-  xdg.dataFile."icons/${qtIconThemeName}/status/16/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
   # hicolor fallback
   xdg.dataFile."icons/hicolor/scalable/apps/fcitx-rime.svg".source = ../assets/fcitx-rime.svg;
 
@@ -141,11 +137,10 @@ in
     copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}-hdpi" "$HOME/.local/share/themes/${gtkThemeName}-hdpi"
     copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}-xhdpi" "$HOME/.local/share/themes/${gtkThemeName}-xhdpi"
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
-    copy_theme_dir "${iconThemePackage}/share/icons/${qtIconThemeName}" "$HOME/.local/share/icons/${qtIconThemeName}"
 
     # 用自定义 rime 图标覆盖 Colloid 主题自带的（复制后执行，避免被覆盖）
     RIME_ICON="${../assets/fcitx-rime.svg}"
-    for d in "$HOME/.local/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${qtIconThemeName}"; do
+    for d in "$HOME/.local/share/icons/${iconThemeName}"; do
       for s in 16 22 24; do
         if [ -d "$d/status/$s" ]; then
           cp -f "$RIME_ICON" "$d/status/$s/fcitx-rime.svg"

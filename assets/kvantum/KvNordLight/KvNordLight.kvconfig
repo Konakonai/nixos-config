@@ -63,16 +63,16 @@ respect_DE=true
 submenu_delay=250
 
 [GeneralColors]
-window.color=#2a2f3a
-base.color=#e5e9f0
-alt.base.color=#2b303c
-button.color=#e5e9f0
-light.color=#d8dee9
-mid.light.color=#d8dee9
-dark.color=#4c566a
-mid.color=#242933
-highlight.color=#d8dee9
-inactive.highlight.color=#d8dee9
+window.color=#f8fafc
+base.color=#ffffff
+alt.base.color=#f1f4f9
+button.color=#edf1f7
+light.color=#ffffff
+mid.light.color=#e5e9f0
+dark.color=#b8c2d3
+mid.color=#d8dee9
+highlight.color=#d8e3f0
+inactive.highlight.color=#e5e9f0
 text.color=#2e3440c8
 window.text.color=#2e3440aa
 button.text.color=#2e3440aa
@@ -112,10 +112,10 @@ frame.right=4
 interior=true
 interior.element=button
 indicator.size=9
-text.normal.color=#eceff4b4
-text.focus.color=white
-text.press.color=#eceff4b4
-text.toggle.color=white
+text.normal.color=#2e3440b4
+text.focus.color=#2e3440
+text.press.color=#2e3440b4
+text.toggle.color=#2e3440
 text.shadow=0
 text.margin=1
 text.iconspacing=4
@@ -130,17 +130,17 @@ frame.expansion=14
 
 [PanelButtonTool]
 inherits=PanelButtonCommand
-text.normal.color=#eceff496
+text.normal.color=#2e344096
 text.bold=true
 
 [ToolbarButton]
 frame.element=tbutton
 interior.element=tbutton
 indicator.element=tarrow
-text.normal.color=#eceff4b4
-text.focus.color=white
-text.press.color=white
-text.toggle.color=white
+text.normal.color=#2e3440b4
+text.focus.color=#2e3440
+text.press.color=#2e3440
+text.toggle.color=#2e3440
 text.bold=true
 
 [Dock]
@@ -151,14 +151,14 @@ frame.top=1
 frame.bottom=1
 frame.left=1
 frame.right=1
-text.normal.color=#eceff4c8
+text.normal.color=#2e3440c8
 
 [DockTitle]
 inherits=PanelButtonCommand
 frame=false
 interior=false
-text.normal.color=#eceff496
-text.focus.color=white
+text.normal.color=#2e344096
+text.focus.color=#2e3440
 text.bold=true
 
 [IndicatorSpinBox]
@@ -171,7 +171,7 @@ frame.left=2
 frame.right=2
 indicator.element=spin
 indicator.size=10
-text.normal.color=#eceff4c8
+text.normal.color=#2e3440c8
 text.margin.top=2
 text.margin.bottom=2
 text.margin.left=2
@@ -181,8 +181,8 @@ text.margin.right=2
 inherits=PanelButtonCommand
 frame=false
 interior.element=radio
-text.normal.color=#eceff4c8
-text.focus.color=white
+text.normal.color=#2e3440c8
+text.focus.color=#2e3440
 min_width=+0.3font
 min_height=+0.3font
 
@@ -190,8 +190,8 @@ min_height=+0.3font
 inherits=PanelButtonCommand
 frame=false
 interior.element=checkbox
-text.normal.color=#eceff4c8
-text.focus.color=white
+text.normal.color=#2e3440c8
+text.focus.color=#2e3440
 min_width=+0.3font
 min_height=+0.3font
 
@@ -241,9 +241,9 @@ indicator.size=9
 
 [ToolboxTab]
 inherits=PanelButtonCommand
-text.normal.color=#eceff4c8
-text.press.color=#eceff496
-text.focus.color=white
+text.normal.color=#2e3440c8
+text.press.color=#2e344096
+text.focus.color=#2e3440
 
 [Tab]
 inherits=PanelButtonCommand
@@ -258,9 +258,9 @@ frame.top=2
 frame.bottom=2
 frame.left=2
 frame.right=2
-text.normal.color=#eceff47d
-text.focus.color=#eceff4b4
-text.toggle.color=#eceff4c8
+text.normal.color=#2e34407d
+text.focus.color=#2e3440b4
+text.toggle.color=#2e3440c8
 frame.expansion=0
 text.bold=true
 
@@ -286,10 +286,10 @@ frame.top=1
 frame.bottom=1
 frame.left=1
 frame.right=1
-text.normal.color=#eceff4aa
-text.focus.color=white
-text.press.color=white
-text.toggle.color=white
+text.normal.color=#2e3440aa
+text.focus.color=#2e3440
+text.press.color=#2e3440
+text.toggle.color=#2e3440
 frame.expansion=0
 
 [SizeGrip]
@@ -302,8 +302,8 @@ indicator.size=5
 text.margin=0
 interior.element=menubar
 frame.element=menubar
-text.normal.color=#eceff4a0
-text.focus.color=white
+text.normal.color=#2e3440a0
+text.focus.color=#2e3440
 frame.left=0
 frame.right=0
 frame.top=0
@@ -329,10 +329,10 @@ inherits=PanelButtonCommand
 frame.element=progress
 interior.element=progress
 text.margin=0
-text.normal.color=#eceff4c8
-text.focus.color=#eceff4c8
-text.press.color=#eceff4c8
-text.toggle.color=#eceff4c8
+text.normal.color=#2e3440c8
+text.focus.color=#2e3440c8
+text.press.color=#2e3440c8
+text.toggle.color=#2e3440c8
 text.bold=true
 frame.expansion=8
 
@@ -355,10 +355,10 @@ text.margin.top=2
 text.margin.bottom=2
 text.margin.left=4
 text.margin.right=4
-text.normal.color=#eceff4c8
-text.focus.color=white
-text.press.color=white
-text.toggle.color=white
+text.normal.color=#2e3440c8
+text.focus.color=#2e3440
+text.press.color=#2e3440
+text.toggle.color=#2e3440
 min_width=+0.3font
 min_height=+0.3font
 frame.expansion=0
@@ -391,8 +391,8 @@ frame=true
 frame.element=menuitem
 interior.element=menuitem
 indicator.element=menuitem
-text.normal.color=#eceff4c8
-text.focus.color=white
+text.normal.color=#2e3440c8
+text.focus.color=#2e3440
 text.margin.top=1
 text.margin.bottom=1
 text.margin.left=15
@@ -411,7 +411,7 @@ inherits=PanelButtonCommand
 frame.element=menubar
 interior.element=menubar
 frame.bottom=0
-text.normal.color=#eceff4a0
+text.normal.color=#2e3440a0
 frame.expansion=0
 
 [MenuBarItem]
@@ -427,8 +427,8 @@ text.margin.left=4
 text.margin.right=4
 text.margin.top=0
 text.margin.bottom=0
-text.normal.color=#eceff4b4
-text.focus.color=white
+text.normal.color=#2e3440b4
+text.focus.color=#2e3440
 text.bold=false
 min_width=+0.3font
 min_height=+0.3font
@@ -444,8 +444,8 @@ text.margin.right=2
 interior.element=titlebar
 indicator.size=12
 indicator.element=mdi
-text.normal.color=#8fbcbb
-text.focus.color=#eceff4a0
+text.normal.color=#5e81ac
+text.focus.color=#2e3440a0
 text.bold=true
 text.italic=true
 frame.expansion=0
@@ -463,9 +463,9 @@ text.margin.top=2
 text.margin.bottom=2
 text.margin.left=2
 text.margin.right=2
-text.focus.color=white
-text.press.color=#eceff4b4
-text.toggle.color=white
+text.focus.color=#2e3440
+text.press.color=#2e3440b4
+text.toggle.color=#2e3440
 frame.expansion=0
 
 [Menu]
@@ -476,7 +476,7 @@ frame.left=1
 frame.right=1
 frame.element=menu
 interior.element=menu
-text.normal.color=#eceff4c8
+text.normal.color=#2e3440c8
 text.shadow=false
 frame.expansion=0
 
@@ -485,8 +485,8 @@ inherits=GenericFrame
 frame=false
 text.shadow=0
 text.margin=0
-text.normal.color=#eceff496
-text.focus.color=white
+text.normal.color=#2e344096
+text.focus.color=#2e3440
 text.bold=true
 frame.expansion=0
 
