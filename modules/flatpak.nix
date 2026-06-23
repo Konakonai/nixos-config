@@ -1,4 +1,4 @@
-{ config, fcitxEnv, ... }:
+{ config, fcitxCompatEnv, ... }:
 
 let
   lilyaGlass = import ./glass-settings.nix;
@@ -56,9 +56,9 @@ in
         Environment = themeEnv;
       };
 
-      "com.qq.QQ".Environment = themeEnv // fcitxEnv;
-      "org.onlyoffice.desktopeditors".Environment = themeEnv // fcitxEnv;
-      "com.tencent.WeChat".Environment = themeEnv // fcitxEnv // electronColorEnv;
+      "com.qq.QQ".Environment = themeEnv // fcitxCompatEnv;
+      "org.onlyoffice.desktopeditors".Environment = themeEnv // fcitxCompatEnv;
+      "com.tencent.WeChat".Environment = themeEnv // fcitxCompatEnv // electronColorEnv;
     };
   };
 }

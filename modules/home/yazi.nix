@@ -1,4 +1,4 @@
-{ pkgs, withFcitx, ... }:
+{ pkgs, ... }:
 
 {
   programs.yazi = {
@@ -64,13 +64,13 @@
           { run = ''$EDITOR "$@"''; block = true; desc = "System Editor ($EDITOR)"; }
         ];
         zed = [
-          { run = ''${withFcitx "zeditor"} "$@"''; orphan = true; desc = "Zed Editor"; }
+          { run = ''zeditor "$@"''; orphan = true; desc = "Zed Editor"; }
         ];
         onlyoffice = [
           { run = ''flatpak run org.onlyoffice.desktopeditors "$@"''; orphan = true; desc = "OnlyOffice"; }
         ];
         zen = [
-          { run = ''${withFcitx "zen-beta"} "$@"''; orphan = true; desc = "Zen Browser"; }
+          { run = ''zen-beta "$@"''; orphan = true; desc = "Zen Browser"; }
         ];
         system = [
           { run = ''xdg-open "$@"''; orphan = true; desc = "System Default (xdg-open)"; }

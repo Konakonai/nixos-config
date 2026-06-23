@@ -1,11 +1,11 @@
-{ withFcitx, ... }:
+{ ... }:
 
 {
   xdg.desktopEntries."dev.zed.Zed" = {
     name = "Zed";
     genericName = "Text Editor";
     comment = "A high-performance, multiplayer code editor.";
-    exec = withFcitx "zeditor %U";
+    exec = "zeditor %U";
     icon = "zed";
     type = "Application";
     categories = [ "Utility" "TextEditor" "Development" "IDE" ];
@@ -22,7 +22,7 @@
     ];
     settings.StartupNotify = "true";
     actions.NewWorkspace = {
-      exec = withFcitx "zeditor --new %U";
+      exec = "zeditor --new %U";
       name = "Open a new workspace";
     };
   };

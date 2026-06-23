@@ -1,4 +1,4 @@
-{ pkgs, lib, withFcitx, ... }:
+{ pkgs, lib, ... }:
 
 let
   ccSwitch = pkgs.callPackage ../../pkgs/cc-switch-cli/default.nix {};
@@ -15,7 +15,7 @@ in
 
   xdg.desktopEntries."antigravity" = {
     name = "Antigravity";
-    exec = withFcitx "antigravity %F";
+    exec = "antigravity %F";
     icon = "antigravity";
     type = "Application";
     categories = [ "Utility" ];
@@ -36,7 +36,7 @@ in
   xdg.desktopEntries."nemo" = {
     name = "Files";
     genericName = "File Manager";
-    exec = withFcitx "${pkgs.nemo-with-extensions}/bin/nemo %U";
+    exec = "${pkgs.nemo-with-extensions}/bin/nemo %U";
     icon = "system-file-manager";
     terminal = false;
     categories = [ "Utility" "FileTools" "System" "FileManager" ];

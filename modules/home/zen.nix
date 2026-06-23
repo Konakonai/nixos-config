@@ -1,4 +1,4 @@
-{ config, lib, withFcitx, ... }:
+{ config, lib, ... }:
 
 let
   zen = lib.getExe config.programs.zen-browser.package;
@@ -23,7 +23,7 @@ in
     name = "Zen Browser (Beta)";
     genericName = "Web Browser";
     comment = "Browse the Web";
-    exec = withFcitx "${zen} --name zen-beta %U";
+    exec = "${zen} --name zen-beta %U";
     icon = "zen-browser";
     terminal = false;
     type = "Application";
@@ -45,15 +45,15 @@ in
     actions = {
       "new-private-window" = {
         name = "New Private Window";
-        exec = withFcitx "${zen} --private-window %U";
+        exec = "${zen} --private-window %U";
       };
       "new-window" = {
         name = "New Window";
-        exec = withFcitx "${zen} --new-window %U";
+        exec = "${zen} --new-window %U";
       };
       "profile-manager-window" = {
         name = "Profile Manager";
-        exec = withFcitx "${zen} --ProfileManager";
+        exec = "${zen} --ProfileManager";
       };
     };
   };
