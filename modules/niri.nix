@@ -10,9 +10,11 @@ in
 
     include "noctalia.kdl"
 
-    // 强制 Niri 渲染主卡使用 Intel 核显，避免 Niri 持续占用独显导致其无法进入低功耗挂起状态
+    // 强制 Niri 渲染主卡使用 Intel 核显，并忽略 NVIDIA 独显设备，避免其占用导致独显无法进入低功耗挂起
     debug {
         render-drm-device "/dev/dri/renderD128"
+        ignore-drm-device "/dev/dri/card0"
+        ignore-drm-device "/dev/dri/renderD129"
     }
 
     // 普通应用只保留一点点轻透感，避免文字和图标被 compositor 一起淡化。
