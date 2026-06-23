@@ -93,6 +93,17 @@ in
     mimeType = [ "inode/directory" ];
   };
 
+  xdg.desktopEntries."toggle-battery-limit" = {
+    name = "切换电池充电限制 (80% / 100%)";
+    genericName = "电池充电限制切换";
+    comment = "在 80% 养护模式与 100% 满充模式之间进行切换";
+    exec = "toggle-battery-limit";
+    icon = "battery-charging";
+    type = "Application";
+    categories = [ "Utility" "System" ];
+    terminal = false;
+  };
+
   # 默认应用关联 (MIME Association)
   xdg.mimeApps = {
     enable = true;

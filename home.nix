@@ -378,5 +378,23 @@ in
 
     # 引用重归类的 splayer 包
     (import ./pkgs/splayer.nix { inherit pkgs lib; })
+
+    # 电池养护模式切换脚本
+    (pkgs.writeShellScriptBin "toggle-battery-limit" ''
+      STATUS_FILE="/sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode"
+      if [ ! -f "$STATUS_FILE" ]; then
+        ${pkgs.libnotify}/bin/notify-send -u critical "电池控制" "当前系统不支持该电池限制控制接口。"
+        exit 1
+      fi
+
+      CURRENT=$(cat "$STATUS_FILE")
+      if [ "$CURRENT" -eq "1" ]; then
+        echo 0 > "$STATUS_FILE"
+        ${pkgs.libnotify}/bin/notify-send -i battery-charging "电池控制" "已关闭限制！现在将充电至 100% 满电。"
+      else
+        echo 1 > "$STATUS_FILE"
+        ${pkgs.libnotify}/bin/notify-send -i battery-good "电池控制" "已开启养护模式！充电限制为 80%。"
+      fi
+    '')
   ];
 }
