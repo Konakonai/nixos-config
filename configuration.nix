@@ -231,12 +231,18 @@ in
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
   '';
 
-  # 允许普通用户 lilya 修改 ThinkBook (ideapad_laptop 驱动) 电池养护模式设置
+  # 允许普通用户 lilya 修改 ThinkBook (ideapad_laptop 驱动) 电池养护模式设置及 PCI 重新扫描权限
   systemd.services.battery-conservation-permissions = {
-    description = "Set permissions for ThinkBook battery conservation mode";
+    description = "Set permissions for ThinkBook battery conservation mode and PCI rescan";
     after = [ "systemd-modules-load.service" ];
     wantedBy = [ "multi-user.target" ];
     script = ''
+      # 允许普通用户重新扫描 PCI 总线以启用独显
+      if [ -f /sys/bus/pci/rescan ]; then
+        chown root:users /sys/bus/pci/rescan
+        chmod 664 /sys/bus/pci/rescan
+      fi
+
       for i in $(seq 1 15); do
         if [ -f /sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode ]; then
           chown lilya:users /sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode
@@ -245,6 +251,21 @@ in
         fi
         sleep 1
       done
+    '';
+    serviceConfig.Type = "oneshot";
+  };
+
+  # 开机自动从 PCI 总线移除 NVIDIA 独显，确保任何用户态程序（如 Electron 助手环境）都无法占用它，实现终极省电
+  # 运行后服务即刻退出（inactive/dead），耗费 0 系统资源。需要独显时在终端执行 `echo 1 > /sys/bus/pci/rescan` 即可瞬间加载独显。
+  systemd.services.disable-nvidia-on-boot = {
+    description = "Disable NVIDIA GPU on boot to save battery";
+    after = [ "systemd-modules-load.service" ];
+    wantedBy = [ "multi-user.target" ];
+    script = ''
+      sleep 2
+      if [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
+        echo 1 > /sys/bus/pci/devices/0000:01:00.0/remove
+      fi
     '';
     serviceConfig.Type = "oneshot";
   };
