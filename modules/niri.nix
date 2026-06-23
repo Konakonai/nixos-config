@@ -9,7 +9,6 @@ in
     ${config.programs.niri.finalConfig}
 
     include "noctalia.kdl"
-    include "custom-outputs.kdl"
 
     // 强制 Niri 渲染主卡使用 Intel 核显，以保障基础渲染能效
     debug {
@@ -143,7 +142,18 @@ in
       };
 
       outputs = {
-        # eDP-1（内置屏幕）已移至 ~/.config/niri/custom-outputs.kdl，以便一键脚本动态切换 60Hz / 165Hz
+        "eDP-1" = {
+          mode = {
+            width = 3200;
+            height = 2000;
+            refresh = 60.0;
+          };
+          scale = 1.75;
+          position = {
+            x = 0;
+            y = 0;
+          };
+        };
 
         "DP-2" = {
           focus-at-startup = true;

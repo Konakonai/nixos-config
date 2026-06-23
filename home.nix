@@ -326,15 +326,6 @@ in
 
   xdg.configFile."yazi/theme.toml".force = true;
 
-  # Niri 动态显示输出配置文件，默认以 60Hz 刷新率启动（配合外接 60Hz 显示器）
-  xdg.configFile."niri/custom-outputs.kdl".text = ''
-    output "eDP-1" {
-        mode "3200x2000@60.00"
-        scale 1.75
-        position x=0 y=0
-    }
-  '';
-
   # Home Packages
   home.packages = with pkgs; [
     # langs
@@ -393,7 +384,6 @@ in
     # 极度省电与高性能插电一键切换脚本
     (pkgs.writeShellScriptBin "toggle-power-mode" ''
       STATUS_FILE="/sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode"
-      NIRI_OUTPUTS_CONFIG="$HOME/.config/niri/custom-outputs.kdl"
       STATE_FILE="$HOME/.config/niri/power-mode-state"
 
       CURRENT_STATE="performance"
@@ -411,16 +401,13 @@ in
           echo 0 > "$STATUS_FILE"
         fi
         
-        # 内置屏幕降为 60Hz 刷新率
-        echo 'output "eDP-1" { mode "3200x2000@60.00"; scale 1.75; position x=0 y=0; }' > "$NIRI_OUTPUTS_CONFIG"
-        
         # 物理关闭并从总线上移除独显
         if [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
           echo 1 > /sys/bus/pci/devices/0000:01:00.0/remove || true
         fi
         
         echo "powersave" > "$STATE_FILE"
-        ${pkgs.libnotify}/bin/notify-send -i battery-caution "电源管理" "已切换到【电池省电模式】：内置屏幕降至 60Hz，独显已彻底关闭电源，充电限制已临时放开至 100% 准备出门。"
+        ${pkgs.libnotify}/bin/notify-send -i battery-caution "电源管理" "已切换到【电池省电模式】：独显已彻底关闭电源，充电限制已临时放开至 100% 准备出门。"
       else
         # ========================================
         # 2. 切换到【插电高性能模式】
@@ -436,11 +423,8 @@ in
           echo 1 > "$STATUS_FILE"
         fi
         
-        # 内置屏幕保持为 60Hz 刷新率
-        echo 'output "eDP-1" { mode "3200x2000@60.00"; scale 1.75; position x=0 y=0; }' > "$NIRI_OUTPUTS_CONFIG"
-        
         echo "performance" > "$STATE_FILE"
-        ${pkgs.libnotify}/bin/notify-send -i video-display "电源管理" "已切换到【插电性能模式】：内置屏幕保持 60Hz，独显已重新加载就绪，充电限制已恢复为 80% 养护电池。"
+        ${pkgs.libnotify}/bin/notify-send -i video-display "电源管理" "已切换到【插电性能模式】：独显已重新加载就绪，充电限制已恢复为 80% 养护电池。"
       fi
     '')
   ];

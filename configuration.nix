@@ -170,7 +170,7 @@ in
     nvidiaSettings = true;
 
     # 独显电源管理（RTD3）配置，当没有程序使用独显时，显卡会自动进入深度睡眠状态（0W 功耗）
-    powerManagement.enable = true;
+    powerManagement.enable = false;
     powerManagement.finegrained = true;
 
     # 配置 PRIME 混合显卡架构中的 Bus ID（已核对 lspci 结果）
