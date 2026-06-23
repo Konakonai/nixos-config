@@ -10,6 +10,11 @@ in
 
     include "noctalia.kdl"
 
+    // 强制 Niri 渲染主卡使用 Intel 核显，避免 Niri 持续占用独显导致其无法进入低功耗挂起状态
+    debug {
+        render-drm-device "/dev/dri/renderD128"
+    }
+
     // 普通应用只保留一点点轻透感，避免文字和图标被 compositor 一起淡化。
     window-rule {
         exclude app-id="^kitty$"
