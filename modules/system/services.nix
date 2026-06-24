@@ -16,6 +16,15 @@
 
   services.printing.enable = true;
 
+  services.kmscon = {
+    enable = true;
+    hwRender = true;
+    extraConfig = ''
+      font-name=Noto Sans CJK SC
+      font-size=16
+    '';
+  };
+
   services.mihomo = {
     enable = true;
     tunMode = true;
