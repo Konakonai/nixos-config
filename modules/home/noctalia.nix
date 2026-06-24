@@ -8,12 +8,6 @@ in
     enable = true;
 
     settings = {
-      theme = {
-        mode = "light";
-        source = "builtin";
-        builtin = "Nord";
-      };
-
       shell = {
         corner_radius_scale = 1.65;
         font_family = lilyaGlass.fonts.sans;

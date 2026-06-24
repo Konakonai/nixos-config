@@ -2,10 +2,10 @@
 
 let
   lilyaGlass = import ./glass-settings.nix;
-  gtkThemePackage = pkgs.nordic;
+  gtkThemePackage = pkgs.adw-gtk3;
   iconThemePackage = pkgs.colloid-icon-theme;
   cursorThemePackage = pkgs.nordzy-cursor-theme;
-  gtkThemeName = lilyaGlass.gtkThemeName;
+  gtkThemeName = "adw-gtk3";
   iconThemeName = lilyaGlass.iconThemeName;
   cursorThemeName = lilyaGlass.cursorThemeName;
   kvantumThemeName = lilyaGlass.kvantumThemeName;
@@ -133,9 +133,8 @@ in
       fi
     }
 
-    copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}" "$HOME/.local/share/themes/${gtkThemeName}"
-    copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}-hdpi" "$HOME/.local/share/themes/${gtkThemeName}-hdpi"
-    copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}-xhdpi" "$HOME/.local/share/themes/${gtkThemeName}-xhdpi"
+    copy_theme_dir "${gtkThemePackage}/share/themes/adw-gtk3" "$HOME/.local/share/themes/adw-gtk3"
+    copy_theme_dir "${gtkThemePackage}/share/themes/adw-gtk3-dark" "$HOME/.local/share/themes/adw-gtk3-dark"
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
 
     # 用自定义 rime 图标覆盖 Colloid 主题自带的（复制后执行，避免被覆盖）
