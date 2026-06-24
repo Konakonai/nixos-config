@@ -9,9 +9,15 @@
 
     substituters = [
       "https://mirrors.ustc.edu.cn/nix-channels/store"
+      "https://mirror.sjtu.edu.cn/nix-channels/store"
       "https://cache.nixos.org"
       "https://niri.cachix.org"
       "https://noctalia.cachix.org"
+    ];
+
+    trusted-users = [
+      "root"
+      "lilya"
     ];
 
     trusted-public-keys = [
