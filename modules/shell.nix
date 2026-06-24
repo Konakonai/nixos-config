@@ -9,8 +9,8 @@
       ll = "ls -alh";
       la = "ls -A";
       gs = "git status";
-      rebuild = "nh os switch /home/lilya/nixos-config -- --impure";
-      testbuild = "nh os test /home/lilya/nixos-config -- --impure";
+      rebuild = "env PATH=/run/wrappers/bin:$PATH nh os switch /home/lilya/nixos-config -- --impure";
+      testbuild = "env PATH=/run/wrappers/bin:$PATH nh os test /home/lilya/nixos-config -- --impure";
     };
   };
 
@@ -22,8 +22,8 @@
       ll = "ls -alh";
       la = "ls -A";
       gs = "git status";
-      rebuild = "nh os switch /home/lilya/nixos-config -- --impure";
-      testbuild = "nh os test /home/lilya/nixos-config -- --impure";
+      rebuild = "env PATH=/run/wrappers/bin:$PATH nh os switch /home/lilya/nixos-config -- --impure";
+      testbuild = "env PATH=/run/wrappers/bin:$PATH nh os test /home/lilya/nixos-config -- --impure";
     };
   };
 
