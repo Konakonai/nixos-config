@@ -28,7 +28,9 @@
     (callPackage ../../pkgs/cc-switch-cli/default.nix {})
     (callPackage ../../pkgs/codex.nix {})
 
+    adwaita-qt6
     libsForQt5.qt5ct
+    qadwaitadecorations-qt6
     qt6Packages.qt6ct
     nordzy-cursor-theme
     opencode

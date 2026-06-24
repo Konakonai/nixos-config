@@ -14,7 +14,7 @@ let
     custom_palette=true
     icon_theme=${iconThemeName}
     standard_dialogs=default
-    style=Fusion
+    style=adwaita
 
     [Interface]
     activate_item_on_single_click=1
@@ -88,6 +88,10 @@ in
   qt = {
     enable = true;
     platformTheme.name = "qt6ct";
+    style = {
+      name = "adwaita";
+      package = pkgs.adwaita-qt6;
+    };
   };
 
   xdg.configFile."qt6ct/qt6ct.conf".text = qtctConfig "qt6ct";
@@ -148,6 +152,7 @@ in
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "qt6ct";
+    QT_WAYLAND_DECORATION = "adwaita";
     ELECTRON_OZONE_PLATFORM_HINT = "wayland";
     XCURSOR_THEME = cursorThemeName;
     XCURSOR_SIZE = "48";
