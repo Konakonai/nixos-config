@@ -20,6 +20,7 @@ let
   niriLogin = pkgs.writeShellScriptBin niriLoginCommand ''
     exec ${niriSession} "$@"
   '';
+  niriLoginPath = lib.getExe niriLogin;
   gtkgreetGtkThemeName = "adw-gtk3";
   gtkgreetGtkThemePackage = pkgs.adw-gtk3;
 
@@ -28,6 +29,20 @@ let
       substituteInPlace gtkgreet/window.c \
         --replace-fail "size = 32000;" "size = 52000;" \
         --replace-fail "size = 96000;" "size = 128000;"
+      substituteInPlace gtkgreet/config.c \
+        --replace-fail '#include <stdio.h>' '#include <stdio.h>
+#include <string.h>' \
+        --replace-fail 'int config_update_command_selector(GtkWidget *combobox) {' 'static const char *display_command(const char *command) {
+    const char *base = strrchr(command, '"'"'/'"'"');
+    return base == NULL ? command : base + 1;
+}
+
+int config_update_command_selector(GtkWidget *combobox) {' \
+        --replace-fail 'gtk_combo_box_text_append((GtkComboBoxText*)combobox, NULL, gtkgreet->command);' 'gtk_combo_box_text_append((GtkComboBoxText*)combobox, gtkgreet->command, display_command(gtkgreet->command));' \
+        --replace-fail 'gtk_combo_box_text_append((GtkComboBoxText*)combobox, NULL, buffer);' 'gtk_combo_box_text_append((GtkComboBoxText*)combobox, buffer, display_command(buffer));'
+      substituteInPlace gtkgreet/actions.c \
+        --replace-fail 'gtkgreet->selected_command = strdup(gtk_combo_box_text_get_active_text((GtkComboBoxText*)ctx->command_selector));' 'const gchar *command_id = gtk_combo_box_get_active_id((GtkComboBox*)ctx->command_selector);
+            gtkgreet->selected_command = strdup(command_id == NULL ? gtk_combo_box_text_get_active_text((GtkComboBoxText*)ctx->command_selector) : command_id);'
     '';
   });
 
@@ -104,7 +119,7 @@ let
   '';
 
   gtkgreetCommand = pkgs.writeShellScript "gtkgreet-command" ''
-    ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriLoginCommand}
+    ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriLoginPath}
     ${lib.getExe' pkgs.sway "swaymsg"} exit
   '';
 
@@ -154,12 +169,10 @@ in
     };
   };
 
-  systemd.services.greetd.path = [ niriLogin ];
-
   services.accounts-daemon.enable = true;
 
   environment.etc."greetd/environments".text = ''
-    ${niriLoginCommand}
+    ${niriLoginPath}
   '';
 
   console = {
