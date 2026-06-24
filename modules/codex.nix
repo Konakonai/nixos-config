@@ -32,7 +32,10 @@ let
       if [ -e "$out/bin/codex-desktop" ]; then
         rm -f "$out/bin/codex-desktop"
         makeWrapper "${codexDesktopBase}/bin/codex-desktop" "$out/bin/codex-desktop" \
-          --set-default CODEX_CLI_PATH "${codexCli}/bin/codex"
+          --set-default CODEX_CLI_PATH "${codexCli}/bin/codex" \
+          --set-default ELECTRON_OZONE_PLATFORM_HINT wayland \
+          --add-flags "--enable-wayland-ime" \
+          --add-flags "--wayland-text-input-version=3"
       fi
 
       desktopFile="$out/share/applications/codex-desktop.desktop"

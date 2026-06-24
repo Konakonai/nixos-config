@@ -30,7 +30,11 @@ let
 
   launcher = pkgs.writeShellScript "antigravity-launcher" ''
     export GTK_USE_PORTAL=1
-    exec ${antigravity-src}/antigravity "$@"
+    export ELECTRON_OZONE_PLATFORM_HINT=wayland
+    exec ${antigravity-src}/antigravity \
+      --enable-wayland-ime \
+      --wayland-text-input-version=3 \
+      "$@"
   '';
 
   fhs-env = pkgs.buildFHSEnv {
