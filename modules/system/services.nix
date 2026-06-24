@@ -22,6 +22,7 @@
     extraConfig = ''
       font-name=Noto Sans CJK SC
       font-size=16
+      multi-monitor=largest
     '';
   };
 
