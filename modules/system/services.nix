@@ -1,6 +1,10 @@
 { pkgs, ... }:
 
 {
+  imports = [
+    ./mihomo.nix
+  ];
+
   systemd.services.openlist = {
     description = "OpenList Service";
     after = [ "network.target" ];
@@ -26,10 +30,4 @@
     '';
   };
 
-  services.mihomo = {
-    enable = true;
-    tunMode = true;
-    configFile = "/home/lilya/.config/mihomo/config.yaml";
-    webui = pkgs.metacubexd;
-  };
 }
