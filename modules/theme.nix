@@ -91,11 +91,7 @@ in
     style.name = "kvantum";
   };
 
-  # Kvantum 主题配置文件
-  xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
-    [General]
-    theme=${kvantumThemeName}
-  '';
+
 
   # 安装 Nord Kvantum 主题到 ~/.local/share/Kvantum/
   xdg.dataFile."Kvantum/${kvantumThemeName}/${kvantumThemeName}.kvconfig".source = "${kvantumTheme}/share/Kvantum/${kvantumThemeName}/${kvantumThemeName}.kvconfig";
