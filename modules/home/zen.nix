@@ -45,16 +45,20 @@ in
     actions = {
       "new-private-window" = {
         name = "New Private Window";
-        exec = "${zen} --private-window %U";
+        exec = "${zen} --name zen-beta --private-window %U";
       };
       "new-window" = {
         name = "New Window";
-        exec = "${zen} --new-window %U";
+        exec = "${zen} --name zen-beta --new-window %U";
       };
       "profile-manager-window" = {
         name = "Profile Manager";
-        exec = "${zen} --ProfileManager";
+        exec = "${zen} --name zen-beta --ProfileManager";
       };
     };
   };
+
+  home.activation.removeZenUserappDesktop = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    rm -f "$HOME"/.local/share/applications/userapp-Zen-*.desktop
+  '';
 }
