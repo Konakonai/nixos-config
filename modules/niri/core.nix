@@ -60,7 +60,7 @@ in
         };
       };
 
-      "DP-2" = {
+      "Philips Consumer Electronics Company PHL 27E2F7901 UHB2341003696" = {
         focus-at-startup = true;
         mode = {
           width = 3840;
