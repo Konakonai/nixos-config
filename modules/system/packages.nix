@@ -29,6 +29,7 @@
     (callPackage ../../pkgs/cc-switch-cli/default.nix {})
     (callPackage ../../pkgs/codex.nix {})
 
+    adwaita-qt
     adwaita-qt6
     libsForQt5.qt5ct
     qadwaitadecorations-qt6
