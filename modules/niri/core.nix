@@ -55,7 +55,7 @@ in
         scale = 1.75;
         position = {
           x = 0;
-          y = 0;
+          y = 149;
         };
       };
 
