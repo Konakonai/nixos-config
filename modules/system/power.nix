@@ -12,16 +12,8 @@ let
       ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set "$1" 2>/dev/null || true
     }
 
-    nvidia_has_clients() {
-      for fd in /proc/[0-9]*/fd/*; do
-        target="$(readlink "$fd" 2>/dev/null || true)"
-        case "$target" in
-          /dev/nvidia*|/dev/dri/card0|/dev/dri/renderD129)
-            return 0
-            ;;
-        esac
-      done
-      return 1
+    nvidia_is_suspended() {
+      [ "$(cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status 2>/dev/null || echo missing)" = "suspended" ]
     }
 
     remove_nvidia() {
@@ -32,8 +24,15 @@ let
         [ -w "$control" ] && echo auto > "$control" 2>/dev/null || true
       done
 
-      if nvidia_has_clients; then
-        echo "nvidia-power-source: NVIDIA has active clients; leaving PCI device present and relying on runtime suspend." >&2
+      for _ in $(seq 1 20); do
+        if nvidia_is_suspended; then
+          break
+        fi
+        sleep 0.25
+      done
+
+      if ! nvidia_is_suspended; then
+        echo "nvidia-power-source: NVIDIA did not runtime suspend; leaving PCI device present and relying on RTD3." >&2
         exit 0
       fi
 
