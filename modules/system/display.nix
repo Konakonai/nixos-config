@@ -22,7 +22,7 @@ in
     enable = true;
     settings = {
       default_session = {
-        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-user-session --asterisks --theme 'border=blue;text=cyan;prompt=green;time=yellow;action=blue;button=red' --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions:${config.services.displayManager.sessionData.desktops}/share/xsessions";
+        command = "${pkgs.kmscon}/bin/kmscon --vt tty1 --seats=seat0 --no-switchvt --no-reset-env --login -- ${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-user-session --asterisks --theme 'border=blue;text=cyan;prompt=green;time=yellow;action=blue;button=red' --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions:${config.services.displayManager.sessionData.desktops}/share/xsessions";
         user = "greeter";
       };
     };
