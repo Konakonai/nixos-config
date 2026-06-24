@@ -20,6 +20,8 @@ let
   niriLogin = pkgs.writeShellScriptBin niriLoginCommand ''
     exec ${niriSession} "$@"
   '';
+  gtkgreetGtkThemeName = "adw-gtk3";
+  gtkgreetGtkThemePackage = pkgs.adw-gtk3;
 
   gtkgreet = pkgs.gtkgreet.overrideAttrs (oldAttrs: {
     postPatch = (oldAttrs.postPatch or "") + ''
@@ -30,61 +32,74 @@ let
   });
 
   gtkgreetCss = pkgs.writeText "gtkgreet.css" ''
+    @define-color accent_color #5e81ac;
+    @define-color accent_bg_color #5e81ac;
+    @define-color accent_fg_color #eceff4;
+    @define-color window_bg_color #eceff4;
+    @define-color window_fg_color #2e3440;
+    @define-color card_bg_color #e5e9f0;
+    @define-color card_fg_color #2e3440;
+    @define-color border_color #cdd8e4;
+    @define-color muted_fg_color #4c566a;
+
     window,
     #window {
-      background-color: #eceff4;
-      background-image: linear-gradient(135deg, #eceff4 0%, #e5e9f0 52%, #d8dee9 100%);
-      color: #2e3440;
+      background-color: @window_bg_color;
+      color: @window_fg_color;
       font-family: "${lilyaGlass.fonts.sans}";
       font-size: 15px;
     }
 
     #clock {
-      color: #5e81ac;
-      font-weight: 300;
-      margin-bottom: 28px;
-      text-shadow: 0 1px rgba(236, 239, 244, 0.72);
+      color: @accent_color;
+      font-weight: 600;
+      margin-bottom: 24px;
+      text-shadow: none;
     }
 
     box#body {
-      background-color: rgba(236, 239, 244, 0.92);
-      border: 1px solid rgba(129, 161, 193, 0.45);
-      border-radius: 14px;
-      box-shadow: 0 18px 52px rgba(46, 52, 64, 0.18);
-      padding: 38px;
+      background-color: alpha(@card_bg_color, 0.84);
+      border: 1px solid @border_color;
+      border-radius: 12px;
+      box-shadow: 0 14px 36px alpha(#3b4252, 0.12);
+      padding: 34px;
       min-width: 360px;
     }
 
     label {
-      color: #3b4252;
+      color: @card_fg_color;
     }
 
     button {
-      background-color: #5e81ac;
-      border: 1px solid #5e81ac;
+      background-color: @accent_bg_color;
+      border: 1px solid @accent_bg_color;
       border-radius: 10px;
-      color: #eceff4;
-      padding: 8px 14px;
+      color: @accent_fg_color;
+      padding: 8px 16px;
     }
 
     button:hover {
-      background-color: #81a1c1;
-      border-color: #81a1c1;
+      background-color: #6b8db6;
+      border-color: #6b8db6;
     }
 
     entry,
     #command-selector entry {
-      background-color: #f8fafc;
-      border: 1px solid rgba(76, 86, 106, 0.28);
+      background-color: alpha(@window_bg_color, 0.72);
+      border: 1px solid @border_color;
       border-radius: 10px;
-      color: #2e3440;
+      color: @window_fg_color;
       padding: 8px 10px;
     }
 
     entry:focus,
     #command-selector entry:focus {
-      border-color: #5e81ac;
-      box-shadow: 0 0 0 2px rgba(94, 129, 172, 0.18);
+      border-color: @accent_color;
+      box-shadow: 0 0 0 2px alpha(@accent_color, 0.18);
+    }
+
+    #command-selector {
+      color: @muted_fg_color;
     }
   '';
 
@@ -105,10 +120,10 @@ let
   '';
 
   gtkgreetSession = pkgs.writeShellScript "gtkgreet-session" ''
-    export GTK_THEME=${lilyaGlass.gtkThemeName}
+    export GTK_THEME=${gtkgreetGtkThemeName}
     export XCURSOR_THEME=${lib.escapeShellArg lilyaGlass.cursorThemeName}
     export XCURSOR_SIZE=48
-    export XDG_DATA_DIRS=${pkgs.nordic}/share:${pkgs.colloid-icon-theme}/share:${pkgs.nordzy-cursor-theme}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
+    export XDG_DATA_DIRS=${gtkgreetGtkThemePackage}/share:${pkgs.colloid-icon-theme}/share:${pkgs.nordzy-cursor-theme}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
 
     exec ${pkgs.dbus}/bin/dbus-run-session ${lib.getExe pkgs.sway} --unsupported-gpu --config ${gtkgreetSwayConfig}
   '';
