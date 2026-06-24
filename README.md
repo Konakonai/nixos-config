@@ -8,7 +8,7 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 - `home.nix`: Home Manager user entry point.
 - `modules/system/`: NixOS system modules.
 - `modules/home/`: user applications, tools, Noctalia, Zen, Yazi, and user scripts.
-- `modules/desktop/`: desktop entries, MIME defaults, Zed, mpv WebDAV, and font aliases.
+- `modules/desktop/`: desktop entries, MIME defaults, Zed, media playback defaults, and font aliases.
 - `modules/system/display/`: niri login session, greetd/gtkgreet, console, portals, and desktop service glue.
 - `modules/system/power/`: base power services, CPU limits, NVIDIA dGPU switching, AC udev events, and permission helpers.
 - `modules/theme/`: GTK, Qt, cursor, Xresources, dconf, Flatpak theme assets, and custom Fcitx/Rime icon integration.

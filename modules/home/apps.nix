@@ -5,7 +5,6 @@
     chromium
     file-roller
     nemo-with-extensions
-    mpv
     pavucontrol
     mission-center
     resources
