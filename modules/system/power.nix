@@ -40,11 +40,11 @@
         chmod 664 /sys/bus/pci/rescan
       fi
 
-      # Set permissions for Nvidia GPU power control and force-enable GPU power on boot (disable RTD3)
+      # Set permissions for Nvidia GPU power control and enable GPU power auto-suspend (enable RTD3)
       if [ -f /sys/bus/pci/devices/0000:01:00.0/power/control ]; then
         chown root:users /sys/bus/pci/devices/0000:01:00.0/power/control
         chmod 664 /sys/bus/pci/devices/0000:01:00.0/power/control
-        echo "on" > /sys/bus/pci/devices/0000:01:00.0/power/control
+        echo "auto" > /sys/bus/pci/devices/0000:01:00.0/power/control
       fi
 
       for i in $(seq 1 15); do
