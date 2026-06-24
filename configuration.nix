@@ -5,8 +5,6 @@
     ./hardware-configuration.nix
     ./modules/system/audio.nix
     ./modules/system/boot.nix
-    # TEMP: disable-nvidia-once
-    ./modules/system/disable-nvidia-once.nix
     ./modules/system/display.nix
     ./modules/system/fonts.nix
     ./modules/system/graphics.nix
