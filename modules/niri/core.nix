@@ -25,8 +25,9 @@ in
     environment = {
       GTK_USE_PORTAL = "1";
       NIXOS_OZONE_WL = "1";
-      QT_QPA_PLATFORMTHEME = "kvantum";
-      QT_STYLE_OVERRIDE = lilyaGlass.qtStyleName;
+      QT_QPA_PLATFORMTHEME = "qt6ct";
+      QT_STYLE_OVERRIDE = "adwaita";
+      QT_WAYLAND_DECORATION = "adwaita";
       ELECTRON_OZONE_PLATFORM_HINT = "wayland";
       XCURSOR_THEME = lilyaGlass.cursorThemeName;
       XCURSOR_SIZE = "48";
