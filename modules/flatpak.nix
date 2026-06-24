@@ -4,7 +4,6 @@ let
   lilyaGlass = import ./glass-settings.nix;
 
   themeEnv = {
-    GTK_THEME = lilyaGlass.gtkThemeName;
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "kvantum";

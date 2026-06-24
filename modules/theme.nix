@@ -154,7 +154,6 @@ in
 
   # 设置全局环境变量
   home.sessionVariables = {
-    GTK_THEME = gtkThemeName;
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "kvantum";
