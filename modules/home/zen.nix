@@ -16,6 +16,9 @@ in
       user_pref("browser.tabs.allow_transparent_browser", false);
       user_pref("widget.wayland.opaque-region.enabled", true);
       user_pref("zen.widget.linux.transparency", false);
+      user_pref("browser.startup.page", 1);
+      user_pref("browser.sessionstore.resume_from_crash", false);
+      user_pref("browser.sessionstore.resume_session_once", false);
     '';
   };
 

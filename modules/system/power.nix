@@ -130,6 +130,10 @@ let
       [ "$(cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status 2>/dev/null || echo missing)" = "suspended" ]
     }
 
+    nvidia_is_present() {
+      [ -e /sys/bus/pci/devices/0000:01:00.0 ]
+    }
+
     typec_display_connected() {
       for partner in /sys/class/typec/port*-partner; do
         [ -e "$partner" ] || continue
@@ -159,10 +163,8 @@ let
       return 1
     }
 
-    rescan_nvidia() {
-      control="/sys/bus/pci/devices/0000:01:00.0/power/control"
-      if [ -w "$control" ]; then
-        echo on > "$control" 2>/dev/null || true
+    rescan_missing_nvidia() {
+      if nvidia_is_present; then
         return 0
       fi
 
@@ -171,9 +173,7 @@ let
       fi
 
       for _ in $(seq 1 20); do
-        control="/sys/bus/pci/devices/0000:01:00.0/power/control"
-        if [ -w "$control" ]; then
-          echo on > "$control" 2>/dev/null || true
+        if nvidia_is_present; then
           return 0
         fi
         sleep 0.25
@@ -185,12 +185,6 @@ let
 
     remove_nvidia() {
       set_profile power-saver
-
-      if typec_display_connected; then
-        echo "nvidia-power-source: Type-C display is connected; keeping NVIDIA ready." >&2
-        rescan_nvidia
-        exit 0
-      fi
 
       for dev in 0000:01:00.1 0000:01:00.0; do
         control="/sys/bus/pci/devices/$dev/power/control"
@@ -218,11 +212,7 @@ let
     restore_nvidia() {
       set_profile balanced
 
-      rescan_nvidia
-    }
-
-    display_nvidia() {
-      rescan_nvidia
+      rescan_missing_nvidia
     }
 
     case "''${1:-auto}" in
@@ -238,9 +228,6 @@ let
         ;;
       ac|performance)
         restore_nvidia
-        ;;
-      display|external-display)
-        display_nvidia
         ;;
       status)
         if ac_online; then
@@ -264,7 +251,7 @@ let
         fi
         ;;
       *)
-        echo "usage: nvidia-power-source [auto|battery|ac|display|status]" >&2
+        echo "usage: nvidia-power-source [auto|battery|ac|status]" >&2
         exit 2
         ;;
     esac
@@ -305,8 +292,6 @@ in
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="0", TAG+="systemd", ENV{SYSTEMD_WANTS}+="cpu-power-source-battery.service nvidia-power-source-battery.service"
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="1", TAG+="systemd", ENV{SYSTEMD_WANTS}+="cpu-power-source-ac.service nvidia-power-source-ac.service"
-
-    SUBSYSTEM=="typec", ACTION=="add|change", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-external-display.service"
   '';
 
   systemd.services.cpu-power-source-boot = {
@@ -341,16 +326,8 @@ in
 
   systemd.services.nvidia-power-source-boot = {
     description = "Apply dGPU state based on AC power at boot";
-    before = [
-      "display-manager.service"
-      "greetd.service"
-    ];
-    after = [
-      "systemd-udev-settle.service"
-      "local-fs.target"
-    ];
-    wants = [ "systemd-udev-settle.service" ];
-    wantedBy = [ "graphical.target" ];
+    after = [ "local-fs.target" ];
+    wantedBy = [ "multi-user.target" ];
     script = ''
       ${nvidiaPowerSource}/bin/nvidia-power-source auto
     '';
@@ -372,15 +349,6 @@ in
     '';
     serviceConfig.Type = "oneshot";
   };
-
-  systemd.services.nvidia-external-display = {
-    description = "Wake NVIDIA dGPU quickly for Type-C display hotplug";
-    script = ''
-      ${nvidiaPowerSource}/bin/nvidia-power-source display
-    '';
-    serviceConfig.Type = "oneshot";
-  };
-
   systemd.services.battery-conservation-permissions = {
     description = "Set permissions for ThinkBook battery conservation mode and PCI rescan";
     after = [ "systemd-modules-load.service" ];
