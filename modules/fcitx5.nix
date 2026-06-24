@@ -32,6 +32,8 @@ in
 
   home.packages = [ fcitx5Package ];
 
+  home.sessionVariables = fcitxCompatEnv;
+
   systemd.user.services.fcitx5 = {
     Unit = {
       Description = "Fcitx 5 input method";

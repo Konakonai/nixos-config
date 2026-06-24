@@ -18,36 +18,41 @@ in
     };
   };
 
-  services.greetd.enable = true;
-
-  programs.regreet = {
+  services.greetd = {
     enable = true;
-    theme = {
-      package = pkgs.nordic;
-      name = "Nordic-Polar";
-    };
-    iconTheme = {
-      package = pkgs.colloid-icon-theme;
-      name = "Colloid-Light";
-    };
-    cursorTheme = {
-      package = pkgs.nordzy-cursor-theme;
-      name = "Nordzy-cursors";
-    };
-    font = {
-      package = pkgs.maple-mono."Normal-NF";
-      name = "Maple Mono Normal NF";
-      size = 12;
-    };
     settings = {
-      background = {
-        path = "/etc/regreet-wallpaper.jpg";
-        fit = "Cover";
+      default_session = {
+        command = "${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-user-session --asterisks --greeting '❄️ Welcome back, Lilya!' --theme 'border=blue;text=cyan;prompt=green;time=yellow;action=blue;button=red' --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions:${config.services.displayManager.sessionData.desktops}/share/xsessions";
+        user = "greeter";
       };
     };
   };
 
-  environment.etc."regreet-wallpaper.jpg".source = ../../assets/sddm-wallpaper.jpg;
+  systemd.services.greetd.serviceConfig = {
+    Type = "idle";
+    StandardInput = "tty";
+    StandardOutput = "tty";
+    StandardError = "journal";
+    TTYReset = true;
+    TTYVHangup = true;
+    TTYVTDisallocate = true;
+  };
+
+  systemd.tmpfiles.rules = [
+    "d /var/cache/tuigreet 0755 greeter greeter - -"
+  ];
+
+  console = {
+    earlySetup = true;
+    packages = with pkgs; [ terminus_font ];
+    font = "${pkgs.terminus_font}/share/consolefonts/ter-v32n.psf.gz";
+    colors = [
+      "2e3440" "bf616a" "a3be8c" "ebcb8b"
+      "81a1c1" "b48ead" "88c0d0" "e5e9f0"
+      "4c566a" "bf616a" "a3be8c" "ebcb8b"
+      "81a1c1" "b48ead" "8fbcbb" "eceff4"
+    ];
+  };
 
   security.sudo.extraConfig = "Defaults pwfeedback";
 
