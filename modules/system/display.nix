@@ -16,37 +16,80 @@ let
       --replace-fail 'systemctl --user import-environment' 'systemctl --user import-environment $(env | cut -d= -f1)'
   '';
   niriSession = "${niriPatched}/bin/niri-session";
+  niriLoginCommand = "Niri";
+  niriLogin = pkgs.writeShellScriptBin niriLoginCommand ''
+    exec ${niriSession} "$@"
+  '';
+
+  gtkgreet = pkgs.gtkgreet.overrideAttrs (oldAttrs: {
+    postPatch = (oldAttrs.postPatch or "") + ''
+      substituteInPlace gtkgreet/window.c \
+        --replace-fail "size = 32000;" "size = 52000;" \
+        --replace-fail "size = 96000;" "size = 128000;"
+    '';
+  });
 
   gtkgreetCss = pkgs.writeText "gtkgreet.css" ''
-    window {
-      background-color: ${lilyaGlass.palette.base};
-      color: ${lilyaGlass.palette.text};
+    window,
+    #window {
+      background-color: #eceff4;
+      background-image: linear-gradient(135deg, #eceff4 0%, #e5e9f0 52%, #d8dee9 100%);
+      color: #2e3440;
       font-family: "${lilyaGlass.fonts.sans}";
       font-size: 15px;
     }
 
+    #clock {
+      color: #5e81ac;
+      font-weight: 300;
+      margin-bottom: 28px;
+      text-shadow: 0 1px rgba(236, 239, 244, 0.72);
+    }
+
     box#body {
       background-color: rgba(236, 239, 244, 0.92);
-      border: 1px solid ${lilyaGlass.palette.crust};
+      border: 1px solid rgba(129, 161, 193, 0.45);
       border-radius: 14px;
-      box-shadow: 0 18px 50px rgba(46, 52, 64, 0.18);
-      padding: 36px;
+      box-shadow: 0 18px 52px rgba(46, 52, 64, 0.18);
+      padding: 38px;
       min-width: 360px;
     }
 
+    label {
+      color: #3b4252;
+    }
+
     button {
+      background-color: #5e81ac;
+      border: 1px solid #5e81ac;
       border-radius: 10px;
+      color: #eceff4;
       padding: 8px 14px;
     }
 
-    entry {
+    button:hover {
+      background-color: #81a1c1;
+      border-color: #81a1c1;
+    }
+
+    entry,
+    #command-selector entry {
+      background-color: #f8fafc;
+      border: 1px solid rgba(76, 86, 106, 0.28);
       border-radius: 10px;
+      color: #2e3440;
       padding: 8px 10px;
+    }
+
+    entry:focus,
+    #command-selector entry:focus {
+      border-color: #5e81ac;
+      box-shadow: 0 0 0 2px rgba(94, 129, 172, 0.18);
     }
   '';
 
   gtkgreetCommand = pkgs.writeShellScript "gtkgreet-command" ''
-    ${lib.getExe pkgs.gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriSession}
+    ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriLoginCommand}
     ${lib.getExe' pkgs.sway "swaymsg"} exit
   '';
 
@@ -62,10 +105,10 @@ let
   '';
 
   gtkgreetSession = pkgs.writeShellScript "gtkgreet-session" ''
-    export GTK_THEME=adw-gtk3
+    export GTK_THEME=${lilyaGlass.gtkThemeName}
     export XCURSOR_THEME=${lib.escapeShellArg lilyaGlass.cursorThemeName}
     export XCURSOR_SIZE=48
-    export XDG_DATA_DIRS=${pkgs.adw-gtk3}/share:${pkgs.colloid-icon-theme}/share:${pkgs.nordzy-cursor-theme}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
+    export XDG_DATA_DIRS=${pkgs.nordic}/share:${pkgs.colloid-icon-theme}/share:${pkgs.nordzy-cursor-theme}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
 
     exec ${pkgs.dbus}/bin/dbus-run-session ${lib.getExe pkgs.sway} --unsupported-gpu --config ${gtkgreetSwayConfig}
   '';
@@ -96,10 +139,12 @@ in
     };
   };
 
+  systemd.services.greetd.path = [ niriLogin ];
+
   services.accounts-daemon.enable = true;
 
   environment.etc."greetd/environments".text = ''
-    ${niriSession}
+    ${niriLoginCommand}
   '';
 
   console = {
