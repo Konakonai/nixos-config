@@ -28,6 +28,13 @@ let
         modules/system/disable-nvidia-once.nix || true
     fi
   '';
+
+  bootOnlyCondition = pkgs.writeShellScript "disable-nvidia-once-boot-only-condition" ''
+    booted="$(${pkgs.coreutils}/bin/readlink -f /run/booted-system 2>/dev/null || true)"
+    current="$(${pkgs.coreutils}/bin/readlink -f /run/current-system 2>/dev/null || true)"
+
+    [ -n "$booted" ] && [ "$booted" = "$current" ]
+  '';
 in
 {
   services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
@@ -88,6 +95,7 @@ in
 
     serviceConfig = {
       Type = "oneshot";
+      ExecCondition = "${bootOnlyCondition}";
       RemainAfterExit = true;
     };
   };
