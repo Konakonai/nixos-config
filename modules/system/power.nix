@@ -23,6 +23,9 @@
   '';
 
   services.udev.extraRules = ''
+    # 当 NVIDIA 独显被添加（开机或重新扫描）时，自动赋予 users 用户组对 remove 文件的写入权限，以便普通用户可以直接一键关闭/移除独显而无需 sudo
+    ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{device}=="0x28e0", RUN+="/bin/sh -c 'chown root:users /sys/bus/pci/devices/$kernel/remove && chmod 664 /sys/bus/pci/devices/$kernel/remove'"
+
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="0", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver"
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
   '';
