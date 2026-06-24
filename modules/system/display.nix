@@ -1,35 +1,7 @@
-{ pkgs, inputs, ... }:
+{ pkgs, inputs, config, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
-  colloidDefault = pkgs.colloid-icon-theme;
-
-  sddmTheme = (pkgs.catppuccin-sddm.override {
-    flavor = "latte";
-    accent = "blue";
-    font = lilyaGlass.fonts.mono;
-    fontSize = "11";
-    background = "/etc/sddm-wallpaper.jpg";
-  }).overrideAttrs (old: {
-    postInstall = (old.postInstall or "") + ''
-      for f in $out/share/sddm/themes/catppuccin-latte-blue/Components/*.qml; do
-        substituteInPlace $f --replace-quiet 'radius: 3' 'radius: 12'
-        substituteInPlace $f --replace-quiet 'radius: 5.4' 'radius: 12'
-        substituteInPlace $f --replace-quiet 'radius: 5' 'radius: 12'
-      done
-
-      cp ${colloidDefault}/share/icons/Colloid-Light/actions/symbolic/system-shutdown-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/power.svg
-      cp ${colloidDefault}/share/icons/Colloid-Light/actions/symbolic/system-reboot-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/reboot.svg
-      cp ${colloidDefault}/share/icons/Colloid-Light/actions/symbolic/system-suspend-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/sleep.svg
-      cp ${colloidDefault}/share/icons/Colloid-Light/actions/symbolic/settings-symbolic.svg $out/share/sddm/themes/catppuccin-latte-blue/icons/settings.svg
-
-      for f in $out/share/sddm/themes/catppuccin-latte-blue/icons/*.svg; do
-        substituteInPlace $f --replace-quiet '#363636' '#5e81ac'
-        substituteInPlace $f --replace-quiet '#1e66f5' '#5e81ac'
-        substituteInPlace $f --replace-quiet 'fill="currentColor"' 'fill="#5e81ac"'
-      done
-    '';
-  });
 in
 {
   programs.niri = {
@@ -46,17 +18,38 @@ in
     };
   };
 
-  services.displayManager.sddm = {
+  services.greetd.enable = true;
+
+  programs.regreet = {
     enable = true;
-    wayland.enable = true;
-    theme = "catppuccin-latte-blue";
-    settings.Theme = {
-      CursorTheme = lilyaGlass.cursorThemeName;
-      CursorSize = "48";
+    theme = {
+      package = pkgs.nordic;
+      name = "Nordic-Polar";
+    };
+    iconTheme = {
+      package = pkgs.colloid-icon-theme;
+      name = "Colloid-Light";
+    };
+    cursorTheme = {
+      package = pkgs.nordzy-cursor-theme;
+      name = "Nordzy-cursors";
+    };
+    font = {
+      package = pkgs.maple-mono."Normal-NF";
+      name = "Maple Mono Normal NF";
+      size = 12;
+    };
+    settings = {
+      background = {
+        path = "/etc/regreet-wallpaper.jpg";
+        fit = "Cover";
+      };
     };
   };
 
-  environment.etc."sddm-wallpaper.jpg".source = ../../assets/sddm-wallpaper.jpg;
+  environment.etc."regreet-wallpaper.jpg".source = ../../assets/sddm-wallpaper.jpg;
+
+  security.sudo.extraConfig = "Defaults pwfeedback";
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
@@ -87,8 +80,5 @@ in
     binfmt = true;
   };
 
-  environment.systemPackages = [
-    sddmTheme
-    colloidDefault
-  ];
+  environment.systemPackages = [ ];
 }
