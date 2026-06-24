@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
@@ -28,10 +28,6 @@ in
   qt = {
     enable = true;
     platformTheme.name = "qt6ct";
-    style = {
-      name = "adwaita";
-      package = pkgs.adwaita-qt6;
-    };
   };
 
   xdg.configFile."qt6ct/qt6ct.conf".text = qtctConfig "qt6ct";
