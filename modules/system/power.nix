@@ -160,6 +160,12 @@ let
     }
 
     rescan_nvidia() {
+      control="/sys/bus/pci/devices/0000:01:00.0/power/control"
+      if [ -w "$control" ]; then
+        echo on > "$control" 2>/dev/null || true
+        return 0
+      fi
+
       if [ -w /sys/bus/pci/rescan ]; then
         echo 1 > /sys/bus/pci/rescan 2>/dev/null || true
       fi
