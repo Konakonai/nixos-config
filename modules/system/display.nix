@@ -2,28 +2,78 @@
 
 let
   lilyaGlass = import ../glass-settings.nix;
-  kmsconConfig = pkgs.writeTextDir "kmscon.conf" config.services.kmscon.extraConfig;
-  tuigreetKmscon = pkgs.writeShellScript "tuigreet-kmscon" ''
-    exec ${lib.getExe pkgs.kmscon} \
-      --configdir ${kmsconConfig} \
-      --vt tty1 \
-      --seats=seat0 \
-      --no-switchvt \
-      --no-reset-env \
-      --login \
-      -- ${lib.getExe pkgs.tuigreet} \
-        --time \
-        --remember \
-        --remember-user-session \
-        --asterisks \
-        --theme 'border=blue;text=cyan;prompt=green;time=yellow;action=blue;button=red' \
-        --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions:${config.services.displayManager.sessionData.desktops}/share/xsessions
+
+  niriBase = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
+  niriPatched = pkgs.runCommandLocal "${niriBase.name}-patched-session" {
+    passthru = niriBase.passthru or { };
+    meta = niriBase.meta or { };
+    cargoBuildNoDefaultFeatures = niriBase.cargoBuildNoDefaultFeatures;
+    cargoBuildFeatures = niriBase.cargoBuildFeatures;
+  } ''
+    cp -a ${niriBase} $out
+    chmod -R u+w $out
+    substituteInPlace $out/bin/niri-session \
+      --replace-fail 'systemctl --user import-environment' 'systemctl --user import-environment $(env | cut -d= -f1)'
+  '';
+  niriSession = "${niriPatched}/bin/niri-session";
+
+  gtkgreetCss = pkgs.writeText "gtkgreet.css" ''
+    window {
+      background-color: ${lilyaGlass.palette.base};
+      color: ${lilyaGlass.palette.text};
+      font-family: "${lilyaGlass.fonts.sans}";
+      font-size: 15px;
+    }
+
+    box#body {
+      background-color: rgba(236, 239, 244, 0.92);
+      border: 1px solid ${lilyaGlass.palette.crust};
+      border-radius: 14px;
+      box-shadow: 0 18px 50px rgba(46, 52, 64, 0.18);
+      padding: 36px;
+      min-width: 360px;
+    }
+
+    button {
+      border-radius: 10px;
+      padding: 8px 14px;
+    }
+
+    entry {
+      border-radius: 10px;
+      padding: 8px 10px;
+    }
+  '';
+
+  gtkgreetCommand = pkgs.writeShellScript "gtkgreet-command" ''
+    ${lib.getExe pkgs.gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriSession}
+    ${lib.getExe' pkgs.sway "swaymsg"} exit
+  '';
+
+  gtkgreetSwayConfig = pkgs.writeText "gtkgreet-sway-config" ''
+    font pango:${lilyaGlass.fonts.sans} 11
+    seat seat0 xcursor_theme ${lilyaGlass.cursorThemeName} 48
+
+    output * bg ${lilyaGlass.palette.base} solid_color
+    output eDP-1 scale 1.75 pos 0 149
+    output DP-5 scale 1.5 pos 1829 0
+
+    exec ${gtkgreetCommand}
+  '';
+
+  gtkgreetSession = pkgs.writeShellScript "gtkgreet-session" ''
+    export GTK_THEME=adw-gtk3
+    export XCURSOR_THEME=${lib.escapeShellArg lilyaGlass.cursorThemeName}
+    export XCURSOR_SIZE=48
+    export XDG_DATA_DIRS=${pkgs.adw-gtk3}/share:${pkgs.colloid-icon-theme}/share:${pkgs.nordzy-cursor-theme}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
+
+    exec ${pkgs.dbus}/bin/dbus-run-session ${lib.getExe pkgs.sway} --unsupported-gpu --config ${gtkgreetSwayConfig}
   '';
 in
 {
   programs.niri = {
     enable = true;
-    package = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
+    package = niriPatched;
   };
 
   services.xserver = {
@@ -37,18 +87,20 @@ in
 
   services.greetd = {
     enable = true;
-    useTextGreeter = true;
+    useTextGreeter = false;
     settings = {
       default_session = {
-        command = "${tuigreetKmscon}";
+        command = "${gtkgreetSession}";
         user = "greeter";
       };
     };
   };
 
-  systemd.tmpfiles.rules = [
-    "d /var/cache/tuigreet 0755 greeter greeter - -"
-  ];
+  services.accounts-daemon.enable = true;
+
+  environment.etc."greetd/environments".text = ''
+    ${niriSession}
+  '';
 
   console = {
     earlySetup = true;

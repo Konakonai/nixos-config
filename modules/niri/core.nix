@@ -59,7 +59,7 @@ in
         focus-at-startup = true;
         scale = 1.5;
         position = {
-          x = 1828;
+          x = 1829;
           y = 0;
         };
       };
