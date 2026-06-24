@@ -28,8 +28,8 @@
     (callPackage ../../pkgs/cc-switch-cli/default.nix {})
     (callPackage ../../pkgs/codex.nix {})
 
-    libsForQt5.qtstyleplugin-kvantum
-    kdePackages.qtstyleplugin-kvantum
+    libsForQt5.qt5ct
+    qt6Packages.qt6ct
     nordzy-cursor-theme
     opencode
   ];
