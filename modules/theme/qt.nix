@@ -8,7 +8,7 @@ let
     custom_palette=true
     icon_theme=${lilyaGlass.iconThemeName}
     standard_dialogs=default
-    style=adwaita
+    style=Darkly
 
     [Interface]
     activate_item_on_single_click=1
@@ -31,5 +31,4 @@ in
   };
 
   xdg.configFile."qt6ct/qt6ct.conf".text = qtctConfig "qt6ct";
-  xdg.configFile."qt5ct/qt5ct.conf".text = qtctConfig "qt5ct";
 }

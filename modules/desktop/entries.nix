@@ -54,4 +54,14 @@ in
     terminal = false;
     noDisplay = true;
   };
+
+  xdg.desktopEntries."qt6ct" = {
+    name = "Qt6 Settings";
+    exec = "qt6ct";
+    icon = "preferences-desktop-theme";
+    type = "Application";
+    categories = [ "Settings" "DesktopSettings" "Qt" ];
+    terminal = false;
+    noDisplay = true;
+  };
 }
