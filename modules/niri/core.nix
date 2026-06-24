@@ -47,11 +47,6 @@ in
 
     outputs = {
       "eDP-1" = {
-        mode = {
-          width = 3200;
-          height = 2000;
-          refresh = 60.0;
-        };
         scale = 1.75;
         position = {
           x = 0;
@@ -61,11 +56,6 @@ in
 
       "Philips Consumer Electronics Company PHL 27E2F7901 UHB2341003696" = {
         focus-at-startup = true;
-        mode = {
-          width = 3840;
-          height = 2160;
-          refresh = 60.0;
-        };
         scale = 1.5;
         position = {
           x = 1828;
