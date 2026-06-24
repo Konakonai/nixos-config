@@ -8,4 +8,5 @@
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "tun" ];
   boot.kernelParams = [ "nvidia-drm.fbdev=1" ];
+  boot.supportedFilesystems.ntfs = true;
 }
