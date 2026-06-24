@@ -1,7 +1,24 @@
-{ pkgs, inputs, config, ... }:
+{ pkgs, inputs, config, lib, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
+  kmsconConfig = pkgs.writeTextDir "kmscon.conf" config.services.kmscon.extraConfig;
+  tuigreetKmscon = pkgs.writeShellScript "tuigreet-kmscon" ''
+    exec ${lib.getExe pkgs.kmscon} \
+      --configdir ${kmsconConfig} \
+      --vt tty1 \
+      --seats=seat0 \
+      --no-switchvt \
+      --no-reset-env \
+      --login \
+      -- ${lib.getExe pkgs.tuigreet} \
+        --time \
+        --remember \
+        --remember-user-session \
+        --asterisks \
+        --theme 'border=blue;text=cyan;prompt=green;time=yellow;action=blue;button=red' \
+        --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions:${config.services.displayManager.sessionData.desktops}/share/xsessions
+  '';
 in
 {
   programs.niri = {
@@ -20,22 +37,13 @@ in
 
   services.greetd = {
     enable = true;
+    useTextGreeter = true;
     settings = {
       default_session = {
-        command = "${pkgs.kmscon}/bin/kmscon --vt tty1 --seats=seat0 --no-switchvt --no-reset-env --login -- ${pkgs.tuigreet}/bin/tuigreet --time --remember --remember-user-session --asterisks --theme 'border=blue;text=cyan;prompt=green;time=yellow;action=blue;button=red' --sessions ${config.services.displayManager.sessionData.desktops}/share/wayland-sessions:${config.services.displayManager.sessionData.desktops}/share/xsessions";
+        command = "${tuigreetKmscon}";
         user = "greeter";
       };
     };
-  };
-
-  systemd.services.greetd.serviceConfig = {
-    Type = "idle";
-    StandardInput = "tty";
-    StandardOutput = "tty";
-    StandardError = "journal";
-    TTYReset = true;
-    TTYVHangup = true;
-    TTYVTDisallocate = true;
   };
 
   systemd.tmpfiles.rules = [
