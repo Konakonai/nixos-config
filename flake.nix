@@ -34,9 +34,14 @@
       url = "github:noctalia-dev/noctalia";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    millennium = {
+      url = "git+https://github.com/SteamClientHomebrew/Millennium.git?dir=packages/nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, niri, noctalia, ... }: {
+  outputs = inputs@{ nixpkgs, home-manager, niri, noctalia, millennium, ... }: {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
 
@@ -48,6 +53,12 @@
         ./configuration.nix
 
         niri.nixosModules.niri
+
+        {
+          nixpkgs.overlays = [
+            millennium.overlays.default
+          ];
+        }
 
         home-manager.nixosModules.home-manager
         {

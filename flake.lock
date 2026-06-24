@@ -101,6 +101,46 @@
         "type": "github"
       }
     },
+    "millennium": {
+      "inputs": {
+        "millennium-src": "millennium-src",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "dir": "packages/nix",
+        "lastModified": 1782265942,
+        "narHash": "sha256-u//vKBWQj5xKU6B1AxRrbBdWekof5cxUlks3BMx6nKc=",
+        "ref": "refs/heads/main",
+        "rev": "0ee0ed084caf5f63b3f7fe168c0106116a5df522",
+        "revCount": 3371,
+        "type": "git",
+        "url": "https://github.com/SteamClientHomebrew/Millennium.git"
+      },
+      "original": {
+        "dir": "packages/nix",
+        "type": "git",
+        "url": "https://github.com/SteamClientHomebrew/Millennium.git"
+      }
+    },
+    "millennium-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1782174433,
+        "narHash": "sha256-9de8yziVrd/BPTXSlVqm8nMTdyS2XViaP7oaTy/IfZ0=",
+        "owner": "SteamClientHomebrew",
+        "repo": "Millennium",
+        "rev": "6ca76735b93d622d10483491b9365b722743d670",
+        "type": "github"
+      },
+      "original": {
+        "owner": "SteamClientHomebrew",
+        "repo": "Millennium",
+        "rev": "6ca76735b93d622d10483491b9365b722743d670",
+        "type": "github"
+      }
+    },
     "niri": {
       "inputs": {
         "niri-stable": "niri-stable",
@@ -374,6 +414,7 @@
         "flake-utils": "flake-utils",
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager",
+        "millennium": "millennium",
         "niri": "niri",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs_2",
