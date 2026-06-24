@@ -130,8 +130,52 @@ let
       [ "$(cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status 2>/dev/null || echo missing)" = "suspended" ]
     }
 
+    external_display_connected() {
+      for status in /sys/class/drm/card*-*/status; do
+        [ -e "$status" ] || continue
+        connector="''${status%/status}"
+        connector="''${connector##*/}"
+
+        case "$connector" in
+          *-eDP-*|*-LVDS-*)
+            continue
+            ;;
+        esac
+
+        if [ "$(cat "$status" 2>/dev/null || echo disconnected)" = "connected" ]; then
+          return 0
+        fi
+      done
+
+      return 1
+    }
+
+    rescan_nvidia() {
+      if [ -w /sys/bus/pci/rescan ]; then
+        echo 1 > /sys/bus/pci/rescan 2>/dev/null || true
+      fi
+
+      for _ in $(seq 1 20); do
+        control="/sys/bus/pci/devices/0000:01:00.0/power/control"
+        if [ -w "$control" ]; then
+          echo on > "$control" 2>/dev/null || true
+          return 0
+        fi
+        sleep 0.25
+      done
+
+      echo "nvidia-power-source: NVIDIA PCI device did not appear after rescan." >&2
+      return 1
+    }
+
     remove_nvidia() {
       set_profile power-saver
+
+      if external_display_connected; then
+        echo "nvidia-power-source: external display is connected; keeping NVIDIA ready." >&2
+        rescan_nvidia
+        exit 0
+      fi
 
       for dev in 0000:01:00.1 0000:01:00.0; do
         control="/sys/bus/pci/devices/$dev/power/control"
@@ -159,20 +203,11 @@ let
     restore_nvidia() {
       set_profile balanced
 
-      if [ -w /sys/bus/pci/rescan ]; then
-        echo 1 > /sys/bus/pci/rescan 2>/dev/null || true
-      fi
+      rescan_nvidia
+    }
 
-      for _ in $(seq 1 20); do
-        control="/sys/bus/pci/devices/0000:01:00.0/power/control"
-        if [ -w "$control" ]; then
-          echo on > "$control" 2>/dev/null || true
-          exit 0
-        fi
-        sleep 0.25
-      done
-
-      echo "nvidia-power-source: NVIDIA PCI device did not appear after rescan." >&2
+    display_nvidia() {
+      rescan_nvidia
     }
 
     case "''${1:-auto}" in
@@ -189,6 +224,9 @@ let
       ac|performance)
         restore_nvidia
         ;;
+      display|external-display)
+        display_nvidia
+        ;;
       status)
         if ac_online; then
           echo "ac"
@@ -203,9 +241,15 @@ let
         else
           echo "nvidia: absent"
         fi
+
+        if external_display_connected; then
+          echo "external-display: connected"
+        else
+          echo "external-display: disconnected"
+        fi
         ;;
       *)
-        echo "usage: nvidia-power-source [auto|battery|ac|status]" >&2
+        echo "usage: nvidia-power-source [auto|battery|ac|display|status]" >&2
         exit 2
         ;;
     esac
@@ -246,6 +290,11 @@ in
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="0", TAG+="systemd", ENV{SYSTEMD_WANTS}+="cpu-power-source-battery.service nvidia-power-source-battery.service"
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="1", TAG+="systemd", ENV{SYSTEMD_WANTS}+="cpu-power-source-ac.service nvidia-power-source-ac.service"
+
+    SUBSYSTEM=="drm", ACTION=="change", KERNEL=="card*-DP-*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-external-display.service"
+    SUBSYSTEM=="drm", ACTION=="change", KERNEL=="card*-HDMI-A-*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-external-display.service"
+    SUBSYSTEM=="drm", ACTION=="change", KERNEL=="card*-USB-C-*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-external-display.service"
+    SUBSYSTEM=="typec", ACTION=="add|change", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-external-display.service"
   '';
 
   systemd.services.cpu-power-source-boot = {
@@ -308,6 +357,14 @@ in
     description = "Restore NVIDIA dGPU when AC power is connected";
     script = ''
       ${nvidiaPowerSource}/bin/nvidia-power-source ac
+    '';
+    serviceConfig.Type = "oneshot";
+  };
+
+  systemd.services.nvidia-external-display = {
+    description = "Wake NVIDIA dGPU quickly for external display hotplug";
+    script = ''
+      ${nvidiaPowerSource}/bin/nvidia-power-source display
     '';
     serviceConfig.Type = "oneshot";
   };
