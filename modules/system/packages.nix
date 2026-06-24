@@ -6,7 +6,8 @@
     wget
     curl
     openlist
-    vlc
+    celluloid
+    rclone
     git
     pciutils
     usbutils

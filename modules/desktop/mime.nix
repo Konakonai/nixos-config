@@ -19,17 +19,17 @@
       "application/pdf" = "zen-beta.desktop";
       "inode/directory" = "nemo.desktop";
 
-      "video/mp4" = "vlc.desktop";
-      "video/x-matroska" = "vlc.desktop";
-      "video/webm" = "vlc.desktop";
-      "video/mpeg" = "vlc.desktop";
-      "video/avi" = "vlc.desktop";
-      "video/quicktime" = "vlc.desktop";
-      "video/x-flv" = "vlc.desktop";
-      "video/3gp" = "vlc.desktop";
-      "video/3gpp" = "vlc.desktop";
-      "video/x-ms-wmv" = "vlc.desktop";
-      "video/x-msvideo" = "vlc.desktop";
+      "video/mp4" = "io.github.celluloid_player.Celluloid.desktop";
+      "video/x-matroska" = "io.github.celluloid_player.Celluloid.desktop";
+      "video/webm" = "io.github.celluloid_player.Celluloid.desktop";
+      "video/mpeg" = "io.github.celluloid_player.Celluloid.desktop";
+      "video/avi" = "io.github.celluloid_player.Celluloid.desktop";
+      "video/quicktime" = "io.github.celluloid_player.Celluloid.desktop";
+      "video/x-flv" = "io.github.celluloid_player.Celluloid.desktop";
+      "video/3gp" = "io.github.celluloid_player.Celluloid.desktop";
+      "video/3gpp" = "io.github.celluloid_player.Celluloid.desktop";
+      "video/x-ms-wmv" = "io.github.celluloid_player.Celluloid.desktop";
+      "video/x-msvideo" = "io.github.celluloid_player.Celluloid.desktop";
 
       "application/zip" = "org.gnome.FileRoller.desktop";
       "application/x-tar" = "org.gnome.FileRoller.desktop";
