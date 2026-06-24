@@ -130,19 +130,28 @@ let
       [ "$(cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status 2>/dev/null || echo missing)" = "suspended" ]
     }
 
-    external_display_connected() {
-      for status in /sys/class/drm/card*-*/status; do
-        [ -e "$status" ] || continue
-        connector="''${status%/status}"
-        connector="''${connector##*/}"
+    typec_display_connected() {
+      for partner in /sys/class/typec/port*-partner; do
+        [ -e "$partner" ] || continue
 
-        case "$connector" in
-          *-eDP-*|*-LVDS-*)
-            continue
-            ;;
-        esac
+        # DisplayPort alt-mode uses VESA SVID 0xff01. Prefer that signal when
+        # the Type-C partner exposes alt modes, but fall back to partner
+        # presence because this machine uses Type-C ports for external display.
+        for svid in "$partner"/*/svid; do
+          [ -e "$svid" ] || continue
+          if [ "$(cat "$svid" 2>/dev/null || true)" = "0xff01" ]; then
+            return 0
+          fi
+        done
 
-        if [ "$(cat "$status" 2>/dev/null || echo disconnected)" = "connected" ]; then
+        for description in "$partner"/*/description; do
+          [ -e "$description" ] || continue
+          if grep -qi "displayport\\|display port\\|dp" "$description" 2>/dev/null; then
+            return 0
+          fi
+        done
+
+        if [ -d "$partner" ]; then
           return 0
         fi
       done
@@ -171,8 +180,8 @@ let
     remove_nvidia() {
       set_profile power-saver
 
-      if external_display_connected; then
-        echo "nvidia-power-source: external display is connected; keeping NVIDIA ready." >&2
+      if typec_display_connected; then
+        echo "nvidia-power-source: Type-C display is connected; keeping NVIDIA ready." >&2
         rescan_nvidia
         exit 0
       fi
@@ -242,10 +251,10 @@ let
           echo "nvidia: absent"
         fi
 
-        if external_display_connected; then
-          echo "external-display: connected"
+        if typec_display_connected; then
+          echo "typec-display: connected"
         else
-          echo "external-display: disconnected"
+          echo "typec-display: disconnected"
         fi
         ;;
       *)
@@ -291,9 +300,6 @@ in
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="1", RUN+="${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced"
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="1", TAG+="systemd", ENV{SYSTEMD_WANTS}+="cpu-power-source-ac.service nvidia-power-source-ac.service"
 
-    SUBSYSTEM=="drm", ACTION=="change", KERNEL=="card*-DP-*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-external-display.service"
-    SUBSYSTEM=="drm", ACTION=="change", KERNEL=="card*-HDMI-A-*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-external-display.service"
-    SUBSYSTEM=="drm", ACTION=="change", KERNEL=="card*-USB-C-*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-external-display.service"
     SUBSYSTEM=="typec", ACTION=="add|change", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-external-display.service"
   '';
 
@@ -362,7 +368,7 @@ in
   };
 
   systemd.services.nvidia-external-display = {
-    description = "Wake NVIDIA dGPU quickly for external display hotplug";
+    description = "Wake NVIDIA dGPU quickly for Type-C display hotplug";
     script = ''
       ${nvidiaPowerSource}/bin/nvidia-power-source display
     '';
