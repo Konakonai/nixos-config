@@ -1,6 +1,23 @@
 { config, pkgs, ... }:
 
+let
+  nh = pkgs.lib.getExe pkgs.nh;
+  rebuild = pkgs.writeShellScriptBin "rebuild" ''
+    export PATH="/run/wrappers/bin:$PATH"
+    exec ${nh} os switch /home/lilya/nixos-config -- --impure "$@"
+  '';
+  testbuild = pkgs.writeShellScriptBin "testbuild" ''
+    export PATH="/run/wrappers/bin:$PATH"
+    exec ${nh} os test /home/lilya/nixos-config -- --impure "$@"
+  '';
+in
+
 {
+  home.packages = [
+    rebuild
+    testbuild
+  ];
+
   # Fish Shell 配置
   programs.fish = {
     enable = true;
@@ -9,8 +26,6 @@
       ll = "ls -alh";
       la = "ls -A";
       gs = "git status";
-      rebuild = "env PATH=/run/wrappers/bin:$PATH nh os switch /home/lilya/nixos-config -- --impure";
-      testbuild = "env PATH=/run/wrappers/bin:$PATH nh os test /home/lilya/nixos-config -- --impure";
     };
   };
 
@@ -22,8 +37,6 @@
       ll = "ls -alh";
       la = "ls -A";
       gs = "git status";
-      rebuild = "env PATH=/run/wrappers/bin:$PATH nh os switch /home/lilya/nixos-config -- --impure";
-      testbuild = "env PATH=/run/wrappers/bin:$PATH nh os test /home/lilya/nixos-config -- --impure";
     };
   };
 
