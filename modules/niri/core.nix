@@ -12,6 +12,7 @@ in
       { command = [ "xwayland-satellite" ]; }
       { command = [ "xrdb" "-merge" "${config.home.homeDirectory}/.Xresources" ]; }
       { command = [ "wl-paste" "--watch" "cliphist" "store" ]; }
+      { command = [ "sh" "-c" "sleep 3 && echo auto > /sys/bus/pci/devices/0000:01:00.0/power/control" ]; }
     ];
 
     hotkey-overlay.skip-at-startup = true;
