@@ -14,10 +14,39 @@
       {
         path = "/boot-grub";
         efiSysMountPoint = "/boot";
+        efiBootloaderId = "NixOS-boot";
         devices = [ "nodev" ];
       }
     ];
     copyKernels = false;
+    extraInstallCommands = ''
+      grubBootId="$(
+        ${pkgs.efibootmgr}/bin/efibootmgr \
+          | ${pkgs.gawk}/bin/awk '/NixOS-boot|NixOS Boot Manager/ { id = $1; sub(/^Boot/, "", id); sub(/\*.*/, "", id); print id; exit }'
+      )"
+
+      if [ -n "$grubBootId" ]; then
+        currentOrder="$(${pkgs.efibootmgr}/bin/efibootmgr | ${pkgs.gnused}/bin/sed -n 's/^BootOrder: //p')"
+        restOrder="$(
+          printf '%s\n' "$currentOrder" \
+            | ${pkgs.gnused}/bin/sed \
+                -e "s/^$grubBootId,//" \
+                -e "s/,$grubBootId,/,/" \
+                -e "s/,$grubBootId$//" \
+                -e "s/^$grubBootId$//"
+        )"
+
+        if [ -n "$restOrder" ]; then
+          desiredOrder="$grubBootId,$restOrder"
+        else
+          desiredOrder="$grubBootId"
+        fi
+
+        if [ -n "$currentOrder" ] && [ "$currentOrder" != "$desiredOrder" ]; then
+          ${pkgs.efibootmgr}/bin/efibootmgr -o "$desiredOrder"
+        fi
+      fi
+    '';
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
