@@ -41,17 +41,16 @@ let
     }
 
     nvidia_client_pids() {
-      for fd in /proc/[0-9]*/fd/*; do
-        target="$(readlink "$fd" 2>/dev/null || true)"
-        case "$target" in
-          /dev/nvidia*|/dev/dri/card0|/dev/dri/renderD129)
-            pid="''${fd#/proc/}"
-            pid="''${pid%%/*}"
-            comm="$(cat "/proc/$pid/comm" 2>/dev/null || true)"
-            echo "$pid:''${comm:-unknown}"
-            ;;
-        esac
-      done | sort -u
+      find /proc/[0-9]*/fd \
+        \( -lname "/dev/nvidia*" -o -lname "/dev/dri/card0" -o -lname "/dev/dri/renderD129" \) \
+        -printf "%h\n" 2>/dev/null \
+        | sed 's#/proc/##; s#/fd##' \
+        | sort -u \
+        | while read -r pid; do
+          [ -n "$pid" ] || continue
+          comm="$(cat "/proc/$pid/comm" 2>/dev/null || true)"
+          echo "$pid:''${comm:-unknown}"
+        done
     }
 
     remove_present_nvidia() {
@@ -150,7 +149,6 @@ in
   systemd.services.nvidia-power-source-boot = {
     description = "Apply dGPU state based on AC power at boot";
     after = [ "local-fs.target" ];
-    wantedBy = [ "multi-user.target" ];
     script = ''
       ${nvidiaPowerSource}/bin/nvidia-power-source auto
     '';
