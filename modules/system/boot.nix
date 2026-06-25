@@ -16,7 +16,7 @@
         owner = "HamzaKarrouchi";
         repo = "Persona_GRUB_Themes";
         rev = "69724f8f5f8e19d064357496088e06166672753f";
-        hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+        hash = "sha256-SJhGLcZRe8F68fHmS0m3MC3doAQi/PeCYQX2rWbKvtE=";
       };
       installPhase = "cp -r themes/persona5_royal/joker $out";
     };
