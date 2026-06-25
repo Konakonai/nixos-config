@@ -9,10 +9,6 @@ in
 
     include "noctalia.kdl"
 
-    debug {
-        render-drm-device "/dev/dri/renderD128"
-    }
-
     window-rule {
         exclude app-id="^kitty$"
         opacity ${lilyaGlass.opacity.windows}
