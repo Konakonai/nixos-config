@@ -1,6 +1,18 @@
 { config, pkgs, ... }:
 
 let
+  clipboardScreenshot = pkgs.writeShellScriptBin "clipboard-screenshot" ''
+    set -euo pipefail
+
+    unset LD_LIBRARY_PATH
+
+    geometry="$(${pkgs.slurp}/bin/slurp -o -r -c '#f5c2e7ff')" || exit 0
+    [ -n "$geometry" ] || exit 0
+
+    ${pkgs.grim}/bin/grim -g "$geometry" - \
+      | ${pkgs.wl-clipboard}/bin/wl-copy --type image/png
+  '';
+
   sattyScreenshot = pkgs.writeShellScriptBin "satty-screenshot" ''
     set -euo pipefail
 
@@ -60,7 +72,10 @@ let
   '';
 in
 {
-  home.packages = [ sattyScreenshot ];
+  home.packages = [
+    clipboardScreenshot
+    sattyScreenshot
+  ];
 
   programs.niri.settings.binds = with config.lib.niri.actions; {
     "Mod+R".action.switch-preset-column-width = [];
@@ -72,7 +87,8 @@ in
     "Mod+Shift+Minus".action.set-window-height = [ "-10%" ];
     "Mod+Shift+Equal".action.set-window-height = [ "+10%" ];
 
-    "Mod+Shift+S".action.spawn = [ "satty-screenshot" "area" ];
+    "Mod+Shift+S".action.spawn = [ "clipboard-screenshot" ];
+    "Mod+Ctrl+Shift+S".action.spawn = [ "satty-screenshot" "area" ];
     "Print".action.screenshot = [];
     "Ctrl+Print".action.screenshot-screen = { write-to-disk = false; };
     "Alt+Print".action.screenshot-window = { write-to-disk = false; };
