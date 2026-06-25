@@ -114,15 +114,6 @@ in
         draw-border-with-background = false;
         clip-to-geometry = true;
       }
-      {
-        matches = [
-          { app-id = "^com\\.gabm\\.satty$"; }
-          { app-id = "^satty$"; }
-          { title = "^Satty$"; }
-        ];
-        open-focused = true;
-        open-floating = true;
-      }
     ];
 
     animations.enable = true;

@@ -22,14 +22,11 @@ let
     run_satty() {
       ${pkgs.satty}/bin/satty \
         --filename "$1" \
-        --fullscreen current-screen \
-        --floating-hack \
-        --no-window-decoration \
-        --early-exit \
+        --fullscreen \
         --copy-command "${pkgs.wl-clipboard}/bin/wl-copy" \
         --output-filename "$output" \
-        --actions-on-enter "save-to-clipboard,exit" \
-        --actions-on-right-click "save-to-clipboard,exit" \
+        --actions-on-enter "save-to-clipboard,save-to-file,exit" \
+        --actions-on-right-click "save-to-clipboard,save-to-file,exit" \
         --actions-on-escape "exit" \
         --initial-tool arrow \
         --brush-smooth-history-size 5 \
