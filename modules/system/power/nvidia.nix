@@ -20,6 +20,23 @@ let
       [ -e /sys/bus/pci/devices/0000:01:00.0 ]
     }
 
+    nvidia_display_connected() {
+      for status in /sys/class/drm/card*-*/status; do
+        [ -e "$status" ] || continue
+        [ "$(cat "$status" 2>/dev/null || true)" = "connected" ] || continue
+
+        connector="''${status%/status}"
+        card="''${connector##*/}"
+        card="''${card%%-*}"
+
+        if [ "$(basename "$(readlink -f "/sys/class/drm/$card/device" 2>/dev/null)" 2>/dev/null || true)" = "0000:01:00.0" ]; then
+          return 0
+        fi
+      done
+
+      return 1
+    }
+
     rescan_missing_nvidia() {
       if nvidia_is_present; then
         return 0
@@ -62,6 +79,11 @@ let
 
     remove_nvidia() {
       set_profile power-saver
+
+      if nvidia_display_connected; then
+        echo "nvidia-power-source: NVIDIA display is connected; keeping dGPU present." >&2
+        exit 0
+      fi
 
       for dev in 0000:01:00.1 0000:01:00.0; do
         control="/sys/bus/pci/devices/$dev/power/control"
@@ -123,6 +145,12 @@ let
           echo "nvidia: absent"
         fi
 
+        if nvidia_display_connected; then
+          echo "nvidia-display: connected"
+        else
+          echo "nvidia-display: disconnected"
+        fi
+
         clients="$(nvidia_client_pids)"
         if [ -n "$clients" ]; then
           echo "clients:"
@@ -148,7 +176,12 @@ in
 
   systemd.services.nvidia-power-source-boot = {
     description = "Apply dGPU state based on AC power at boot";
+    before = [
+      "display-manager.service"
+      "greetd.service"
+    ];
     after = [ "local-fs.target" ];
+    wantedBy = [ "graphical.target" ];
     script = ''
       ${nvidiaPowerSource}/bin/nvidia-power-source auto
     '';
