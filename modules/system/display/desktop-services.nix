@@ -15,9 +15,11 @@
   services.udisks2.enable = true;
   services.flatpak.enable = true;
   services.samba-wsdd.enable = true;
+  services.gnome.at-spi2-core.enable = true;
   programs.dconf.enable = true;
 
   environment.systemPackages = [
+    pkgs.glib
     pkgs.ntfs3g
     pkgs.wsdd
   ];

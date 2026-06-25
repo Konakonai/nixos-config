@@ -12,5 +12,6 @@ in
     gtk-theme = "adw-gtk3";
     icon-theme = lilyaGlass.iconThemeName;
     monospace-font-name = "${lilyaGlass.fonts.mono} ${builtins.toString lilyaGlass.fonts.size}";
+    toolkit-accessibility = true;
   };
 }
