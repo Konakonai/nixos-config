@@ -88,12 +88,21 @@ let
 
         mkdir -p "$(dirname "$NIRI_RENDER_CONFIG")"
 
-        if [ "$mode" = "intel" ]; then
-          intel_render="$(render_node_for_pci "$INTEL_PCI" || true)"
-          if [ -n "$intel_render" ]; then
-            printf 'debug {\n    render-drm-device "%s"\n}\n' "$intel_render" > "$NIRI_RENDER_CONFIG"
-            return 0
-          fi
+        case "$mode" in
+          intel)
+            render_node="$(render_node_for_pci "$INTEL_PCI" || true)"
+            ;;
+          nvidia)
+            render_node="$(render_node_for_pci "$NVIDIA_PCI" || true)"
+            ;;
+          *)
+            render_node=""
+            ;;
+        esac
+
+        if [ -n "$render_node" ]; then
+          printf 'debug {\n    render-drm-device "%s"\n}\n' "$render_node" > "$NIRI_RENDER_CONFIG"
+          return 0
         fi
 
         : > "$NIRI_RENDER_CONFIG"
@@ -124,7 +133,11 @@ let
 
       ac_nvidia() {
         set_profile balanced
-        write_niri_render_config auto
+        if nvidia_display_connected; then
+          write_niri_render_config nvidia
+        else
+          write_niri_render_config auto
+        fi
         set_runtime_power on
       }
 
