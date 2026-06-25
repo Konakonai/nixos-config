@@ -1,64 +1,6 @@
-{ config, pkgs, ... }:
+{ config, ... }:
 
-let
-  sattyScreenshot = pkgs.writeShellScriptBin "satty-screenshot" ''
-    set -euo pipefail
-
-    unset LD_LIBRARY_PATH
-
-    mode="''${1:-area}"
-    screenshot_dir="$HOME/Pictures/Screenshots"
-    ${pkgs.coreutils}/bin/mkdir -p "$screenshot_dir"
-
-    output="$screenshot_dir/screenshot-$(${pkgs.coreutils}/bin/date +%Y%m%d-%H%M%S).png"
-    tmp_dir="''${XDG_RUNTIME_DIR:-/tmp}"
-    tmp="$(${pkgs.coreutils}/bin/mktemp --tmpdir="$tmp_dir" satty-screenshot.XXXXXX.png)"
-
-    cleanup() {
-      ${pkgs.coreutils}/bin/rm -f "$tmp"
-    }
-    trap cleanup EXIT
-
-    run_satty() {
-      ${pkgs.satty}/bin/satty \
-        --filename "$1" \
-        --fullscreen \
-        --copy-command "${pkgs.wl-clipboard}/bin/wl-copy" \
-        --output-filename "$output" \
-        --actions-on-enter "save-to-clipboard,save-to-file,exit" \
-        --actions-on-right-click "save-to-clipboard,save-to-file,exit" \
-        --actions-on-escape "exit" \
-        --initial-tool arrow \
-        --brush-smooth-history-size 5 \
-        --disable-notifications
-    }
-
-    case "$mode" in
-      area)
-        geometry="$(${pkgs.slurp}/bin/slurp -o -r -c '#f5c2e7ff')" || exit 0
-        [ -n "$geometry" ] || exit 0
-        ${pkgs.grim}/bin/grim -t ppm -g "$geometry" - | run_satty -
-        ;;
-      screen)
-        ${config.programs.niri.package}/bin/niri msg action screenshot-screen --path "$tmp"
-        [ -s "$tmp" ] || exit 1
-        run_satty "$tmp"
-        ;;
-      window)
-        ${config.programs.niri.package}/bin/niri msg action screenshot-window --path "$tmp"
-        [ -s "$tmp" ] || exit 1
-        run_satty "$tmp"
-        ;;
-      *)
-        echo "usage: satty-screenshot [area|screen|window]" >&2
-        exit 2
-        ;;
-    esac
-  '';
-in
 {
-  home.packages = [ sattyScreenshot ];
-
   programs.niri.settings.binds = with config.lib.niri.actions; {
     "Mod+R".action.switch-preset-column-width = [];
     "Mod+Shift+R".action.switch-preset-column-width-back = [];
@@ -69,10 +11,10 @@ in
     "Mod+Shift+Minus".action.set-window-height = [ "-10%" ];
     "Mod+Shift+Equal".action.set-window-height = [ "+10%" ];
 
-    "Mod+Shift+S".action.spawn = [ "satty-screenshot" "area" ];
-    "Print".action.spawn = [ "satty-screenshot" "area" ];
-    "Ctrl+Print".action.spawn = [ "satty-screenshot" "screen" ];
-    "Alt+Print".action.spawn = [ "satty-screenshot" "window" ];
+    "Mod+Shift+S".action.screenshot = [];
+    "Print".action.screenshot = [];
+    "Ctrl+Print".action.screenshot-screen = [];
+    "Alt+Print".action.screenshot-window = [];
 
     "Mod+Escape".action.spawn = [ "noctalia" "msg" "session" "lock" ];
     "Mod+M".action.spawn = [ "noctalia" "msg" "panel-toggle" "session" ];
