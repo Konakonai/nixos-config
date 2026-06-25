@@ -1,146 +1,144 @@
 { pkgs, ... }:
 
 let
-  nvidiaPowerSource = pkgs.writeShellScriptBin "nvidia-power-source" ''
-    set -u
+  intelPci = "0000:00:02.0";
+  nvidiaPci = "0000:01:00.0";
+  nvidiaAudioPci = "0000:01:00.1";
+  niriRenderConfig = "/run/niri-power-render-device.kdl";
 
-    ac_online() {
-      [ "$(cat /sys/class/power_supply/ADP0/online 2>/dev/null || echo 0)" = "1" ]
-    }
+  nvidiaPowerSource = pkgs.writeShellApplication {
+    name = "nvidia-power-source";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.findutils
+      pkgs.gnugrep
+      pkgs.gnused
+      pkgs.power-profiles-daemon
+    ];
+    text = ''
+      set -u
 
-    set_profile() {
-      ${pkgs.coreutils}/bin/timeout 1s ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set "$1" 2>/dev/null || true
-    }
+      INTEL_PCI="${intelPci}"
+      NVIDIA_PCI="${nvidiaPci}"
+      NVIDIA_AUDIO_PCI="${nvidiaAudioPci}"
+      NIRI_RENDER_CONFIG="${niriRenderConfig}"
 
-    nvidia_is_suspended() {
-      [ "$(cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status 2>/dev/null || echo missing)" = "suspended" ]
-    }
+      ac_online() {
+        [ "$(cat /sys/class/power_supply/ADP0/online 2>/dev/null || echo 0)" = "1" ]
+      }
 
-    nvidia_is_present() {
-      [ -e /sys/bus/pci/devices/0000:01:00.0 ]
-    }
+      set_profile() {
+        timeout 1s powerprofilesctl set "$1" 2>/dev/null || true
+      }
 
-    nvidia_display_connected() {
-      for status in /sys/class/drm/card*-*/status; do
-        [ -e "$status" ] || continue
-        [ "$(cat "$status" 2>/dev/null || true)" = "connected" ] || continue
+      pci_present() {
+        [ -e "/sys/bus/pci/devices/$1" ]
+      }
 
-        connector="''${status%/status}"
-        card="''${connector##*/}"
-        card="''${card%%-*}"
+      render_node_for_pci() {
+        pci="$1"
 
-        if [ "$(basename "$(readlink -f "/sys/class/drm/$card/device" 2>/dev/null)" 2>/dev/null || true)" = "0000:01:00.0" ]; then
+        for node in /sys/class/drm/renderD*; do
+          [ -e "$node" ] || continue
+          [ "$(basename "$(readlink -f "$node/device" 2>/dev/null)" 2>/dev/null || true)" = "$pci" ] || continue
+          echo "/dev/dri/$(basename "$node")"
           return 0
-        fi
-      done
-
-      return 1
-    }
-
-    rescan_missing_nvidia() {
-      if nvidia_is_present; then
-        return 0
-      fi
-
-      if [ -w /sys/bus/pci/rescan ]; then
-        echo 1 > /sys/bus/pci/rescan 2>/dev/null || true
-      fi
-
-      for _ in $(seq 1 20); do
-        if nvidia_is_present; then
-          return 0
-        fi
-        sleep 0.25
-      done
-
-      echo "nvidia-power-source: NVIDIA PCI device did not appear after rescan." >&2
-      return 1
-    }
-
-    nvidia_client_pids() {
-      find /proc/[0-9]*/fd \
-        \( -lname "/dev/nvidia*" -o -lname "/dev/dri/card0" -o -lname "/dev/dri/renderD129" \) \
-        -printf "%h\n" 2>/dev/null \
-        | sed 's#/proc/##; s#/fd##' \
-        | sort -u \
-        | while read -r pid; do
-          [ -n "$pid" ] || continue
-          comm="$(cat "/proc/$pid/comm" 2>/dev/null || true)"
-          echo "$pid:''${comm:-unknown}"
         done
-    }
 
-    remove_present_nvidia() {
-      for dev in 0000:01:00.1 0000:01:00.0; do
-        remove="/sys/bus/pci/devices/$dev/remove"
-        [ -w "$remove" ] && echo 1 > "$remove" 2>/dev/null || true
-      done
-    }
+        return 1
+      }
 
-    remove_nvidia() {
-      set_profile power-saver
+      drm_nodes_for_pci() {
+        pci="$1"
 
-      if nvidia_display_connected; then
-        echo "nvidia-power-source: NVIDIA display is connected; keeping dGPU present." >&2
-        exit 0
-      fi
+        for node in /sys/class/drm/card[0-9] /sys/class/drm/renderD*; do
+          [ -e "$node" ] || continue
+          [ "$(basename "$(readlink -f "$node/device" 2>/dev/null)" 2>/dev/null || true)" = "$pci" ] || continue
+          echo "/dev/dri/$(basename "$node")"
+        done
+      }
 
-      for dev in 0000:01:00.1 0000:01:00.0; do
-        control="/sys/bus/pci/devices/$dev/power/control"
-        [ -w "$control" ] && echo auto > "$control" 2>/dev/null || true
-      done
+      nvidia_display_connected() {
+        for status in /sys/class/drm/card*-*/status; do
+          [ -e "$status" ] || continue
+          [ "$(cat "$status" 2>/dev/null || true)" = "connected" ] || continue
 
-      for _ in $(seq 1 6); do
-        if nvidia_is_suspended; then
-          break
+          connector="''${status%/status}"
+          card="''${connector##*/}"
+          card="''${card%%-*}"
+
+          [ "$(basename "$(readlink -f "/sys/class/drm/$card/device" 2>/dev/null)" 2>/dev/null || true)" = "$NVIDIA_PCI" ] || continue
+          return 0
+        done
+
+        return 1
+      }
+
+      set_runtime_power() {
+        value="$1"
+
+        for dev in "$NVIDIA_AUDIO_PCI" "$NVIDIA_PCI"; do
+          control="/sys/bus/pci/devices/$dev/power/control"
+          [ -w "$control" ] && echo "$value" > "$control" 2>/dev/null || true
+        done
+      }
+
+      write_niri_render_config() {
+        mode="$1"
+
+        mkdir -p "$(dirname "$NIRI_RENDER_CONFIG")"
+
+        if [ "$mode" = "intel" ]; then
+          intel_render="$(render_node_for_pci "$INTEL_PCI" || true)"
+          if [ -n "$intel_render" ]; then
+            printf 'debug {\n    render-drm-device "%s"\n}\n' "$intel_render" > "$NIRI_RENDER_CONFIG"
+            return 0
+          fi
         fi
-        sleep 0.25
-      done
 
-      if ! nvidia_is_suspended; then
-        clients="$(nvidia_client_pids)"
-        if [ -n "$clients" ]; then
-          echo "nvidia-power-source: NVIDIA is still in use; leaving PCI device present. Clients: $clients" >&2
-          exit 0
-        fi
+        : > "$NIRI_RENDER_CONFIG"
+      }
 
-        echo "nvidia-power-source: NVIDIA did not runtime suspend, but no clients are using it; removing PCI device." >&2
-      fi
+      nvidia_client_pids() {
+        {
+          echo "/dev/nvidia*"
+          drm_nodes_for_pci "$NVIDIA_PCI"
+        } | while read -r node; do
+          [ -n "$node" ] || continue
+          find /proc/[0-9]*/fd -lname "$node" -printf "%h\n" 2>/dev/null || true
+        done \
+          | sed 's#/proc/##; s#/fd##' \
+          | sort -u \
+          | while read -r pid; do
+            [ -n "$pid" ] || continue
+            comm="$(cat "/proc/$pid/comm" 2>/dev/null || true)"
+            echo "$pid:''${comm:-unknown}"
+          done
+      }
 
-      remove_present_nvidia
-    }
+      battery_nvidia() {
+        set_profile power-saver
+        write_niri_render_config intel
+        set_runtime_power auto
+      }
 
-    restore_nvidia() {
-      set_profile balanced
+      ac_nvidia() {
+        set_profile balanced
+        write_niri_render_config auto
+        set_runtime_power on
+      }
 
-      rescan_missing_nvidia
-    }
-
-    case "''${1:-auto}" in
-      auto)
-        if ac_online; then
-          restore_nvidia
-        else
-          remove_nvidia
-        fi
-        ;;
-      battery|powersave)
-        remove_nvidia
-        ;;
-      ac|performance)
-        restore_nvidia
-        ;;
-      status)
+      status_nvidia() {
         if ac_online; then
           echo "ac"
         else
           echo "battery"
         fi
 
-        if [ -e /sys/bus/pci/devices/0000:01:00.0 ]; then
+        if pci_present "$NVIDIA_PCI"; then
           echo "nvidia: present"
-          cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status 2>/dev/null || true
-          cat /sys/bus/pci/devices/0000:01:00.0/power/control 2>/dev/null || true
+          cat "/sys/bus/pci/devices/$NVIDIA_PCI/power/runtime_status" 2>/dev/null || true
+          cat "/sys/bus/pci/devices/$NVIDIA_PCI/power/control" 2>/dev/null || true
         else
           echo "nvidia: absent"
         fi
@@ -151,6 +149,12 @@ let
           echo "nvidia-display: disconnected"
         fi
 
+        if [ -s "$NIRI_RENDER_CONFIG" ]; then
+          echo "niri-render: $(grep -m1 'render-drm-device' "$NIRI_RENDER_CONFIG" | sed 's/^[[:space:]]*//')"
+        else
+          echo "niri-render: auto"
+        fi
+
         clients="$(nvidia_client_pids)"
         if [ -n "$clients" ]; then
           echo "clients:"
@@ -158,24 +162,62 @@ let
         else
           echo "clients: none"
         fi
-        ;;
-      *)
-        echo "usage: nvidia-power-source [auto|battery|ac|status]" >&2
-        exit 2
-        ;;
-    esac
-  '';
+      }
+
+      case "''${1:-auto}" in
+        auto)
+          if ac_online; then
+            ac_nvidia
+          else
+            battery_nvidia
+          fi
+          ;;
+        battery|powersave)
+          battery_nvidia
+          ;;
+        ac|performance)
+          ac_nvidia
+          ;;
+        status)
+          status_nvidia
+          ;;
+        *)
+          echo "usage: nvidia-power-source [auto|battery|ac|status]" >&2
+          exit 2
+          ;;
+      esac
+    '';
+  };
 in
 {
   environment.systemPackages = [ nvidiaPowerSource ];
 
+  systemd.tmpfiles.rules = [
+    "f ${niriRenderConfig} 0664 root users - -"
+  ];
+
   services.udev.extraRules = ''
-    # Allow the users group to power down the dGPU when it appears after boot or PCI rescan.
-    ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", ATTR{device}=="0x28e0", RUN+="/bin/sh -c 'chown root:users /sys/bus/pci/devices/$kernel/remove /sys/bus/pci/devices/$kernel/power/control 2>/dev/null || true; chmod 664 /sys/bus/pci/devices/$kernel/remove /sys/bus/pci/devices/$kernel/power/control 2>/dev/null || true'"
+    ACTION=="add", SUBSYSTEM=="pci", ATTR{vendor}=="0x10de", RUN+="/bin/sh -c 'chown root:users /sys/bus/pci/devices/$kernel/power/control 2>/dev/null || true; chmod 664 /sys/bus/pci/devices/$kernel/power/control 2>/dev/null || true'"
   '';
 
+  systemd.services.nvidia-power-control-permissions = {
+    description = "Allow users group to adjust NVIDIA runtime power control";
+    after = [ "systemd-udevd.service" ];
+    wantedBy = [ "multi-user.target" ];
+    script = ''
+      for dev in ${nvidiaAudioPci} ${nvidiaPci}; do
+        control="/sys/bus/pci/devices/$dev/power/control"
+        if [ -f "$control" ]; then
+          chown root:users "$control"
+          chmod 664 "$control"
+        fi
+      done
+    '';
+    serviceConfig.Type = "oneshot";
+  };
+
   systemd.services.nvidia-power-source-boot = {
-    description = "Apply dGPU state based on AC power at boot";
+    description = "Apply NVIDIA offload policy based on AC power at boot";
     before = [
       "display-manager.service"
       "greetd.service"
@@ -187,29 +229,29 @@ in
     '';
     serviceConfig = {
       Type = "oneshot";
-      TimeoutSec = "8s";
+      TimeoutSec = "3s";
     };
   };
 
   systemd.services.nvidia-power-source-battery = {
-    description = "Power down NVIDIA dGPU when AC power is disconnected";
+    description = "Prefer NVIDIA runtime suspend when AC power is disconnected";
     script = ''
       ${nvidiaPowerSource}/bin/nvidia-power-source battery
     '';
     serviceConfig = {
       Type = "oneshot";
-      TimeoutSec = "8s";
+      TimeoutSec = "3s";
     };
   };
 
   systemd.services.nvidia-power-source-ac = {
-    description = "Restore NVIDIA dGPU when AC power is connected";
+    description = "Keep NVIDIA ready when AC power is connected";
     script = ''
       ${nvidiaPowerSource}/bin/nvidia-power-source ac
     '';
     serviceConfig = {
       Type = "oneshot";
-      TimeoutSec = "8s";
+      TimeoutSec = "3s";
     };
   };
 }

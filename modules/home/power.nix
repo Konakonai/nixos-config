@@ -27,7 +27,7 @@
         fi
 
         echo "powersave" > "$STATE_FILE"
-        ${pkgs.libnotify}/bin/notify-send -i battery-caution "电源管理" "已切换到【电池省电模式】：CPU 已限制到 2P+8E、关闭 Turbo/超线程，独显会尽量下电；充电限制已临时放开至 100% 准备出门。"
+        ${pkgs.libnotify}/bin/notify-send -i battery-caution "电源管理" "已切换到【电池省电模式】：CPU 已限制到 2P+8E、关闭 Turbo/超线程，niri 下次启动会固定使用核显，NVIDIA 仅按需 offload；充电限制已临时放开至 100% 准备出门。"
       else
         if [ -x "$CPU_POWER_SOURCE" ]; then
           "$CPU_POWER_SOURCE" ac
@@ -42,7 +42,7 @@
         fi
 
         echo "performance" > "$STATE_FILE"
-        ${pkgs.libnotify}/bin/notify-send -i video-display "电源管理" "已切换到【插电性能模式】：CPU 已恢复全核/Turbo，独显已重新扫描并恢复持续唤醒，充电限制已恢复为 80% 养护电池。"
+        ${pkgs.libnotify}/bin/notify-send -i video-display "电源管理" "已切换到【插电性能模式】：CPU 已恢复全核/Turbo，niri 下次启动会自动选择渲染设备，NVIDIA 保持可用；充电限制已恢复为 80% 养护电池。"
       fi
     '')
   ];

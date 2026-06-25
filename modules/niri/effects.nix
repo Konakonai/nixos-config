@@ -8,6 +8,7 @@ in
     ${config.programs.niri.finalConfig}
 
     include "noctalia.kdl"
+    include "/run/niri-power-render-device.kdl"
 
     window-rule {
         exclude app-id="^kitty$"
