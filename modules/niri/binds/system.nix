@@ -71,8 +71,8 @@ in
 
     "Mod+Shift+S".action.spawn = [ "satty-screenshot" "area" ];
     "Print".action.screenshot = [];
-    "Ctrl+Print".action.screenshot-screen = { write-to-disk = false; };
-    "Alt+Print".action.screenshot-window = { write-to-disk = false; };
+    "Ctrl+Print".action.screenshot-screen = [];
+    "Alt+Print".action.screenshot-window = [];
 
     "Mod+Escape".action.spawn = [ "noctalia" "msg" "session" "lock" ];
     "Mod+M".action.spawn = [ "noctalia" "msg" "panel-toggle" "session" ];
