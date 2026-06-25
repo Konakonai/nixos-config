@@ -70,9 +70,9 @@ in
     "Mod+Shift+Equal".action.set-window-height = [ "+10%" ];
 
     "Mod+Shift+S".action.spawn = [ "satty-screenshot" "area" ];
-    "Print".action.spawn = [ "satty-screenshot" "area" ];
-    "Ctrl+Print".action.spawn = [ "satty-screenshot" "screen" ];
-    "Alt+Print".action.spawn = [ "satty-screenshot" "window" ];
+    "Print".action.screenshot = [];
+    "Ctrl+Print".action.screenshot-screen = [];
+    "Alt+Print".action.screenshot-window = [];
 
     "Mod+Escape".action.spawn = [ "noctalia" "msg" "session" "lock" ];
     "Mod+M".action.spawn = [ "noctalia" "msg" "panel-toggle" "session" ];
