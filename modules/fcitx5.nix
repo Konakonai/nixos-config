@@ -40,6 +40,7 @@ in
     };
 
     Service = {
+      ExecStartPre = "${pkgs.bash}/bin/bash -c 'for i in {1..50}; do [ -S \"$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY\" ] && exit 0; sleep 0.1; done; exit 1'";
       ExecStart = "${fcitx5Package}/bin/fcitx5 --replace";
       Restart = "on-failure";
       RestartSec = 3;

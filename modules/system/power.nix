@@ -49,16 +49,7 @@ let
 
     case "''${1:-status}" in
       boot|change)
-        if ac_online; then
-          set_power on
-        else
-          if is_niri_on_nvidia; then
-            echo "Niri is running on NVIDIA, keeping power ON to prevent crash."
-            set_power on
-          else
-            set_power auto
-          fi
-        fi
+        set_power on
         ;;
       ac|on)
         set_power on
