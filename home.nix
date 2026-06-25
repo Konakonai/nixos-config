@@ -13,7 +13,6 @@
     ./modules/home/cli-tools.nix
     ./modules/home/dev.nix
     ./modules/home/noctalia.nix
-    ./modules/home/power.nix
     ./modules/home/yazi.nix
     ./modules/home/zen.nix
 

@@ -14,7 +14,7 @@
     nvidiaSettings = true;
 
     powerManagement = {
-      enable = true;
+      enable = false;
       finegrained = true;
     };
 

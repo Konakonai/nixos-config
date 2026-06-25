@@ -43,18 +43,6 @@ in
     mimeType = [ "inode/directory" ];
   };
 
-  xdg.desktopEntries."toggle-power-mode" = {
-    name = "切换省电/插电模式";
-    genericName = "电源模式切换";
-    comment = "在一键省电模式与满血插电模式之间进行切换";
-    exec = "toggle-power-mode";
-    icon = "battery";
-    type = "Application";
-    categories = [ "Utility" "System" ];
-    terminal = false;
-    noDisplay = true;
-  };
-
   xdg.desktopEntries."qt6ct" = {
     name = "Qt6 Settings";
     exec = "qt6ct";
