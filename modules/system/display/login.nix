@@ -19,14 +19,8 @@ let
   niriLoginCommand = "Niri";
   niriLogin = pkgs.writeShellScriptBin niriLoginCommand ''
     if [ "$(cat /sys/class/power_supply/ADP0/online 2>/dev/null)" = "1" ]; then
-      if [ -w /sys/bus/pci/devices/0000:01:00.0/power/control ]; then
-        echo "on" > /sys/bus/pci/devices/0000:01:00.0/power/control
-      fi
       export NIRI_CONFIG="$HOME/.config/niri/config-nvidia.kdl"
     else
-      if [ -w /sys/bus/pci/devices/0000:01:00.0/power/control ]; then
-        echo "auto" > /sys/bus/pci/devices/0000:01:00.0/power/control
-      fi
       export NIRI_CONFIG="$HOME/.config/niri/config-intel.kdl"
     fi
     exec ${niriSession} "$@"
