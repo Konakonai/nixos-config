@@ -9,7 +9,7 @@ let
     }
 
     set_profile() {
-      ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set "$1" 2>/dev/null || true
+      ${pkgs.coreutils}/bin/timeout 1s ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set "$1" 2>/dev/null || true
     }
 
     nvidia_is_suspended() {
@@ -18,35 +18,6 @@ let
 
     nvidia_is_present() {
       [ -e /sys/bus/pci/devices/0000:01:00.0 ]
-    }
-
-    typec_display_connected() {
-      for partner in /sys/class/typec/port*-partner; do
-        [ -e "$partner" ] || continue
-
-        # DisplayPort alt-mode uses VESA SVID 0xff01. Prefer that signal when
-        # the Type-C partner exposes alt modes, but fall back to partner
-        # presence because this machine uses Type-C ports for external display.
-        for svid in "$partner"/*/svid; do
-          [ -e "$svid" ] || continue
-          if [ "$(cat "$svid" 2>/dev/null || true)" = "0xff01" ]; then
-            return 0
-          fi
-        done
-
-        for description in "$partner"/*/description; do
-          [ -e "$description" ] || continue
-          if grep -qi "displayport\\|display port\\|dp" "$description" 2>/dev/null; then
-            return 0
-          fi
-        done
-
-        if [ -d "$partner" ]; then
-          return 0
-        fi
-      done
-
-      return 1
     }
 
     rescan_missing_nvidia() {
@@ -69,6 +40,27 @@ let
       return 1
     }
 
+    nvidia_client_pids() {
+      for fd in /proc/[0-9]*/fd/*; do
+        target="$(readlink "$fd" 2>/dev/null || true)"
+        case "$target" in
+          /dev/nvidia*|/dev/dri/card0|/dev/dri/renderD129)
+            pid="''${fd#/proc/}"
+            pid="''${pid%%/*}"
+            comm="$(cat "/proc/$pid/comm" 2>/dev/null || true)"
+            echo "$pid:''${comm:-unknown}"
+            ;;
+        esac
+      done | sort -u
+    }
+
+    remove_present_nvidia() {
+      for dev in 0000:01:00.1 0000:01:00.0; do
+        remove="/sys/bus/pci/devices/$dev/remove"
+        [ -w "$remove" ] && echo 1 > "$remove" 2>/dev/null || true
+      done
+    }
+
     remove_nvidia() {
       set_profile power-saver
 
@@ -77,7 +69,7 @@ let
         [ -w "$control" ] && echo auto > "$control" 2>/dev/null || true
       done
 
-      for _ in $(seq 1 20); do
+      for _ in $(seq 1 6); do
         if nvidia_is_suspended; then
           break
         fi
@@ -85,14 +77,16 @@ let
       done
 
       if ! nvidia_is_suspended; then
-        echo "nvidia-power-source: NVIDIA did not runtime suspend; leaving PCI device present and relying on RTD3." >&2
-        exit 0
+        clients="$(nvidia_client_pids)"
+        if [ -n "$clients" ]; then
+          echo "nvidia-power-source: NVIDIA is still in use; leaving PCI device present. Clients: $clients" >&2
+          exit 0
+        fi
+
+        echo "nvidia-power-source: NVIDIA did not runtime suspend, but no clients are using it; removing PCI device." >&2
       fi
 
-      for dev in 0000:01:00.1 0000:01:00.0; do
-        remove="/sys/bus/pci/devices/$dev/remove"
-        [ -w "$remove" ] && echo 1 > "$remove" 2>/dev/null || true
-      done
+      remove_present_nvidia
     }
 
     restore_nvidia() {
@@ -130,10 +124,12 @@ let
           echo "nvidia: absent"
         fi
 
-        if typec_display_connected; then
-          echo "typec-display: connected"
+        clients="$(nvidia_client_pids)"
+        if [ -n "$clients" ]; then
+          echo "clients:"
+          echo "$clients"
         else
-          echo "typec-display: disconnected"
+          echo "clients: none"
         fi
         ;;
       *)
@@ -158,7 +154,10 @@ in
     script = ''
       ${nvidiaPowerSource}/bin/nvidia-power-source auto
     '';
-    serviceConfig.Type = "oneshot";
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutSec = "8s";
+    };
   };
 
   systemd.services.nvidia-power-source-battery = {
@@ -166,7 +165,10 @@ in
     script = ''
       ${nvidiaPowerSource}/bin/nvidia-power-source battery
     '';
-    serviceConfig.Type = "oneshot";
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutSec = "8s";
+    };
   };
 
   systemd.services.nvidia-power-source-ac = {
@@ -174,6 +176,9 @@ in
     script = ''
       ${nvidiaPowerSource}/bin/nvidia-power-source ac
     '';
-    serviceConfig.Type = "oneshot";
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutSec = "8s";
+    };
   };
 }

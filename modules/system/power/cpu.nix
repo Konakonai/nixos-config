@@ -14,6 +14,10 @@ let
       [ -w "$path" ] && echo "$value" > "$path" 2>/dev/null || true
     }
 
+    set_profile() {
+      ${pkgs.coreutils}/bin/timeout 1s ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set "$1" 2>/dev/null || true
+    }
+
     set_policy() {
       policy="$1"
       max_freq="$2"
@@ -24,7 +28,7 @@ let
     }
 
     battery_cpu() {
-      ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set power-saver 2>/dev/null || true
+      set_profile power-saver
 
       write_if_present /sys/devices/system/cpu/intel_pstate/no_turbo 1
       write_if_present /sys/devices/system/cpu/smt/control off
@@ -51,7 +55,7 @@ let
     }
 
     ac_cpu() {
-      ${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced 2>/dev/null || true
+      set_profile balanced
 
       write_if_present /sys/devices/system/cpu/smt/control on
 
@@ -120,16 +124,15 @@ in
 
   systemd.services.cpu-power-source-boot = {
     description = "Apply CPU state based on AC power at boot";
-    after = [
-      "systemd-udev-settle.service"
-      "local-fs.target"
-    ];
-    wants = [ "systemd-udev-settle.service" ];
+    after = [ "local-fs.target" ];
     wantedBy = [ "multi-user.target" ];
     script = ''
       ${cpuPowerSource}/bin/cpu-power-source auto
     '';
-    serviceConfig.Type = "oneshot";
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutSec = "5s";
+    };
   };
 
   systemd.services.cpu-power-source-battery = {
@@ -137,7 +140,10 @@ in
     script = ''
       ${cpuPowerSource}/bin/cpu-power-source battery
     '';
-    serviceConfig.Type = "oneshot";
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutSec = "5s";
+    };
   };
 
   systemd.services.cpu-power-source-ac = {
@@ -145,6 +151,9 @@ in
     script = ''
       ${cpuPowerSource}/bin/cpu-power-source ac
     '';
-    serviceConfig.Type = "oneshot";
+    serviceConfig = {
+      Type = "oneshot";
+      TimeoutSec = "5s";
+    };
   };
 }
