@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ ... }:
 
 {
   hardware.bluetooth = {
@@ -9,13 +9,6 @@
   services.upower.enable = true;
   services.power-profiles-daemon.enable = true;
   services.thermald.enable = true;
-
-  systemd.services.set-balanced-profile = {
-    wantedBy = [ "multi-user.target" ];
-    after = [ "power-profiles-daemon.service" ];
-    script = "${pkgs.power-profiles-daemon}/bin/powerprofilesctl set balanced";
-    serviceConfig.Type = "oneshot";
-  };
 
   systemd.services.battery-conservation-permissions = {
     description = "Set permissions for ThinkBook battery conservation mode";
