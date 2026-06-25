@@ -5,9 +5,18 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.grub = {
     enable = true;
-    device = "nodev";
     efiSupport = true;
     configurationLimit = 30;
+    # Keep large kernel/initrd artifacts off the small ESP. GRUB writes its
+    # boot files under /boot-grub on the root filesystem, while /boot remains
+    # only the EFI system partition.
+    mirroredBoots = [
+      {
+        path = "/boot-grub";
+        efiSysMountPoint = "/boot";
+        devices = [ "nodev" ];
+      }
+    ];
     copyKernels = false;
   };
 
