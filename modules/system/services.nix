@@ -24,5 +24,13 @@
 
   services.printing.enable = true;
 
-  services.kmscon.enable = false;
+  services.kmscon = {
+    enable = true;
+    hwRender = true;
+    extraConfig = ''
+      font-name=Noto Sans CJK SC
+      font-size=16
+      multi-monitor=largest
+    '';
+  };
 }
