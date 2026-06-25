@@ -19,6 +19,7 @@
   programs.dconf.enable = true;
 
   environment.systemPackages = [
+    pkgs.gsettings-desktop-schemas
     pkgs.glib
     pkgs.ntfs3g
     pkgs.wsdd
