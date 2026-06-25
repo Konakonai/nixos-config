@@ -16,6 +16,8 @@ in
 
     hotkey-overlay.skip-at-startup = true;
 
+    screenshot-path = null;
+
     cursor = {
       theme = lilyaGlass.cursorThemeName;
       size = 48;
