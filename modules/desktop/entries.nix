@@ -2,6 +2,7 @@
 
 let
   ccSwitch = pkgs.callPackage ../../pkgs/cc-switch-cli/default.nix {};
+  antigravity = import ../../pkgs/antigravity.nix { inherit pkgs lib; };
 in
 {
   xdg.desktopEntries."cc-switch-handler" = {
@@ -15,7 +16,7 @@ in
 
   xdg.desktopEntries."antigravity" = {
     name = "Antigravity";
-    exec = "antigravity %F";
+    exec = "${lib.getExe antigravity} %F";
     icon = "antigravity";
     type = "Application";
     categories = [ "Utility" ];
@@ -26,7 +27,7 @@ in
   xdg.desktopEntries."yazi" = {
     name = "Yazi";
     genericName = "File Manager";
-    exec = "kitty -e yazi %u";
+    exec = "${lib.getExe pkgs.kitty} -e ${lib.getExe pkgs.yazi} %u";
     icon = "yazi";
     terminal = false;
     categories = [ "Utility" "FileTools" "System" "FileManager" ];
@@ -45,7 +46,7 @@ in
 
   xdg.desktopEntries."qt6ct" = {
     name = "Qt6 Settings";
-    exec = "qt6ct";
+    exec = "${lib.getExe pkgs.qt6Packages.qt6ct}";
     icon = "preferences-desktop-theme";
     type = "Application";
     categories = [ "Settings" "DesktopSettings" "Qt" ];

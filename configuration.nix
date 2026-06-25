@@ -9,6 +9,7 @@
     ./modules/system/fonts.nix
     ./modules/system/graphics.nix
     ./modules/system/localization.nix
+    ./modules/system/memory.nix
     ./modules/system/networking.nix
     ./modules/system/nix.nix
     ./modules/system/packages.nix

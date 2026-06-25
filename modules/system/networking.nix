@@ -13,6 +13,7 @@
       iifname { "mihomo" } accept comment "trusted interface"
     '';
 
+    # OpenList is intentionally reachable on the LAN.
     allowedTCPPorts = [ 5244 ];
 
     allowedTCPPortRanges = [

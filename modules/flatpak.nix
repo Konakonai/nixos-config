@@ -33,6 +33,7 @@ in
       "org.onlyoffice.desktopeditors"
     ];
 
+    # Strict declarative Flatpak management: apps not listed here are removed.
     uninstallUnmanaged = true;
 
     update.auto = {

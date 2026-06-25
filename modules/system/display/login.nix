@@ -26,12 +26,17 @@ let
   niriLoginPath = lib.getExe niriLogin;
   gtkgreetGtkThemeName = "adw-gtk3";
   gtkgreetGtkThemePackage = pkgs.adw-gtk3;
+  gtkgreetFontSize = 14;
+  gtkgreetCardWidth = 420;
+  gtkgreetCardPadding = 28;
 
   gtkgreet = pkgs.gtkgreet.overrideAttrs (oldAttrs: {
     postPatch = (oldAttrs.postPatch or "") + ''
+      # Give the greeter enough room for high-DPI input widgets.
       substituteInPlace gtkgreet/window.c \
         --replace-fail "size = 32000;" "size = 52000;" \
         --replace-fail "size = 96000;" "size = 128000;"
+      # Show friendly command names while keeping the full command as selected value.
       substituteInPlace gtkgreet/config.c \
         --replace-fail '#include <stdio.h>' '#include <stdio.h>
 #include <string.h>' \
@@ -65,7 +70,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
       background-color: @window_bg_color;
       color: @window_fg_color;
       font-family: "${lilyaGlass.fonts.sans}";
-      font-size: 15px;
+      font-size: ${builtins.toString gtkgreetFontSize}px;
     }
 
     #clock {
@@ -78,10 +83,10 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     box#body {
       background-color: alpha(@card_bg_color, 0.84);
       border: 1px solid @border_color;
-      border-radius: 12px;
-      box-shadow: 0 14px 36px alpha(#3b4252, 0.12);
-      padding: 34px;
-      min-width: 360px;
+      border-radius: 10px;
+      box-shadow: 0 12px 30px alpha(#3b4252, 0.10);
+      padding: ${builtins.toString gtkgreetCardPadding}px;
+      min-width: ${builtins.toString gtkgreetCardWidth}px;
     }
 
     label {
@@ -132,7 +137,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
 
     output * bg ${lilyaGlass.palette.base} solid_color
     output eDP-1 scale 1.75 pos 0 149
-    output DP-5 scale 1.5 pos 1829 0
+    output DP-2 scale 1.5 pos 1829 0
 
     exec ${gtkgreetCommand}
   '';

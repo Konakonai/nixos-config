@@ -59,9 +59,9 @@ let
   icon = pkgs.runCommand "antigravity-icon" {
     buildInputs = [ pkgs.asar ];
   } ''
-    asar extract ${antigravity-src}/resources/app.asar /tmp/app
+    asar extract ${antigravity-src}/resources/app.asar app
     mkdir -p $out/share/icons/hicolor/256x256/apps
-    cp /tmp/app/icon.png $out/share/icons/hicolor/256x256/apps/antigravity.png
+    cp app/icon.png $out/share/icons/hicolor/256x256/apps/antigravity.png
   '';
 in
 pkgs.symlinkJoin {
@@ -70,5 +70,6 @@ pkgs.symlinkJoin {
   meta = {
     description = "Antigravity - Agentic Desktop Application by Google";
     platforms = [ "x86_64-linux" ];
+    mainProgram = "antigravity";
   };
 }

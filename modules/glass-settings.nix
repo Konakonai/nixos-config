@@ -33,11 +33,8 @@
     capsules = 16.0;
   };
 
-  gtkThemeName = "Nordic-Polar";
   iconThemeName = "Colloid-Light";
   cursorThemeName = "Nordzy-cursors";
-  qtStyleName = "kvantum";
-  kvantumThemeName = "KvNordLight";
 
   fonts = {
     sans = "Noto Sans CJK SC";

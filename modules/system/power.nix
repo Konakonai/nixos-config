@@ -49,6 +49,7 @@ let
 
     case "''${1:-status}" in
       boot|change)
+        # dGPU-only mode: keep the NVIDIA device awake until hybrid profiles are stable again.
         set_power on
         ;;
       ac|on)
@@ -77,7 +78,7 @@ in
   services.power-profiles-daemon.enable = true;
   services.thermald.enable = true;
 
-  powerManagement.powertop.enable = true;
+  powerManagement.powertop.enable = false;
 
   environment.systemPackages = [ nvidiaPowerControl ];
 
@@ -99,12 +100,18 @@ in
   };
 
   services.udev.extraRules = ''
-    # Notify systemd to run nvidia-power-control-change when AC power state changes
+    # Keep latency-sensitive HID devices awake. PowerTOP auto-tuning was putting
+    # these behind USB autosuspend, which matched the observed mouse/keyboard stalls.
+    ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="1532", ATTR{idProduct}=="0099", TEST=="power/control", ATTR{power/control}="on"
+    ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="320f", ATTR{idProduct}=="5088", TEST=="power/control", ATTR{power/control}="on"
+    ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="2109", ATTR{idProduct}=="2822", TEST=="power/control", ATTR{power/control}="on"
+
+    # dGPU-only mode is intentional for now; this keeps the device awake across AC events.
     SUBSYSTEM=="power_supply", KERNEL=="ADP0", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-power-control-change.service"
   '';
 
   systemd.services.nvidia-power-control-boot = {
-    description = "Apply NVIDIA power control based on AC power at boot";
+    description = "Keep NVIDIA dGPU awake at boot";
     after = [ "local-fs.target" ];
     wantedBy = [ "multi-user.target" ];
     script = "${nvidiaPowerControl}/bin/nvidia-power-control boot";
@@ -112,7 +119,7 @@ in
   };
 
   systemd.services.nvidia-power-control-change = {
-    description = "Adjust NVIDIA power control on AC power state change";
+    description = "Keep NVIDIA dGPU awake after AC power changes";
     script = "${nvidiaPowerControl}/bin/nvidia-power-control change";
     serviceConfig.Type = "oneshot";
   };

@@ -1,22 +1,6 @@
-{ pkgs, ... }:
+{ ... }:
 
 let
-  fcitx5Package = pkgs.qt6Packages.fcitx5-with-addons.override {
-    addons = with pkgs; [
-      fcitx5-gtk
-      kdePackages.fcitx5-qt
-      kdePackages.fcitx5-configtool
-      fcitx5-nord
-
-      (fcitx5-rime.override {
-        rimeDataPkgs = with pkgs; [
-          rime-data
-          rime-ice
-        ];
-      })
-    ];
-  };
-
   fcitxCompatEnv = {
     XMODIFIERS = "@im=fcitx";
     GTK_IM_MODULE = "fcitx";
@@ -27,26 +11,7 @@ let
 in
 {
   _module.args = {
-    inherit fcitx5Package fcitxCompatEnv;
-  };
-
-  home.packages = [ fcitx5Package ];
-
-  systemd.user.services.fcitx5 = {
-    Unit = {
-      Description = "Fcitx 5 input method";
-      PartOf = [ "graphical-session.target" ];
-      After = [ "graphical-session.target" ];
-    };
-
-    Service = {
-      ExecStartPre = "${pkgs.bash}/bin/bash -c 'for i in {1..50}; do [ -S \"$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY\" ] && exit 0; sleep 0.1; done; exit 1'";
-      ExecStart = "${fcitx5Package}/bin/fcitx5 --replace";
-      Restart = "on-failure";
-      RestartSec = 3;
-    };
-
-    Install.WantedBy = [ "graphical-session.target" ];
+    inherit fcitxCompatEnv;
   };
 
   xdg.configFile."fcitx5/conf/classicui.conf".text = ''

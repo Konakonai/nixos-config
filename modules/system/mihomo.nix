@@ -11,6 +11,13 @@ in
 {
   system.activationScripts.mihomoConfig = ''
     set -eu
+    tmp=""
+    cleanup() {
+      if [ -n "$tmp" ]; then
+        rm -f "$tmp"
+      fi
+    }
+    trap cleanup EXIT
 
     install -d -m 700 -o lilya -g users ${configDir}
 
@@ -29,6 +36,7 @@ in
     chown lilya:users "$tmp"
     chmod 600 "$tmp"
     mv "$tmp" ${configFile}
+    tmp=""
   '';
 
   services.mihomo = {
