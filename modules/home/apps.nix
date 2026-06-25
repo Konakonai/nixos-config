@@ -10,7 +10,7 @@
     resources
     localsend
     hyprpicker
-    swappy
+    satty
 
     (import ../../pkgs/antigravity.nix { inherit pkgs lib; })
     (import ../../pkgs/splayer.nix { inherit pkgs lib; })
