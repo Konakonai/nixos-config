@@ -2,9 +2,8 @@
 
 let
   lilyaGlass = import ../glass-settings.nix;
-in
-{
-  xdg.configFile.niri-config.source = lib.mkForce (pkgs.writeText "niri-config.kdl" ''
+
+  baseConfig = ''
     ${config.programs.niri.finalConfig}
 
     include "noctalia.kdl"
@@ -82,5 +81,29 @@ in
         noise ${lilyaGlass.blur.noise}
         saturation ${lilyaGlass.blur.saturation}
     }
+  '';
+in
+{
+  xdg.configFile.niri-config.source = lib.mkForce (pkgs.writeText "niri-config.kdl" ''
+    ${baseConfig}
+    debug {
+        render-drm-device "/dev/dri/by-path/pci-0000:00:02.0-render"
+        ignore-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
+    }
   '');
+
+  xdg.configFile."niri/config-intel.kdl".text = ''
+    ${baseConfig}
+    debug {
+        render-drm-device "/dev/dri/by-path/pci-0000:00:02.0-render"
+        ignore-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
+    }
+  '';
+
+  xdg.configFile."niri/config-nvidia.kdl".text = ''
+    ${baseConfig}
+    debug {
+        render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
+    }
+  '';
 }
