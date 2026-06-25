@@ -1,37 +1,15 @@
 { pkgs, ... }:
 
 {
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.systemd-boot.configurationLimit = 30;
-  boot.loader.systemd-boot.extraInstallCommands = ''
-    linuxBootId="$(
-      ${pkgs.efibootmgr}/bin/efibootmgr \
-        | ${pkgs.gawk}/bin/awk '/Linux Boot Manager/ { id = $1; sub(/^Boot/, "", id); sub(/\*.*/, "", id); print id; exit }'
-    )"
-
-    if [ -n "$linuxBootId" ]; then
-      currentOrder="$(${pkgs.efibootmgr}/bin/efibootmgr | ${pkgs.gnused}/bin/sed -n 's/^BootOrder: //p')"
-      restOrder="$(
-        printf '%s\n' "$currentOrder" \
-          | ${pkgs.gnused}/bin/sed \
-              -e "s/^$linuxBootId,//" \
-              -e "s/,$linuxBootId,/,/" \
-              -e "s/,$linuxBootId$//" \
-              -e "s/^$linuxBootId$//"
-      )"
-
-      if [ -n "$restOrder" ]; then
-        desiredOrder="$linuxBootId,$restOrder"
-      else
-        desiredOrder="$linuxBootId"
-      fi
-
-      if [ -n "$currentOrder" ] && [ "$currentOrder" != "$desiredOrder" ]; then
-        ${pkgs.efibootmgr}/bin/efibootmgr -o "$desiredOrder"
-      fi
-    fi
-  '';
+  boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub = {
+    enable = true;
+    device = "nodev";
+    efiSupport = true;
+    configurationLimit = 30;
+    copyKernels = false;
+  };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "tun" ];
