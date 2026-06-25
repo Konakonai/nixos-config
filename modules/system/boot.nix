@@ -9,6 +9,10 @@
     device = "nodev";
     efiSupport = true;
     configurationLimit = 30;
+    # Prefer the external 4K panel for GRUB and the EFI framebuffer.
+    # "auto" is kept as a fallback for boots without the external display.
+    gfxmodeEfi = "3840x2160,auto";
+    gfxpayloadEfi = "keep";
     theme = pkgs.stdenv.mkDerivation {
       pname = "persona5-joker-grub-theme";
       version = "1.0";
@@ -24,7 +28,13 @@
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "tun" ];
-  boot.kernelParams = [ "nvidia-drm.modeset=1" "nvidia-drm.fbdev=1" "i915.enable_guc=3" ];
+  boot.kernelParams = [
+    "nvidia-drm.modeset=1"
+    "nvidia-drm.fbdev=1"
+    # Keep fbcon on the Philips external panel at native resolution.
+    "video=DP-2:3840x2160@60"
+    "i915.enable_guc=3"
+  ];
   boot.supportedFilesystems.ntfs = true;
 
   security.allowSimultaneousMultithreading = false;
