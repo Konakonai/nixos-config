@@ -112,6 +112,15 @@ in
         draw-border-with-background = false;
         clip-to-geometry = true;
       }
+      {
+        matches = [
+          { app-id = "^steam$"; }
+        ];
+        excludes = [
+          { title = "^(Steam|Settings|Steam Settings|Friends List|.* Root Menu|.* Supernav|Account Menu|Notifications Menu)$"; }
+        ];
+        open-fullscreen = true;
+      }
     ];
 
     animations.enable = true;
