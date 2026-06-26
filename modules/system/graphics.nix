@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, ... }:
 
 {
   services.xserver.videoDrivers = [ "nvidia" ];
@@ -17,8 +17,6 @@
       enable = true;
       finegrained = true;
     };
-
-    moduleParams."nvidia-drm".fbdev = lib.mkForce 0;
 
     prime = {
       offload = {
