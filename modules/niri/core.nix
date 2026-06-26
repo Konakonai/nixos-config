@@ -99,7 +99,7 @@ in
       "eDP-1" = {
         scale = 1.75;
         position = {
-          x = 0;
+          x = 2560;
           y = 149;
         };
       };
@@ -108,7 +108,7 @@ in
         focus-at-startup = true;
         scale = 1.5;
         position = {
-          x = 1829;
+          x = 0;
           y = 0;
         };
       };
