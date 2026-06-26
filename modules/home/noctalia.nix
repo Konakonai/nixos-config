@@ -1,17 +1,11 @@
-{ inputs, pkgs, ... }:
+{ ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
-  noctaliaPackage = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
-    patches = (old.patches or [ ]) ++ [
-      ../../patches/noctalia-bar-blur-glass-only.patch
-    ];
-  });
 in
 {
   programs.noctalia = {
     enable = true;
-    package = noctaliaPackage;
 
     settings = {
       shell = {

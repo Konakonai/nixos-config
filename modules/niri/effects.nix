@@ -34,6 +34,9 @@ let
 
     layer-rule {
         match namespace="^noctalia-bar-main$"
+        background-effect {
+            blur false
+        }
         popups {
             opacity ${lilyaGlass.opacity.layerPopups}
             geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
