@@ -45,7 +45,7 @@ in
         thickness = 38;
         background_opacity = lilyaGlass.opacity.noctaliaPanels;
         radius = lilyaGlass.radius.panels;
-        margin_ends = 18;
+        margin_ends = 180;
         margin_edge = 10;
         padding = 0;
         widget_spacing = 10;
