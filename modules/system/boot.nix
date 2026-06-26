@@ -36,7 +36,7 @@ in
     enable = true;
     efiSupport = true;
     configurationLimit = 30;
-    gfxmodeEfi = "3840x2160,auto";
+    gfxmodeEfi = "2560x1440,1920x1080,auto";
     gfxpayloadEfi = "keep";
     theme = touhouGrubTheme;
     # Keep large kernel/initrd artifacts off the small ESP. GRUB writes its
