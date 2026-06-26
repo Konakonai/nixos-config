@@ -87,7 +87,10 @@ in
   boot.initrd.verbose = false;
   boot.plymouth = {
     enable = true;
-    theme = "breeze";
+    theme = "catppuccin-mocha";
+    themePackages = [
+      (pkgs.catppuccin-plymouth.override { variant = "mocha"; })
+    ];
   };
   boot.kernelParams = [
     "quiet"
