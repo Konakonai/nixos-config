@@ -166,6 +166,7 @@ in
         matches = [
           { app-id = "^steam_app_.*$"; }
         ];
+        open-on-workspace = "games";
         open-fullscreen = true;
         geometry-corner-radius = {
           top-left = 0.0;

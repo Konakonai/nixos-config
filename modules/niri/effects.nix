@@ -8,6 +8,10 @@ let
 
     include "noctalia.kdl"
 
+    workspace "games" {
+        open-on-output "DP-2"
+    }
+
     window-rule {
         exclude app-id="^kitty$"
         opacity ${lilyaGlass.opacity.windows}
