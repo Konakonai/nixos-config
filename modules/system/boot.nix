@@ -31,35 +31,111 @@ let
     };
   };
 
-  badApplePlymouthTheme = pkgs.stdenvNoCC.mkDerivation {
-    pname = "plymouth-theme-bad-apple";
-    version = "2026-05-19";
+  touhouPlymouthTheme = pkgs.stdenvNoCC.mkDerivation {
+    pname = "plymouth-theme-touhou-logo";
+    version = "2026-06-26";
 
-    src = pkgs.fetchFromGitHub {
-      owner = "ruanyouxing";
-      repo = "bad-apple-plymouth";
-      rev = "a82c7a16b9943021d6b7de097f7292c1b514c989";
-      hash = "sha256-qvhnODlR3v0rYkOyec19e11Ju+8Fgskb07mVafgXRWo=";
+    src = pkgs.fetchurl {
+      url = "https://upload.wikimedia.org/wikipedia/commons/f/f6/Touhou_Project.svg";
+      hash = "sha256-eSBXInPHh9YH58/wicug5HG3wyXAz0NHGnrcd9xLeQs=";
     };
 
+    nativeBuildInputs = [
+      pkgs.imagemagick
+      pkgs.librsvg
+    ];
+
+    dontUnpack = true;
     dontConfigure = true;
     dontBuild = true;
 
     installPhase = ''
       runHook preInstall
 
-      themeDir="$out/share/plymouth/themes/bad_apple"
+      themeDir="$out/share/plymouth/themes/touhou_logo"
       mkdir -p "$themeDir"
-      cp -r ./* "$themeDir/"
-      substituteInPlace "$themeDir/bad_apple.plymouth" \
-        --replace-fail /usr/share/plymouth/themes/bad_apple "$themeDir"
+
+      rsvg-convert -w 720 "$src" -o touhou-logo-render.png
+      magick touhou-logo-render.png \
+        -background none \
+        -gravity center \
+        -extent 780x170 \
+        "$themeDir/touhou-logo.png"
+
+      magick -size 460x6 xc:'#2f2730' "$themeDir/progress-box.png"
+      magick -size 460x6 xc:'#2698c7' "$themeDir/progress-bar.png"
+
+      cat > "$themeDir/touhou_logo.plymouth" <<EOF
+[Plymouth Theme]
+Name=Touhou Logo
+Description=Touhou Project logo with a quiet progress bar
+ModuleName=script
+
+[script]
+ImageDir=$themeDir
+ScriptFile=$themeDir/touhou_logo.script
+EOF
+
+      cat > "$themeDir/touhou_logo.script" <<'EOF'
+Window.SetBackgroundTopColor(0, 0, 0);
+Window.SetBackgroundBottomColor(0, 0, 0);
+
+logo.image = Image("touhou-logo.png");
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetPosition(
+  Window.GetX() + Window.GetWidth() / 2 - logo.image.GetWidth() / 2,
+  Window.GetY() + Window.GetHeight() / 2 - logo.image.GetHeight() / 2 - 48,
+  10
+);
+
+progress_box.image = Image("progress-box.png");
+progress_box.sprite = Sprite(progress_box.image);
+progress_box.sprite.SetPosition(
+  Window.GetX() + Window.GetWidth() / 2 - progress_box.image.GetWidth() / 2,
+  Window.GetY() + Window.GetHeight() / 2 + 80,
+  8
+);
+
+progress_bar.original_image = Image("progress-bar.png");
+progress_bar.image = progress_bar.original_image.Scale(1, progress_bar.original_image.GetHeight());
+progress_bar.sprite = Sprite(progress_bar.image);
+progress_bar.sprite.SetPosition(
+  Window.GetX() + Window.GetWidth() / 2 - progress_bar.original_image.GetWidth() / 2,
+  Window.GetY() + Window.GetHeight() / 2 + 80,
+  9
+);
+
+fun progress_callback(duration, progress)
+{
+  width = Math.Int(progress_bar.original_image.GetWidth() * progress);
+
+  if (width < 1)
+    width = 1;
+
+  if (width != progress_bar.image.GetWidth())
+    {
+      progress_bar.image = progress_bar.original_image.Scale(width, progress_bar.original_image.GetHeight());
+      progress_bar.sprite.SetImage(progress_bar.image);
+    }
+}
+
+Plymouth.SetBootProgressFunction(progress_callback);
+
+fun quit_callback()
+{
+  logo.sprite.SetOpacity(1);
+}
+
+Plymouth.SetQuitFunction(quit_callback);
+EOF
 
       runHook postInstall
     '';
 
     meta = {
-      description = "Bad Apple Plymouth boot splash";
-      homepage = "https://github.com/ruanyouxing/bad-apple-plymouth";
+      description = "Touhou Project logo Plymouth boot splash";
+      homepage = "https://commons.wikimedia.org/wiki/File:Touhou_Project.svg";
+      license = pkgs.lib.licenses.publicDomain;
       platforms = pkgs.lib.platforms.linux;
     };
   };
@@ -122,8 +198,8 @@ in
   boot.initrd.verbose = false;
   boot.plymouth = {
     enable = true;
-    theme = "bad_apple";
-    themePackages = [ badApplePlymouthTheme ];
+    theme = "touhou_logo";
+    themePackages = [ touhouPlymouthTheme ];
   };
   boot.kernelParams = [
     "quiet"
