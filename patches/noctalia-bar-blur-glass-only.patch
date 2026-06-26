@@ -1,0 +1,15 @@
+diff --git a/src/shell/bar/bar.cpp b/src/shell/bar/bar.cpp
+index 7a8d0f0..1c5a2c2 100644
+--- a/src/shell/bar/bar.cpp
++++ b/src/shell/bar/bar.cpp
+@@ -1873,6 +1873,10 @@ void Bar::applyBarCompositorBlur(BarInstance& instance) const {
+   if (instance.surface == nullptr) {
+     return;
+   }
++  if (m_config == nullptr || m_config->config().shell.panel.transparencyMode != PanelTransparencyMode::Glass) {
++    instance.surface->clearBlurRegion();
++    return;
++  }
+   if (!barContentVisuallyShown(instance)) {
+     instance.surface->clearBlurRegion();
+     return;

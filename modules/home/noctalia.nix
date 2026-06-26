@@ -1,11 +1,17 @@
-{ ... }:
+{ inputs, pkgs, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
+  noctaliaPackage = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ [
+      ../../patches/noctalia-bar-blur-glass-only.patch
+    ];
+  });
 in
 {
   programs.noctalia = {
     enable = true;
+    package = noctaliaPackage;
 
     settings = {
       shell = {
@@ -31,7 +37,6 @@ in
           control_center_placement = "floating";
           wallpaper_placement = "floating";
           session_placement = "floating";
-          tray.icon_size = 22;
         };
       };
 
@@ -40,8 +45,8 @@ in
         thickness = 38;
         background_opacity = lilyaGlass.opacity.noctaliaPanels;
         radius = lilyaGlass.radius.panels;
-        margin_h = 18;
-        margin_v = 10;
+        margin_ends = 18;
+        margin_edge = 10;
         padding = 0;
         widget_spacing = 10;
         scale = 1.0;
@@ -69,8 +74,6 @@ in
         offset_x = 18;
         offset_y = 12;
       };
-
-      location.monthBeforeDay = true;
     };
   };
 }
