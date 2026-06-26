@@ -97,6 +97,7 @@ in
     "nvidia-drm.modeset=1"
     "nvidia-drm.fbdev=1"
     "video=DP-2:3840x2160@60e"
+    "video=eDP-1:d"
     "i915.enable_guc=3"
     "udev.log_level=3"
   ];
