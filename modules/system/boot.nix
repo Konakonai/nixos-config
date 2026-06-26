@@ -1,6 +1,8 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
+  internalDisplayKernelParam = "video=eDP-1:d";
+
   touhouGrubTheme = pkgs.stdenvNoCC.mkDerivation {
     pname = "grub-theme-touhou-project";
     version = "2023-04-19";
@@ -28,6 +30,41 @@ let
       platforms = pkgs.lib.platforms.all;
     };
   };
+
+  badApplePlymouthTheme = pkgs.stdenvNoCC.mkDerivation {
+    pname = "plymouth-theme-bad-apple";
+    version = "2026-05-19";
+
+    src = pkgs.fetchFromGitHub {
+      owner = "ruanyouxing";
+      repo = "bad-apple-plymouth";
+      rev = "a82c7a16b9943021d6b7de097f7292c1b514c989";
+      hash = "sha256-qvhnODlR3v0rYkOyec19e11Ju+8Fgskb07mVafgXRWo=";
+    };
+
+    dontConfigure = true;
+    dontBuild = true;
+
+    installPhase = ''
+      runHook preInstall
+
+      themeDir="$out/share/plymouth/themes/bad_apple"
+      mkdir -p "$themeDir"
+      cp -r ./* "$themeDir/"
+      substituteInPlace "$themeDir/bad_apple.plymouth" \
+        --replace-fail /usr/share/plymouth/themes/bad_apple "$themeDir"
+
+      runHook postInstall
+    '';
+
+    meta = {
+      description = "Bad Apple Plymouth boot splash";
+      homepage = "https://github.com/ruanyouxing/bad-apple-plymouth";
+      platforms = pkgs.lib.platforms.linux;
+    };
+  };
+
+  fallbackKernelParams = builtins.filter (param: param != internalDisplayKernelParam) config.boot.kernelParams;
 in
 {
   boot.loader.systemd-boot.enable = false;
@@ -81,7 +118,26 @@ in
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "tun" ];
+  boot.consoleLogLevel = 0;
+  boot.initrd.verbose = false;
+  boot.plymouth = {
+    enable = true;
+    theme = "bad_apple";
+    themePackages = [ badApplePlymouthTheme ];
+  };
+  boot.kernelParams = [
+    "quiet"
+    # Default to an external-only boot splash. GRUB still provides an
+    # internal-display-fallback specialisation for boots without a monitor.
+    internalDisplayKernelParam
+    "udev.log_level=3"
+  ];
   boot.supportedFilesystems.ntfs = true;
+
+  specialisation.internal-display-fallback.configuration = {
+    system.nixos.tags = [ "internal-display-fallback" ];
+    boot.kernelParams = lib.mkForce fallbackKernelParams;
+  };
 
   environment.systemPackages = [ pkgs.efibootmgr ];
 

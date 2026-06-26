@@ -1,7 +1,22 @@
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   zen = lib.getExe config.programs.zen-browser.package;
+  zenLaunch = pkgs.writeShellScript "launch-zen-beta" ''
+    profile="$HOME/.config/zen/i41yvfec.Default Profile"
+
+    if ! ${pkgs.procps}/bin/pgrep -u "$(${pkgs.coreutils}/bin/id -u)" -f '/bin/zen-beta( |$)|/lib/zen-bin-[^ ]*/zen( |$)' >/dev/null; then
+      rm -f \
+        "$profile/sessionstore.jsonlz4" \
+        "$profile/sessionstore-backups/recovery.jsonlz4" \
+        "$profile/sessionstore-backups/recovery.baklz4" \
+        "$profile/sessionstore-backups/previous.jsonlz4" \
+        "$profile/zen-sessions.jsonlz4" \
+        "$profile/zen-sessions-backup/recovery.baklz4"
+    fi
+
+    exec ${zen} --name zen-beta "$@"
+  '';
 in
 {
   programs.zen-browser = {
@@ -32,7 +47,7 @@ in
     name = "Zen Browser (Beta)";
     genericName = "Web Browser";
     comment = "Browse the Web";
-    exec = "${zen} --name zen-beta %U";
+    exec = "${zenLaunch} %U";
     icon = "zen-browser";
     terminal = false;
     type = "Application";
@@ -54,15 +69,15 @@ in
     actions = {
       "new-private-window" = {
         name = "New Private Window";
-        exec = "${zen} --name zen-beta --private-window %U";
+        exec = "${zenLaunch} --private-window %U";
       };
       "new-window" = {
         name = "New Window";
-        exec = "${zen} --name zen-beta --new-window %U";
+        exec = "${zenLaunch} --new-window %U";
       };
       "profile-manager-window" = {
         name = "Profile Manager";
-        exec = "${zen} --name zen-beta --ProfileManager";
+        exec = "${zenLaunch} --ProfileManager";
       };
     };
   };
