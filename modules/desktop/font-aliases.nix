@@ -28,12 +28,39 @@ let
         <edit name="family" mode="assign" binding="same"><string>${m.to}</string></edit>
       </match>
   '') fontMappings);
+
+  defaultFontConfigXml = ''
+    <alias>
+      <family>sans-serif</family>
+      <prefer>
+        <family>Noto Sans CJK SC</family>
+        <family>Noto Sans</family>
+      </prefer>
+    </alias>
+
+    <alias>
+      <family>serif</family>
+      <prefer>
+        <family>Noto Serif CJK SC</family>
+        <family>Noto Serif</family>
+      </prefer>
+    </alias>
+
+    <alias>
+      <family>monospace</family>
+      <prefer>
+        <family>Maple Mono Normal NF</family>
+        <family>Noto Sans Mono CJK SC</family>
+      </prefer>
+    </alias>
+  '';
 in
 {
   xdg.configFile."fontconfig/conf.d/99-simsun-alias.conf".text = ''
     <?xml version="1.0"?>
     <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
     <fontconfig>
+      ${defaultFontConfigXml}
       ${fontConfigXml}
     </fontconfig>
   '';

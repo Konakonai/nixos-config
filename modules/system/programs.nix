@@ -7,6 +7,9 @@ in
   programs.steam = {
     enable = true;
     package = pkgs.millennium-steam;
+    extraPackages = with pkgs; [
+      pulseaudio
+    ];
     remotePlay.openFirewall = true;
     dedicatedServer.openFirewall = true;
   };
