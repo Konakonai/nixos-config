@@ -1,5 +1,34 @@
 { pkgs, ... }:
 
+let
+  touhouGrubTheme = pkgs.stdenvNoCC.mkDerivation {
+    pname = "grub-theme-touhou-project";
+    version = "2023-04-19";
+
+    src = pkgs.fetchzip {
+      url = "https://github.com/13atm01/GRUB-Theme/releases/download/Tproject-v1.0/Touhou_Project.tar.gz";
+      hash = "sha256-GcB4Drad77Ndd9LnNA+ZHzjnE4Rm+IwP9FDKLQodxTo=";
+      stripRoot = false;
+    };
+
+    dontUnpack = true;
+    dontConfigure = true;
+    dontBuild = true;
+
+    installPhase = ''
+      mkdir -p "$out"
+      cp -r "$src/Touhou Project/Touhou-project/." "$out/"
+      test -f "$out/theme.txt"
+    '';
+
+    meta = {
+      description = "Touhou Project GRUB theme from 13atm01/GRUB-Theme";
+      homepage = "https://github.com/13atm01/GRUB-Theme";
+      license = pkgs.lib.licenses.gpl3;
+      platforms = pkgs.lib.platforms.all;
+    };
+  };
+in
 {
   boot.loader.systemd-boot.enable = false;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -7,6 +36,9 @@
     enable = true;
     efiSupport = true;
     configurationLimit = 30;
+    gfxmodeEfi = "3840x2160,auto";
+    gfxpayloadEfi = "keep";
+    theme = touhouGrubTheme;
     # Keep large kernel/initrd artifacts off the small ESP. GRUB writes its
     # boot files under /boot-grub on the root filesystem, while /boot remains
     # only the EFI system partition.
