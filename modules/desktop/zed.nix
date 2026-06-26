@@ -53,7 +53,7 @@ in
       theme = {
         mode = "light";
         light = "Noctalia Light";
-        dark = "Noctalia Light";
+        dark = "Noctalia Dark";
       };
     };
   };
