@@ -23,7 +23,7 @@ in
         };
 
         panel = {
-          transparency_mode = "glass";
+          transparency_mode = lilyaGlass.noctalia.panelTransparencyMode;
           borders = false;
           shadow = false;
           launcher_placement = "centered";

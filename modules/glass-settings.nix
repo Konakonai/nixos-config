@@ -27,6 +27,10 @@
     saturation = "1.08";
   };
 
+  noctalia = {
+    panelTransparencyMode = "soft";
+  };
+
   radius = {
     windows = 14.0;
     panels = 22;
