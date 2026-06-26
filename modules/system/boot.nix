@@ -36,8 +36,6 @@ in
     enable = true;
     efiSupport = true;
     configurationLimit = 30;
-    gfxmodeEfi = "2560x1440,1920x1080,auto";
-    gfxpayloadEfi = "keep";
     theme = touhouGrubTheme;
     # Keep large kernel/initrd artifacts off the small ESP. GRUB writes its
     # boot files under /boot-grub on the root filesystem, while /boot remains
@@ -83,24 +81,6 @@ in
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "tun" ];
-  boot.consoleLogLevel = 0;
-  boot.initrd.verbose = false;
-  boot.plymouth = {
-    enable = true;
-    theme = "catppuccin-mocha";
-    themePackages = [
-      (pkgs.catppuccin-plymouth.override { variant = "mocha"; })
-    ];
-  };
-  boot.kernelParams = [
-    "quiet"
-    "nvidia-drm.modeset=1"
-    "nvidia-drm.fbdev=1"
-    "video=DP-2:3840x2160@60e"
-    "video=eDP-1:d"
-    "i915.enable_guc=3"
-    "udev.log_level=3"
-  ];
   boot.supportedFilesystems.ntfs = true;
 
   environment.systemPackages = [ pkgs.efibootmgr ];
