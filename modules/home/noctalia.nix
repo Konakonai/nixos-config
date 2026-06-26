@@ -23,7 +23,7 @@ in
         };
 
         panel = {
-          transparency_mode = "solid";
+          transparency_mode = "glass";
           borders = false;
           shadow = false;
           launcher_placement = "centered";

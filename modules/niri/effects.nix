@@ -8,9 +8,7 @@ let
 
     include "noctalia.kdl"
 
-    workspace "games" {
-        open-on-output "DP-2"
-    }
+    workspace "games"
 
     window-rule {
         exclude app-id="^kitty$"
@@ -36,6 +34,11 @@ let
 
     layer-rule {
         match namespace="^noctalia-bar-main$"
+        background-effect {
+            blur false
+            noise 0.0
+            saturation ${lilyaGlass.blur.saturation}
+        }
         popups {
             opacity ${lilyaGlass.opacity.layerPopups}
             geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
