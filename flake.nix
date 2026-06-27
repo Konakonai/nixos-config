@@ -8,7 +8,7 @@
     nix-flatpak.url = "git+https://github.com/gmodena/nix-flatpak.git?ref=refs/tags/v0.7.0";
 
     codex-desktop-linux = {
-      url = "github:ilysenko/codex-desktop-linux/1e2dcf29d81acaeb80686f2819d7e0546f37dc68";
+      url = "github:ilysenko/codex-desktop-linux";
       flake = false;
     };
 
