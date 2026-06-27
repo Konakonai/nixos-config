@@ -82,28 +82,47 @@ Window.SetBackgroundBottomColor(0, 0, 0);
 
 logo.image = Image("touhou-logo.png");
 logo.sprite = Sprite(logo.image);
-logo.sprite.SetPosition(
-  Window.GetX() + Window.GetWidth() / 2 - logo.image.GetWidth() / 2,
-  Window.GetY() + Window.GetHeight() / 2 - logo.image.GetHeight() / 2 - 48,
-  10
-);
 
 progress_box.image = Image("progress-box.png");
 progress_box.sprite = Sprite(progress_box.image);
-progress_box.sprite.SetPosition(
-  Window.GetX() + Window.GetWidth() / 2 - progress_box.image.GetWidth() / 2,
-  Window.GetY() + Window.GetHeight() / 2 + 80,
-  8
-);
 
 progress_bar.original_image = Image("progress-bar.png");
 progress_bar.image = progress_bar.original_image.Scale(1, progress_bar.original_image.GetHeight());
 progress_bar.sprite = Sprite(progress_bar.image);
-progress_bar.sprite.SetPosition(
-  Window.GetX() + Window.GetWidth() / 2 - progress_bar.original_image.GetWidth() / 2,
-  Window.GetY() + Window.GetHeight() / 2 + 80,
-  9
-);
+
+fun place_sprites()
+{
+  center_x = Window.GetX() + Window.GetWidth() / 2;
+  center_y = Window.GetY() + Window.GetHeight() / 2;
+  progress_y = center_y + logo.image.GetHeight() / 2 + 22;
+
+  logo.sprite.SetPosition(
+    center_x - logo.image.GetWidth() / 2,
+    center_y - logo.image.GetHeight() / 2 - 48,
+    10
+  );
+
+  progress_box.sprite.SetPosition(
+    center_x - progress_box.image.GetWidth() / 2,
+    progress_y,
+    8
+  );
+
+  progress_bar.sprite.SetPosition(
+    center_x - progress_bar.original_image.GetWidth() / 2,
+    progress_y,
+    9
+  );
+}
+
+fun refresh_callback()
+{
+  Window.ApplyBackgroundColors();
+  place_sprites();
+}
+
+place_sprites();
+Plymouth.SetRefreshFunction(refresh_callback);
 
 fun progress_callback(duration, progress)
 {
@@ -211,6 +230,9 @@ in
     "udev.log_level=3"
     "rd.systemd.show_status=false"
     "systemd.show_status=false"
+    # tty1 is handed to Plymouth/kmscon; keep fbcon on fallback VTs so a
+    # non-fullscreen kernel console is less likely to flash during handoff.
+    "fbcon=vc:2-6"
     "vt.global_cursor_default=0"
   ] ++ lib.optional (preferredDisplayKernelParam != null) preferredDisplayKernelParam;
   boot.supportedFilesystems.ntfs = true;

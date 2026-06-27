@@ -14,9 +14,11 @@ in
 
   boot = {
     # Prefer the external panel during kernel/Plymouth takeover without
-    # disabling the internal panel. Use the internal-display-fallback
+    # disabling the internal panel. Force the digital connector only; let DRM
+    # pick the monitor's EDID preferred mode instead of a CVT user mode that
+    # NVIDIA may reject during early boot. Use the internal-display-fallback
     # specialisation when booting away from the dock.
-    preferredDisplayParam = "video=DP-2:3840x2160@60D";
+    preferredDisplayParam = "video=DP-2:D";
   };
 
   display = {
