@@ -226,9 +226,10 @@ in
     "udev.log_level=3"
     "rd.systemd.show_status=false"
     "systemd.show_status=false"
-    # tty1 is handed to Plymouth/kmscon; keep fbcon on fallback VTs so a
-    # non-fullscreen kernel console is less likely to flash during handoff.
-    "fbcon=vc:2-6"
+    # Keep fbcon available on tty1 as a display holder between niri and greetd.
+    # This makes logout closer to boot, where Plymouth keeps the external panel
+    # alive until the greeter takes over.
+    "fbcon=vc:1-6"
     "vt.global_cursor_default=0"
   ] ++ lib.optional (preferredDisplayKernelParam != null) preferredDisplayKernelParam;
   boot.supportedFilesystems.ntfs = true;
