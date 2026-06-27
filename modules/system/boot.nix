@@ -209,6 +209,9 @@ in
   boot.kernelParams = [
     "quiet"
     "udev.log_level=3"
+    "rd.systemd.show_status=false"
+    "systemd.show_status=false"
+    "vt.global_cursor_default=0"
   ] ++ lib.optional (preferredDisplayKernelParam != null) preferredDisplayKernelParam;
   boot.supportedFilesystems.ntfs = true;
 
