@@ -10,6 +10,7 @@
     resources
     localsend
     hyprpicker
+    loupe
     swappy
 
     (import ../../pkgs/antigravity.nix { inherit pkgs lib; })

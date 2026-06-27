@@ -1,5 +1,8 @@
 { ... }:
 
+let
+  imageViewer = "org.gnome.Loupe.desktop";
+in
 {
   xdg.mimeApps = {
     enable = true;
@@ -18,6 +21,29 @@
       "application/x-extension-xht" = "zen-beta.desktop";
       "application/pdf" = "zen-beta.desktop";
       "inode/directory" = "nemo.desktop";
+
+      "image/apng" = imageViewer;
+      "image/avif" = imageViewer;
+      "image/bmp" = imageViewer;
+      "image/gif" = imageViewer;
+      "image/heic" = imageViewer;
+      "image/jpeg" = imageViewer;
+      "image/jp2" = imageViewer;
+      "image/jxl" = imageViewer;
+      "image/png" = imageViewer;
+      "image/svg+xml" = imageViewer;
+      "image/svg+xml-compressed" = imageViewer;
+      "image/tiff" = imageViewer;
+      "image/vnd.microsoft.icon" = imageViewer;
+      "image/webp" = imageViewer;
+      "image/x-portable-anymap" = imageViewer;
+      "image/x-portable-bitmap" = imageViewer;
+      "image/x-portable-graymap" = imageViewer;
+      "image/x-portable-pixmap" = imageViewer;
+      "image/x-tga" = imageViewer;
+      "image/x-win-bitmap" = imageViewer;
+      "image/x-xbitmap" = imageViewer;
+      "image/x-xpixmap" = imageViewer;
 
       "video/mp4" = "io.github.celluloid_player.Celluloid.desktop";
       "video/x-matroska" = "io.github.celluloid_player.Celluloid.desktop";
