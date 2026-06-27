@@ -1,31 +1,29 @@
 # Agent Notes
 
-本文件适用于整个 `nixos-config` 仓库。这里是用户的本机精确 NixOS 配置，不是通用模板；通用化工作应放在专门的 template/portable 分支，而不是削弱 `main` 的本机可复刻性。
+本文件适用于整个 `nixos-config` 仓库。它定义修改规范，而不是记录每个具体功能的历史细节。具体实现背景应写在对应模块注释、README/AUDIT 或提交信息里。
 
-## 核心原则
+## 仓库定位
 
-- 保持声明式、可复刻、可审计。不要用手动系统状态、一次性 shell hack 或未记录的本机运行态来“修好”配置。
-- 先读现有结构再改。优先沿用 `hosts/`、`modules/`、`pkgs/` 里的既有模式，不为了显得通用而引入多余抽象。
-- 本机特有值留在 `hosts/lilya-thinkbook/default.nix`：显示器 connector/EDID 名称、GPU/PCI/render node、电源适配器、电池路径、USB 设备、用户家目录下的服务路径。
-- 不要回滚或覆盖用户/其他 agent 的未提交改动。遇到 dirty worktree 时先看清楚，只改本任务需要的文件。
-- 改完 NixOS 配置后提交，除非用户明确说不要提交。
+- `main` 是用户本机的精确 NixOS 配置，目标是可复刻、可审计、可长期维护。
+- 通用模板、示例化配置或去本机化改造应放到独立分支，不要削弱 `main` 对本机的精确描述。
+- 默认保留用户已经验证可用的行为。需要改变启动、登录、显示、输入、网络、secret、文件同步等高影响路径时，要有明确理由并做验证。
 
-## 关键不变量
+## 模块化原则
 
-- 控制台方案是 `kmscon`，不要退回 getty。
-- 登录链路是 `greetd` + `gtkgreet` + `niri`。gtkgreet 主题应保持“外屏壁纸 + 半透明登录卡”的方向。
-- 默认启动使用外屏优先参数 `video=DP-2:3840x2160@60D`，不要重新改回 `video=eDP-1:d`。`internal-display-fallback` specialisation 应保留，用于无外屏/离开 dock 启动。
-- niri 显示布局必须保留外屏为全局原点 `(0,0)`，这是为了修复 Steam/XWayland 游戏点击问题。内屏物理上在外屏左侧，因此应使用负坐标，例如 `eDP-1` 在 `(-1829,149)`，不要为了避免负数把内屏放到外屏右侧。
-- NVIDIA/niri GPU 选择在登录时决定：接外接电源时用 NVIDIA 配置，电池时用 Intel 配置。不要做 niri 运行中 GPU 热切换。
-- Codex Desktop 使用上游 `codex-desktop-computer-use-ui`。不要恢复本地 AppShot/Zed opener 补丁；Linux AppShot 无法完美复刻 macOS AppShot 时宁可不启用。
-- Codex 自动更新走本仓库的 Nix 定时器：只更新 `codex-desktop-linux` 的 `flake.lock`、构建验证并提交，不自动 `switch`。不要接入上游 native `codex-update-manager`，当前 Nix/AppImage 路径没有完整 updater/service/polkit/update-builder。
-- SPlayer 保留当前稳定 AppImage 包装，桌面入口由 Nix 声明式生成。除非 SPlayer-Next 有稳定 release 并验证可用，否则不要迁移。
+- 先读现有结构再改，优先沿用仓库已有模式，不为了“更抽象”而新增层级。
+- 通用逻辑放在 `modules/`；本机硬件、路径、显示器、GPU、电源、用户目录、secret 位置等本机事实放在 `hosts/<host>/`。
+- 自定义包或包装逻辑放在 `pkgs/`，不要把大段 packaging 塞进 Home/NixOS 模块。
+- 资产放在 `assets/`，补丁放在 `patches/`，文档放在根目录或贴近相关模块的位置。
+- 模块应小而有边界：一个模块负责一个主题；跨模块共享值优先通过 `hostProfile`、现有 option 或局部 `let`，不要用散落硬编码。
+- 不要提交运行态数据库、明文 secret、临时备份、`result` symlink、下载缓存或构建产物。
 
-## 补丁与硬编码
+## 变更风格
 
-- 补丁只保留功能性修复，并在附近注释说明原因和移除条件。确认上游支持后优先删除本地补丁。
-- 不要新增无必要硬编码。确实属于本机硬件/布局/secret 路径的值，放入 host profile；通用模块通过 `hostProfile` 读取。
-- 不要提交运行态数据库、secret 明文、临时备份、`result` symlink 或构建产物。
+- 保持声明式。不要依赖手动系统状态、一次性命令、隐式 `/home` 文件或未记录的外部副作用来完成配置。
+- 改动要尽量小而完整。不要把无关重构、格式化、依赖升级混进功能修复。
+- 本地补丁必须有明确用途和移除条件。确认上游支持后优先删除补丁，而不是长期堆叠。
+- 新增硬编码前先判断它属于“本机事实”还是“通用逻辑”。本机事实必须集中到 host profile。
+- 不要回滚或覆盖用户/其他 agent 的未提交改动。遇到 dirty worktree 时先看清楚，只处理本任务需要的文件。
 
 ## 验证要求
 
@@ -38,27 +36,26 @@ nix eval .#nixosConfigurations.nixos.config.warnings --json
 nix build .#nixosConfigurations.nixos.config.system.build.toplevel --no-link --print-out-paths
 ```
 
-涉及 boot/display 时额外检查：
+按风险追加验证：
 
-```bash
-nix eval .#nixosConfigurations.nixos.config.boot.kernelParams --json
-nix eval .#nixosConfigurations.nixos.config.specialisation --apply 's: builtins.toJSON (builtins.attrNames s)' --raw
-```
+- 修改 boot/display/specialisation：检查 kernel params、specialisation 列表，并说明需要用户实机验证什么。
+- 修改 niri/桌面会话：验证生成配置；如果包含 include，要按实际运行目录验证。
+- 修改包、补丁或 flake input：构建 toplevel，并用 `nvd diff /run/current-system /nix/store/<new-toplevel>` 审查闭包变化。
+- 修改 systemd service/timer：eval 或查看生成 unit，确认 `Install`、`WantedBy`、`ExecStart` 和运行条件合理。
 
-涉及 niri 时，用实际 include 布局验证 Intel/NVIDIA 两份配置：
+如果某项验证因为环境限制不能跑，要在最终回复里明确说明。
 
-```bash
-tmpdir=$(mktemp -d)
-cp /nix/store/...-hm_niriconfigintel.kdl "$tmpdir/config.kdl"
-cp /home/lilya/.config/niri/noctalia.kdl "$tmpdir/noctalia.kdl"
-niri validate -c "$tmpdir/config.kdl"
-rm -rf "$tmpdir"
-```
+## Git 流程
 
-涉及闭包变化时运行：
+- 修改完成并验证后必须提交，除非用户明确说不要提交。
+- 提交前检查 `git status --short` 和 staged diff，确保只包含本任务相关文件。
+- 提交信息用简短祈使句，描述行为变化，例如 `Fix display geometry`。
+- 提交成功后默认推送当前分支到对应 remote，除非用户明确说不要 push、当前分支没有 upstream、网络/权限失败，或仓库状态显示不适合推送。
+- 不要使用 force push，除非用户明确要求并确认风险。
+- 如果自动任务生成提交，也应保证工作区干净、构建通过，并禁用需要交互的签名流程。
 
-```bash
-nvd diff /run/current-system /nix/store/<new-toplevel>
-```
+## 与用户沟通
 
-完成后给用户说明改了什么、验证了什么、是否需要运行 `rebuild`。不要把长 `nixos-rebuild` 命令写给用户；用户有 `rebuild` alias。
+- 最终回复要说明改了什么、验证了什么、提交 hash、是否已 push，以及用户下一步是否需要运行 `rebuild`。
+- 用户有 `rebuild` alias；需要应用配置时说 `rebuild`，不要默认给长 `nixos-rebuild` 命令。
+- 不确定需求时优先从代码和系统状态中查证；确实需要取舍时再问用户。
