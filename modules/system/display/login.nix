@@ -16,16 +16,19 @@ let
     cargoBuildFeatures = niriBase.cargoBuildFeatures;
   } ''
     # niri-session normally imports a small allowlist of environment variables.
-    # The desktop session here relies on richer Home Manager/session env, so keep
-    # exporting the full current process environment until upstream covers this.
+    # The desktop session here relies on richer Home Manager/session env, but
+    # don't propagate driver-forcing variables from a stale parent environment.
     cp -a ${niriBase} $out
     chmod -R u+w $out
     substituteInPlace $out/bin/niri-session \
-      --replace-fail 'systemctl --user import-environment' 'systemctl --user import-environment $(env | cut -d= -f1)'
+      --replace-fail 'systemctl --user import-environment' 'systemctl --user unset-environment GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME; env | cut -d= -f1 | grep -Ev "^(GBM_BACKEND|__GLX_VENDOR_LIBRARY_NAME)$" | xargs -r systemctl --user import-environment'
   '';
   niriSession = "${niriPatched}/bin/niri-session";
   niriLoginCommand = "Niri";
   niriLogin = pkgs.writeShellScriptBin niriLoginCommand ''
+    unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
+    ${pkgs.systemd}/bin/systemctl --user unset-environment GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME 2>/dev/null || true
+
     ${if nvidia.enable or false then ''
       if [ "$(cat /sys/class/power_supply/${nvidia.acAdapter}/online 2>/dev/null || echo 0)" = "1" ]; then
         export NIRI_CONFIG="$HOME/.config/niri/config-nvidia.kdl"
@@ -159,7 +162,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
         2>/dev/null || true)"
 
       if [ -n "$external" ]; then
-        ${lib.getExe' pkgs.sway "swaymsg"} output "$external" enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.loginPosition} >/dev/null 2>&1 || true
+        ${lib.getExe' pkgs.sway "swaymsg"} output "$external" enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position} >/dev/null 2>&1 || true
         ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position} >/dev/null 2>&1 || true
         ${lib.getExe' pkgs.sway "swaymsg"} focus output "$external" >/dev/null 2>&1 || true
       else

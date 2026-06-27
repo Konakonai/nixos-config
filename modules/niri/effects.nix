@@ -12,7 +12,6 @@ let
   nvidiaDebug = lib.optionalString (nvidia.enable or false) ''
     debug {
         render-drm-device "${nvidia.nvidiaRenderNode}"
-        wait-for-frame-completion-before-queueing
     }
   '';
 
