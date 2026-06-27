@@ -46,6 +46,16 @@ let
   gtkgreetFontSize = 14;
   gtkgreetCardWidth = 440;
   gtkgreetCardPadding = 30;
+  loginOutputConfig =
+    if externalDisplay != null then
+      ''
+        output ${externalDisplay.connector} enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position}
+        output ${internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position}
+      ''
+    else
+      ''
+        output ${internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition}
+      '';
   loginBackgroundCommand =
     if loginWallpaper != null then
       "output * bg ${loginWallpaper} fill"
@@ -173,7 +183,6 @@ int config_update_command_selector(GtkWidget *combobox) {' \
           return 0
         fi
 
-        ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null 2>&1 || true
         return 1
       }
 
@@ -184,19 +193,15 @@ int config_update_command_selector(GtkWidget *combobox) {' \
       }
       trap cleanup_outputs EXIT
 
-      for _ in 1 2 3 4 5 6 7 8 9 10; do
-        apply_outputs && break
-        ${pkgs.coreutils}/bin/sleep 0.1
-      done
+      apply_outputs || true
 
       (
         ${lib.getExe' pkgs.sway "swaymsg"} -t subscribe '["output"]' | while read -r _; do
-          apply_outputs
+          apply_outputs || true
         done
       ) &
       output_watcher=$!
     '' else ''
-      ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null 2>&1 || true
     ''}
 
     ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriLoginPath}
@@ -206,6 +211,8 @@ int config_update_command_selector(GtkWidget *combobox) {' \
   gtkgreetSwayConfig = pkgs.writeText "gtkgreet-sway-config" ''
     font pango:${lilyaGlass.fonts.sans} 11
     seat seat0 xcursor_theme ${lilyaGlass.cursorThemeName} 48
+
+    ${loginOutputConfig}
 
     ${loginBackgroundCommand}
 
