@@ -7,6 +7,11 @@
     flake-utils.url = "github:numtide/flake-utils";
     nix-flatpak.url = "git+https://github.com/gmodena/nix-flatpak.git?ref=refs/tags/v0.7.0";
 
+    agenix = {
+      url = "https://github.com/ryantm/agenix/archive/b027ee29d959fda4b60b57566d64c98a202e0feb.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     codex-desktop-linux = {
       url = "github:ilysenko/codex-desktop-linux";
       flake = false;
@@ -41,7 +46,7 @@
     };
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, niri, noctalia, millennium, ... }:
+  outputs = inputs@{ nixpkgs, home-manager, niri, noctalia, millennium, agenix, ... }:
   let
     hostProfile = import ./hosts/lilya-thinkbook;
   in
@@ -57,6 +62,7 @@
         ./configuration.nix
 
         niri.nixosModules.niri
+        agenix.nixosModules.default
 
         {
           nixpkgs.overlays = [

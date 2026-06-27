@@ -189,26 +189,24 @@ kmscon 在多显示器、高 DPI、dGPU 直连、GRUB framebuffer/NVIDIA DRM 组
 - 改成更声明式的 profile 管理：优先用 Zen/Firefox policies 或 Home Manager 可识别的 profile 机制。
 - 如果上游模块暂时不支持，就至少把 profile ID 抽成局部变量并加注释，说明它是为修重复窗口保留的。
 
-### Mihomo activation script 仍然偏脆
+### Mihomo secret 管理已迁到 agenix
 
 文件：`modules/system/mihomo.nix`
 
-证据：
+现状：
 
-- activation script 依赖 `/home/lilya/.config/age/mihomo.txt`。
-- 缺失或不可读会直接 `exit 1`，阻塞 rebuild/activation。
-- 临时文件生成后没有 `trap` 清理。
+- `mihomo-proxies.yaml.age` 由 agenix 解密到 `/run/agenix`。
+- `mihomo-config.service` 在 `mihomo.service` 前生成 runtime `config.yaml`。
+- 最终配置仍由公开的 before/after 片段和 secret proxy 片段拼接，避免把完整代理配置写进仓库。
 
-影响：
+注意：
 
-这不是当前最明显的 bug，但属于会让 rebuild 失败方式很硬的配置。
+- `/home/lilya/.config/age/mihomo.txt` 仍是本机外部状态，需要在复刻机器时恢复。
+- 如果以后 secret 数量增多，或需要结构化编辑多个 YAML/JSON secret，再考虑迁到 sops-nix。
 
-建议修法：
+后续可选：
 
-- 暂不改变 secret 格式。
-- 给 temp file 加 `trap` 清理。
-- 错误信息更明确，说明要补哪个 identity 文件。
-- 后续再考虑迁到正式 secrets 模块。
+- 把通用 secret identity 路径从 `hostProfile.services.mihomo.identityFile` 提升成 `hostProfile.secrets.ageIdentityFile`。
 
 ### Flatpak 的严格声明式策略可以保留，但要写注释
 

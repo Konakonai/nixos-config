@@ -65,7 +65,6 @@ in
   services = {
     openlistDataDir = "${homeDirectory}/.config/openlist";
     mihomo = {
-      configDir = "${homeDirectory}/.config/mihomo";
       identityFile = "${homeDirectory}/.config/age/mihomo.txt";
     };
   };

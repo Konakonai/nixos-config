@@ -1,43 +1,61 @@
-{ hostProfile, pkgs, ... }:
+{ config, hostProfile, pkgs, ... }:
 
 let
-  configDir = hostProfile.services.mihomo.configDir;
-  configFile = "${configDir}/config.yaml";
+  runtimeDir = "/run/mihomo";
+  configFile = "${runtimeDir}/config.yaml";
   identityFile = hostProfile.services.mihomo.identityFile;
+  proxiesFile = config.age.secrets.mihomo-proxies.path;
   configBeforeProxies = ./mihomo/config-before-proxies.yaml;
   configAfterProxies = ./mihomo/config-after-proxies.yaml;
   encryptedProxies = ../../secrets/mihomo-proxies.yaml.age;
 in
 {
-  system.activationScripts.mihomoConfig = ''
-    set -eu
-    tmp=""
-    cleanup() {
-      if [ -n "$tmp" ]; then
-        rm -f "$tmp"
+  age = {
+    identityPaths = [ identityFile ];
+    secrets.mihomo-proxies = {
+      file = encryptedProxies;
+      owner = "root";
+      group = "root";
+      mode = "0400";
+    };
+  };
+
+  systemd.services.mihomo-config = {
+    description = "Generate Mihomo runtime configuration";
+    before = [ "mihomo.service" ];
+    requiredBy = [ "mihomo.service" ];
+    path = [ pkgs.coreutils ];
+    serviceConfig = {
+      Type = "oneshot";
+      UMask = "0077";
+    };
+    script = ''
+      set -eu
+
+      if [ ! -r ${proxiesFile} ]; then
+        echo "Missing decrypted Mihomo proxy secret: ${proxiesFile}" >&2
+        exit 1
       fi
-    }
-    trap cleanup EXIT
 
-    install -d -m 700 -o lilya -g users ${configDir}
+      install -d -m 700 ${runtimeDir}
 
-    if [ ! -r ${identityFile} ]; then
-      echo "Missing mihomo age identity: ${identityFile}" >&2
-      exit 1
-    fi
+      tmp="$(mktemp ${runtimeDir}/config.yaml.tmp.XXXXXX)"
+      cleanup() {
+        rm -f "$tmp"
+      }
+      trap cleanup EXIT
 
-    tmp="$(mktemp ${configDir}/config.yaml.tmp.XXXXXX)"
-    {
-      cat ${configBeforeProxies}
-      ${pkgs.age}/bin/age --decrypt --identity ${identityFile} ${encryptedProxies}
-      cat ${configAfterProxies}
-    } > "$tmp"
+      {
+        cat ${configBeforeProxies}
+        cat ${proxiesFile}
+        cat ${configAfterProxies}
+      } > "$tmp"
 
-    chown lilya:users "$tmp"
-    chmod 600 "$tmp"
-    mv "$tmp" ${configFile}
-    tmp=""
-  '';
+      chmod 600 "$tmp"
+      mv "$tmp" ${configFile}
+      trap - EXIT
+    '';
+  };
 
   services.mihomo = {
     enable = true;
