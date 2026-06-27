@@ -213,11 +213,7 @@ in
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "tun" ];
-  # Plymouth must start after NVIDIA KMS has replaced the firmware framebuffer;
-  # otherwise it lays out on the internal panel and keeps that geometry when the
-  # external display takes over.
   boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
-  boot.initrd.systemd.services.plymouth-start.after = [ "systemd-modules-load.service" ];
   boot.consoleLogLevel = 0;
   boot.initrd.verbose = false;
   boot.plymouth = {

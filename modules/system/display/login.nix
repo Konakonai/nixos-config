@@ -162,7 +162,8 @@ int config_update_command_selector(GtkWidget *combobox) {' \
 
       if [ -n "$external" ]; then
         ${lib.getExe' pkgs.sway "swaymsg"} output "$external" enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.loginPosition} >/dev/null 2>&1 || true
-        ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} disable >/dev/null 2>&1 || true
+        ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position} >/dev/null 2>&1 || true
+        ${lib.getExe' pkgs.sway "swaymsg"} focus output "$external" >/dev/null 2>&1 || true
       else
         ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null 2>&1 || true
       fi
