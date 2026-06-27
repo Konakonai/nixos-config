@@ -25,11 +25,6 @@
 - 新增硬编码前先判断它属于“本机事实”还是“通用逻辑”。本机事实必须集中到 host profile。
 - 不要回滚或覆盖用户/其他 agent 的未提交改动。遇到 dirty worktree 时先看清楚，只处理本任务需要的文件。
 
-## 本机工具注意事项
-
-- 需要提权或弹出 polkit 密码框时，优先使用 `/run/wrappers/bin/sudo` 或 `/run/wrappers/bin/pkexec`。`/run/current-system/sw/bin/sudo` 和 `/run/current-system/sw/bin/pkexec` 可能不是 setuid wrapper，直接调用会出现 `must be owned by uid 0 and have setuid bit set` 或 `pkexec must be setuid root`。
-- 写磁盘、改分区、挂载/卸载系统级设备前，必须重新确认目标设备路径、型号、容量和当前挂载点；涉及清空设备时先得到用户明确确认。
-
 ## 验证要求
 
 常规 NixOS 配置改动至少运行：
