@@ -28,8 +28,6 @@ let
   niriLogin = pkgs.writeShellScriptBin niriLoginCommand ''
     ${if nvidia.enable or false then ''
       if [ "$(cat /sys/class/power_supply/${nvidia.acAdapter}/online 2>/dev/null || echo 0)" = "1" ]; then
-        export GBM_BACKEND=nvidia-drm
-        export __GLX_VENDOR_LIBRARY_NAME=nvidia
         export NIRI_CONFIG="$HOME/.config/niri/config-nvidia.kdl"
       else
         export NIRI_CONFIG="$HOME/.config/niri/config-intel.kdl"
