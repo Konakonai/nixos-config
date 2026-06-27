@@ -13,13 +13,10 @@ in
   };
 
   boot = {
-    # Default boot path targets the external display. Use the
-    # internal-display-fallback specialisation when no monitor is attached.
-    disableInternalDisplayParam = "video=eDP-1:d";
-    # Test profile: prefer the external panel during kernel/Plymouth takeover
-    # without disabling the internal panel. If this fixes Plymouth sizing, it can
-    # replace disableInternalDisplayParam as the default.
-    externalDisplayPreferredParam = "video=DP-2:3840x2160@60D";
+    # Prefer the external panel during kernel/Plymouth takeover without
+    # disabling the internal panel. Use the internal-display-fallback
+    # specialisation when booting away from the dock.
+    preferredDisplayParam = "video=DP-2:3840x2160@60D";
   };
 
   display = {
