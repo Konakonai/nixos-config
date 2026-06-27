@@ -62,6 +62,17 @@ in
     ];
   };
 
+  storage.readOnlyNtfsVolumes = [
+    {
+      label = "Windows-SSD";
+      uuid = "787069FB7069C08C";
+    }
+    {
+      label = "Data";
+      uuid = "74E29274E2923A76";
+    }
+  ];
+
   services = {
     openlistDataDir = "${homeDirectory}/.config/openlist";
     mihomo = {

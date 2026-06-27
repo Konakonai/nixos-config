@@ -1,5 +1,14 @@
-{ pkgs, ... }:
+{ hostProfile, lib, pkgs, ... }:
 
+let
+  readOnlyNtfsVolumes = hostProfile.storage.readOnlyNtfsVolumes or [ ];
+  readOnlyNtfsMountOptions = lib.concatMapStringsSep "\n\n" (volume: ''
+    # ${volume.label} (${volume.uuid})
+    [/dev/disk/by-uuid/${volume.uuid}]
+    ntfs:ntfs3_defaults=uid=$UID,gid=$GID,ro,windows_names
+    ntfs:ntfs_defaults=uid=$UID,gid=$GID,ro,windows_names
+  '') readOnlyNtfsVolumes;
+in
 {
   services.xserver = {
     enable = true;
@@ -40,6 +49,18 @@
   '';
 
   security.sudo.extraConfig = "Defaults pwfeedback";
+
+  environment.etc = lib.optionalAttrs (readOnlyNtfsVolumes != [ ]) {
+    "udisks2/mount_options.conf".text = ''
+      # Host Windows volumes are mounted read-only through udisks/Nemo. Windows
+      # fast startup or hibernation can leave NTFS dirty, and Linux should not
+      # force writable mounts in that state.
+      [defaults]
+      ntfs_drivers=ntfs3,ntfs
+
+      ${readOnlyNtfsMountOptions}
+    '';
+  };
 
   environment.sessionVariables = {
     NIXOS_OZONE_WL = "1";
