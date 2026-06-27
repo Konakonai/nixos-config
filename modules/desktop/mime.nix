@@ -1,6 +1,7 @@
 { ... }:
 
 let
+  ebookReader = "com.github.johnfactotum.Foliate.desktop";
   imageViewer = "org.gnome.Loupe.desktop";
 in
 {
@@ -21,6 +22,7 @@ in
       "application/x-extension-xht" = "zen-beta.desktop";
       "application/pdf" = "zen-beta.desktop";
       "inode/directory" = "nemo.desktop";
+      "x-scheme-handler/opds" = ebookReader;
 
       "image/apng" = imageViewer;
       "image/avif" = imageViewer;
@@ -72,6 +74,13 @@ in
       "application/x-toml" = "dev.zed.Zed.desktop";
       "text/x-python" = "dev.zed.Zed.desktop";
       "text/x-shellscript" = "dev.zed.Zed.desktop";
+
+      "application/epub+zip" = ebookReader;
+      "application/vnd.amazon.mobi8-ebook" = ebookReader;
+      "application/vnd.comicbook+zip" = ebookReader;
+      "application/x-fictionbook+xml" = ebookReader;
+      "application/x-mobipocket-ebook" = ebookReader;
+      "application/x-zip-compressed-fb2" = ebookReader;
 
       "application/msword" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = "org.onlyoffice.desktopeditors.desktop";

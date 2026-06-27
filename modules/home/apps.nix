@@ -8,6 +8,7 @@
     pavucontrol
     mission-center
     resources
+    foliate
     localsend
     hyprpicker
     loupe
