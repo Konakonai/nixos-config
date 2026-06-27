@@ -10,7 +10,5 @@
       repeat = false;
       action.toggle-overview = [];
     };
-
-    "Mod+Ctrl+A".action.spawn = [ "codex-desktop" "--appshot" ];
   };
 }

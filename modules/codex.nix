@@ -4,17 +4,7 @@ let
   system = pkgs.stdenv.hostPlatform.system;
   codexCli = pkgs.callPackage ../pkgs/codex.nix { };
 
-  # Keep the Linux desktop app on the pinned upstream source while carrying the
-  # local AppShot/niri capture and Zed opener integration that is not upstreamed.
-  codexDesktopSource = pkgs.applyPatches {
-    name = "codex-desktop-linux-zed-appshots-source";
-    src = inputs.codex-desktop-linux;
-    patches = [
-      ../patches/codex-desktop-linux-zed-appshots.patch
-    ];
-  };
-
-  codexDesktopFlake = (import "${codexDesktopSource}/flake.nix").outputs {
+  codexDesktopFlake = (import "${inputs.codex-desktop-linux}/flake.nix").outputs {
     self = {
       rev = inputs.codex-desktop-linux.rev or "";
       lastModified = inputs.codex-desktop-linux.lastModified or 1;
@@ -24,7 +14,7 @@ let
   };
 
   codexDesktopBase =
-    codexDesktopFlake.packages.${system}.codex-desktop-computer-use-ui-zed-opener-appshots;
+    codexDesktopFlake.packages.${system}.codex-desktop-computer-use-ui;
 
   codexDesktop = pkgs.symlinkJoin {
     name = "${codexDesktopBase.name}-codex-cli-path";

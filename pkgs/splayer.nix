@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 
 let
   pname = "splayer";
@@ -8,6 +8,16 @@ let
     sha256 = "0krcl9gfxmg8m15gn1qwqr2f2i6mwrzrd8izvrqw06zbm1m74zz4";
   };
   appimageContents = pkgs.appimageTools.extractType2 { inherit pname version src; };
+  desktopItem = pkgs.makeDesktopItem {
+    name = "SPlayer";
+    desktopName = "SPlayer";
+    exec = "splayer %U";
+    icon = "SPlayer";
+    comment = "A minimalist music player";
+    categories = [ "Audio" "Music" "AudioVideo" ];
+    mimeTypes = [ "x-scheme-handler/orpheus" ];
+    startupWMClass = "SPlayer";
+  };
 in
 pkgs.appimageTools.wrapType2 {
   inherit pname version src;
@@ -18,13 +28,7 @@ pkgs.appimageTools.wrapType2 {
   ];
 
   extraInstallCommands = ''
-    # Copy desktop item and icons
-    install -Dm444 ${appimageContents}/SPlayer.desktop -t $out/share/applications/
+    install -Dm444 ${desktopItem}/share/applications/SPlayer.desktop -t $out/share/applications/
     cp -r ${appimageContents}/usr/share/icons $out/share/
-
-    # The upstream AppImage desktop file points at AppRun; the wrapped Nix
-    # package should launch through the generated splayer wrapper instead.
-    substituteInPlace $out/share/applications/SPlayer.desktop \
-      --replace-fail 'Exec=AppRun --no-sandbox %U' 'Exec=splayer %U'
   '';
 }

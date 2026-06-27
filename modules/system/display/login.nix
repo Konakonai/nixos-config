@@ -5,6 +5,7 @@ let
   nvidia = hostProfile.graphics.nvidia or { enable = false; };
   internalDisplay = hostProfile.display.internal;
   externalDisplay = hostProfile.display.external or null;
+  loginWallpaper = hostProfile.display.loginWallpaper or null;
   pos = position: "${builtins.toString position.x} ${builtins.toString position.y}";
 
   niriBase = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
@@ -42,8 +43,13 @@ let
   gtkgreetGtkThemeName = "adw-gtk3";
   gtkgreetGtkThemePackage = pkgs.adw-gtk3;
   gtkgreetFontSize = 14;
-  gtkgreetCardWidth = 420;
-  gtkgreetCardPadding = 28;
+  gtkgreetCardWidth = 440;
+  gtkgreetCardPadding = 30;
+  loginBackgroundCommand =
+    if loginWallpaper != null then
+      "output * bg ${loginWallpaper} fill"
+    else
+      "output * bg ${lilyaGlass.palette.base} solid_color";
 
   gtkgreet = pkgs.gtkgreet.overrideAttrs (oldAttrs: {
     postPatch = (oldAttrs.postPatch or "") + ''
@@ -77,29 +83,30 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     @define-color window_fg_color #2e3440;
     @define-color card_bg_color #e5e9f0;
     @define-color card_fg_color #2e3440;
-    @define-color border_color #cdd8e4;
+    @define-color border_color #d8dee9;
     @define-color muted_fg_color #4c566a;
+    @define-color shadow_color #2e3440;
 
     window,
     #window {
-      background-color: @window_bg_color;
+      background-color: transparent;
       color: @window_fg_color;
       font-family: "${lilyaGlass.fonts.sans}";
       font-size: ${builtins.toString gtkgreetFontSize}px;
     }
 
     #clock {
-      color: @accent_color;
+      color: @accent_fg_color;
       font-weight: 600;
-      margin-bottom: 24px;
-      text-shadow: none;
+      margin-bottom: 22px;
+      text-shadow: 0 2px 8px alpha(@shadow_color, 0.40);
     }
 
     box#body {
-      background-color: alpha(@card_bg_color, 0.84);
-      border: 1px solid @border_color;
-      border-radius: 10px;
-      box-shadow: 0 12px 30px alpha(#3b4252, 0.10);
+      background-color: alpha(@card_bg_color, 0.76);
+      border: 1px solid alpha(@window_bg_color, 0.52);
+      border-radius: ${builtins.toString lilyaGlass.radius.panels}px;
+      box-shadow: 0 18px 55px alpha(@shadow_color, 0.24);
       padding: ${builtins.toString gtkgreetCardPadding}px;
       min-width: ${builtins.toString gtkgreetCardWidth}px;
     }
@@ -111,8 +118,9 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     button {
       background-color: @accent_bg_color;
       border: 1px solid @accent_bg_color;
-      border-radius: 10px;
+      border-radius: ${builtins.toString lilyaGlass.radius.windows}px;
       color: @accent_fg_color;
+      min-height: 38px;
       padding: 8px 16px;
     }
 
@@ -123,11 +131,12 @@ int config_update_command_selector(GtkWidget *combobox) {' \
 
     entry,
     #command-selector entry {
-      background-color: alpha(@window_bg_color, 0.72);
-      border: 1px solid @border_color;
-      border-radius: 10px;
+      background-color: alpha(@window_bg_color, 0.78);
+      border: 1px solid alpha(@border_color, 0.92);
+      border-radius: ${builtins.toString lilyaGlass.radius.windows}px;
       color: @window_fg_color;
-      padding: 8px 10px;
+      min-height: 38px;
+      padding: 8px 12px;
     }
 
     entry:focus,
@@ -169,7 +178,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     font pango:${lilyaGlass.fonts.sans} 11
     seat seat0 xcursor_theme ${lilyaGlass.cursorThemeName} 48
 
-    output * bg ${lilyaGlass.palette.base} solid_color
+    ${loginBackgroundCommand}
 
     exec ${gtkgreetCommand}
   '';

@@ -17,6 +17,7 @@
     unrar
     _7zz
     pigz
+    ffmpeg-full
 
     wl-clipboard
     grim

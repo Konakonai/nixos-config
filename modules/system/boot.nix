@@ -2,6 +2,7 @@
 
 let
   internalDisplayKernelParam = hostProfile.boot.disableInternalDisplayParam or null;
+  externalDisplayPreferredParam = hostProfile.boot.externalDisplayPreferredParam or null;
 
   touhouGrubTheme = pkgs.stdenvNoCC.mkDerivation {
     pname = "grub-theme-touhou-project";
@@ -141,6 +142,11 @@ EOF
   };
 
   fallbackKernelParams = builtins.filter (param: param != internalDisplayKernelParam) config.boot.kernelParams;
+  externalPreferredKernelParams =
+    builtins.filter
+      (param: param != internalDisplayKernelParam && param != externalDisplayPreferredParam)
+      config.boot.kernelParams
+    ++ lib.optional (externalDisplayPreferredParam != null) externalDisplayPreferredParam;
 in
 {
   boot.loader.systemd-boot.enable = false;
@@ -212,12 +218,19 @@ in
   ] ++ lib.optional (internalDisplayKernelParam != null) internalDisplayKernelParam;
   boot.supportedFilesystems.ntfs = true;
 
-  specialisation = lib.optionalAttrs (internalDisplayKernelParam != null) {
-    internal-display-fallback.configuration = {
-      system.nixos.tags = [ "internal-display-fallback" ];
-      boot.kernelParams = lib.mkForce fallbackKernelParams;
+  specialisation =
+    lib.optionalAttrs (internalDisplayKernelParam != null) {
+      internal-display-fallback.configuration = {
+        system.nixos.tags = [ "internal-display-fallback" ];
+        boot.kernelParams = lib.mkForce fallbackKernelParams;
+      };
+    }
+    // lib.optionalAttrs (externalDisplayPreferredParam != null) {
+      external-display-preferred.configuration = {
+        system.nixos.tags = [ "external-display-preferred" ];
+        boot.kernelParams = lib.mkForce externalPreferredKernelParams;
+      };
     };
-  };
 
   environment.systemPackages = [ pkgs.efibootmgr ];
 

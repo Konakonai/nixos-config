@@ -3,17 +3,17 @@
     "codex-desktop-linux": {
       "flake": false,
       "locked": {
-        "lastModified": 1782200019,
-        "narHash": "sha256-l6ywUiVVeOoqooxJWD0/LWr2luvaj3FpYGCHJzdByRg=",
+        "lastModified": 1782554666,
+        "narHash": "sha256-ptCCTJ3NKMPs827EqLqQBgp4J3+K57mqLeF705s5FtM=",
         "owner": "ilysenko",
         "repo": "codex-desktop-linux",
-        "rev": "0006f4a22657a399a73f8963376943bc9e7fbe9d",
+        "rev": "1e2dcf29d81acaeb80686f2819d7e0546f37dc68",
         "type": "github"
       },
       "original": {
         "owner": "ilysenko",
         "repo": "codex-desktop-linux",
-        "rev": "0006f4a22657a399a73f8963376943bc9e7fbe9d",
+        "rev": "1e2dcf29d81acaeb80686f2819d7e0546f37dc68",
         "type": "github"
       }
     },
