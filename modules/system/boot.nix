@@ -214,6 +214,10 @@ in
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "tun" ];
   boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
+  boot.initrd.systemd.services.plymouth-start.unitConfig = {
+    Wants = [ "systemd-modules-load.service" ];
+    After = [ "systemd-modules-load.service" ];
+  };
   boot.consoleLogLevel = 0;
   boot.initrd.verbose = false;
   boot.plymouth = {
