@@ -46,11 +46,16 @@ let
   gtkgreetFontSize = 14;
   gtkgreetCardWidth = 440;
   gtkgreetCardPadding = 30;
+  deferredInternalLoginOutput = pkgs.writeShellScript "gtkgreet-enable-internal-output" ''
+    sleep 0.20
+    ${lib.getExe' pkgs.sway "swaymsg"} output ${internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position} >/dev/null 2>&1 || true
+  '';
   loginOutputConfig =
     if externalDisplay != null then
       ''
         output ${externalDisplay.connector} enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position}
-        output ${internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position}
+        output ${internalDisplay.connector} disable
+        exec ${deferredInternalLoginOutput}
       ''
     else
       ''

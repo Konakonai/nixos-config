@@ -4,6 +4,14 @@ let
   lilyaGlass = import ../glass-settings.nix;
   internalDisplay = hostProfile.display.internal;
   externalDisplay = hostProfile.display.external or null;
+  deferredInternalDisplay = pkgs.writeShellScript "niri-enable-internal-display" ''
+    sleep 0.20
+    niri="${config.programs.niri.package}/bin/niri"
+
+    "$niri" msg output ${lib.escapeShellArg internalDisplay.connector} on >/dev/null 2>&1 || true
+    "$niri" msg output ${lib.escapeShellArg internalDisplay.connector} scale ${builtins.toString internalDisplay.scale} >/dev/null 2>&1 || true
+    "$niri" msg output ${lib.escapeShellArg internalDisplay.connector} position set ${builtins.toString internalDisplay.position.x} ${builtins.toString internalDisplay.position.y} >/dev/null 2>&1 || true
+  '';
   steamGameBarGuard = pkgs.writeShellScript "steam-game-bar-guard" ''
     set -euo pipefail
 
@@ -59,7 +67,9 @@ in
   programs.niri.settings = {
     prefer-no-csd = true;
 
-    spawn-at-startup = [
+    spawn-at-startup = lib.optionals (externalDisplay != null) [
+      { command = [ "${deferredInternalDisplay}" ]; }
+    ] ++ [
       { command = [ "noctalia" ]; }
       { command = [ "xwayland-satellite" ]; }
       { command = [ "xrdb" "-merge" "${config.home.homeDirectory}/.Xresources" ]; }
@@ -99,6 +109,7 @@ in
 
     outputs = {
       "${internalDisplay.connector}" = {
+        enable = externalDisplay == null;
         scale = internalDisplay.scale;
         position = {
           inherit (internalDisplay.position) x y;
