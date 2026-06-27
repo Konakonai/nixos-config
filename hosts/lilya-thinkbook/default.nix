@@ -26,7 +26,6 @@ in
 
     internal = {
       connector = "eDP-1";
-      mode = { width = 3200; height = 2000; refresh = 60.0; };
       scale = 1.75;
       # Keep the external display at the global origin for XWayland/Steam games
       # while matching the physical layout: the laptop panel sits on the left.
@@ -40,7 +39,6 @@ in
       model = "PHL 27E2F7901";
       serial = "UHB2341003696";
       niriName = "Philips Consumer Electronics Company PHL 27E2F7901 UHB2341003696";
-      mode = { width = 3840; height = 2160; refresh = 60.0; };
       scale = 1.5;
       position = { x = 0; y = 0; };
       loginPosition = { x = 0; y = 0; };

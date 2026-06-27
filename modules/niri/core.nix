@@ -4,10 +4,6 @@ let
   lilyaGlass = import ../glass-settings.nix;
   internalDisplay = hostProfile.display.internal;
   externalDisplay = hostProfile.display.external or null;
-  outputMode = display:
-    lib.optionalAttrs (display ? mode) {
-      inherit (display) mode;
-    };
   steamGameBarGuard = pkgs.writeShellScript "steam-game-bar-guard" ''
     set -euo pipefail
 
@@ -107,7 +103,7 @@ in
         position = {
           inherit (internalDisplay.position) x y;
         };
-      } // outputMode internalDisplay;
+      };
     } // lib.optionalAttrs (externalDisplay != null) {
       "${externalDisplay.niriName}" = {
         focus-at-startup = true;
@@ -115,7 +111,7 @@ in
         position = {
           inherit (externalDisplay.position) x y;
         };
-      } // outputMode externalDisplay;
+      };
     };
 
     layout = {
