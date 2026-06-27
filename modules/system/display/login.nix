@@ -153,21 +153,48 @@ int config_update_command_selector(GtkWidget *combobox) {' \
 
   gtkgreetCommand = pkgs.writeShellScript "gtkgreet-command" ''
     ${if externalDisplay != null then ''
-      external="$(${lib.getExe' pkgs.sway "swaymsg"} -t get_outputs | ${lib.getExe pkgs.jq} -r \
-        --arg connector ${lib.escapeShellArg externalDisplay.connector} \
-        --arg make ${lib.escapeShellArg externalDisplay.make} \
-        --arg model ${lib.escapeShellArg externalDisplay.model} \
-        --arg serial ${lib.escapeShellArg externalDisplay.serial} \
-        'first(.[] | select(.active and (.name == $connector or (.make == $make and .model == $model and .serial == $serial))) | .name) // ""' \
-        2>/dev/null || true)"
+      find_external() {
+        ${lib.getExe' pkgs.sway "swaymsg"} -t get_outputs | ${lib.getExe pkgs.jq} -r \
+          --arg connector ${lib.escapeShellArg externalDisplay.connector} \
+          --arg make ${lib.escapeShellArg externalDisplay.make} \
+          --arg model ${lib.escapeShellArg externalDisplay.model} \
+          --arg serial ${lib.escapeShellArg externalDisplay.serial} \
+          'first(.[] | select(.active and (.name == $connector or (.make == $make and .model == $model and .serial == $serial))) | .name) // ""' \
+          2>/dev/null || true
+      }
 
-      if [ -n "$external" ]; then
-        ${lib.getExe' pkgs.sway "swaymsg"} output "$external" enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position} >/dev/null 2>&1 || true
-        ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position} >/dev/null 2>&1 || true
-        ${lib.getExe' pkgs.sway "swaymsg"} focus output "$external" >/dev/null 2>&1 || true
-      else
+      apply_outputs() {
+        external="$(find_external)"
+
+        if [ -n "$external" ]; then
+          ${lib.getExe' pkgs.sway "swaymsg"} output "$external" enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position} >/dev/null 2>&1 || true
+          ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position} >/dev/null 2>&1 || true
+          ${lib.getExe' pkgs.sway "swaymsg"} focus output "$external" >/dev/null 2>&1 || true
+          return 0
+        fi
+
         ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null 2>&1 || true
-      fi
+        return 1
+      }
+
+      cleanup_outputs() {
+        if [ -n "''${output_watcher:-}" ]; then
+          kill "$output_watcher" >/dev/null 2>&1 || true
+        fi
+      }
+      trap cleanup_outputs EXIT
+
+      for _ in 1 2 3 4 5 6 7 8 9 10; do
+        apply_outputs && break
+        ${pkgs.coreutils}/bin/sleep 0.1
+      done
+
+      (
+        ${lib.getExe' pkgs.sway "swaymsg"} -t subscribe '["output"]' | while read -r _; do
+          apply_outputs
+        done
+      ) &
+      output_watcher=$!
     '' else ''
       ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null 2>&1 || true
     ''}
