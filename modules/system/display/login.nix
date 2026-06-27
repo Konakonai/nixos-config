@@ -7,6 +7,12 @@ let
   externalDisplay = hostProfile.display.external or null;
   loginWallpaper = hostProfile.display.loginWallpaper or null;
   pos = position: "${builtins.toString position.x} ${builtins.toString position.y}";
+  swayMode = display:
+    let
+      refresh = lib.removeSuffix ".000000" (builtins.toString display.mode.refresh);
+    in
+    lib.optionalString (display ? mode)
+      " mode ${builtins.toString display.mode.width}x${builtins.toString display.mode.height}@${refresh}Hz";
 
   niriBase = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
   niriPatched = pkgs.runCommandLocal "${niriBase.name}-patched-session" {
@@ -49,12 +55,12 @@ let
   loginOutputConfig =
     if externalDisplay != null then
       ''
-        output ${externalDisplay.connector} enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position}
-        output ${internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position}
+        output ${externalDisplay.connector} enable${swayMode externalDisplay} scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position}
+        output ${internalDisplay.connector} enable${swayMode internalDisplay} scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position}
       ''
     else
       ''
-        output ${internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition}
+        output ${internalDisplay.connector} enable${swayMode internalDisplay} scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition}
       '';
   loginBackgroundCommand =
     if loginWallpaper != null then
