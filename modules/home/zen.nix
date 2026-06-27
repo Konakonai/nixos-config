@@ -1,9 +1,10 @@
-{ config, lib, pkgs, ... }:
+{ config, hostProfile, lib, pkgs, ... }:
 
 let
+  zenProfilePath = hostProfile.zen.profilePath;
   zen = lib.getExe config.programs.zen-browser.package;
   zenLaunch = pkgs.writeShellScript "launch-zen-beta" ''
-    profile="$HOME/.config/zen/i41yvfec.Default Profile"
+    profile="$HOME/.config/zen/${zenProfilePath}"
 
     if ! ${pkgs.procps}/bin/pgrep -u "$(${pkgs.coreutils}/bin/id -u)" -f '/bin/zen-beta( |$)|/lib/zen-bin-[^ ]*/zen( |$)' >/dev/null; then
       rm -f \
@@ -23,11 +24,13 @@ in
     enable = true;
     setAsDefaultBrowser = true;
 
-    profiles.default = {
-      id = 0;
-      name = "Default Profile";
-      path = "i41yvfec.Default Profile";
-      isDefault = true;
+      profiles.default = {
+        id = 0;
+        name = "Default Profile";
+        # This profile id is host state from the existing Zen install. Keep it
+        # centralized so the duplicate-window workaround is easy to update.
+        path = zenProfilePath;
+        isDefault = true;
 
       settings = {
         "toolkit.legacyUserProfileCustomizations.stylesheets" = true;

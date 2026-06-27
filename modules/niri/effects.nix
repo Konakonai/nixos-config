@@ -1,7 +1,20 @@
-{ config, pkgs, lib, ... }:
+{ config, hostProfile, pkgs, lib, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
+  nvidia = hostProfile.graphics.nvidia or { enable = false; };
+  intelDebug = lib.optionalString (nvidia.enable or false) ''
+    debug {
+        render-drm-device "${nvidia.intelRenderNode}"
+        ignore-drm-device "${nvidia.nvidiaRenderNode}"
+    }
+  '';
+  nvidiaDebug = lib.optionalString (nvidia.enable or false) ''
+    debug {
+        render-drm-device "${nvidia.nvidiaRenderNode}"
+        wait-for-frame-completion-before-queueing
+    }
+  '';
 
   baseConfig = ''
     ${config.programs.niri.finalConfig}
@@ -84,25 +97,16 @@ in
 {
   xdg.configFile.niri-config.source = lib.mkForce (pkgs.writeText "niri-config.kdl" ''
     ${baseConfig}
-    debug {
-        render-drm-device "/dev/dri/by-path/pci-0000:00:02.0-render"
-        ignore-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
-    }
+    ${intelDebug}
   '');
 
   xdg.configFile."niri/config-intel.kdl".text = ''
     ${baseConfig}
-    debug {
-        render-drm-device "/dev/dri/by-path/pci-0000:00:02.0-render"
-        ignore-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
-    }
+    ${intelDebug}
   '';
 
   xdg.configFile."niri/config-nvidia.kdl".text = ''
     ${baseConfig}
-    debug {
-        render-drm-device "/dev/dri/by-path/pci-0000:01:00.0-render"
-        wait-for-frame-completion-before-queueing
-    }
+    ${nvidiaDebug}
   '';
 }

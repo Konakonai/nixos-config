@@ -4,6 +4,8 @@ let
   system = pkgs.stdenv.hostPlatform.system;
   codexCli = pkgs.callPackage ../pkgs/codex.nix { };
 
+  # Keep the Linux desktop app on the pinned upstream source while carrying the
+  # local AppShot/niri capture and Zed opener integration that is not upstreamed.
   codexDesktopSource = pkgs.applyPatches {
     name = "codex-desktop-linux-zed-appshots-source";
     src = inputs.codex-desktop-linux;

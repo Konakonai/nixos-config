@@ -1,4 +1,8 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
+
+let
+  zed = lib.getExe config.programs.zed-editor.package;
+in
 
 {
   programs.yazi = {
@@ -64,7 +68,7 @@
           { run = ''$EDITOR "$@"''; block = true; desc = "System Editor ($EDITOR)"; }
         ];
         zed = [
-          { run = ''zeditor "$@"''; orphan = true; desc = "Zed Editor"; }
+          { run = ''${zed} "$@"''; orphan = true; desc = "Zed Editor"; }
         ];
         onlyoffice = [
           { run = ''flatpak run org.onlyoffice.desktopeditors "$@"''; orphan = true; desc = "OnlyOffice"; }

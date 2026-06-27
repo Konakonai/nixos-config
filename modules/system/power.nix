@@ -1,13 +1,17 @@
-{ pkgs, ... }:
+{ hostProfile, lib, pkgs, ... }:
 
 let
+  nvidia = hostProfile.graphics.nvidia or { enable = false; };
+  power = hostProfile.power or { };
+  batteryConservationPath = power.batteryConservationPath or null;
+  keepAwakeUsbDevices = power.keepAwakeUsbDevices or [ ];
   nvidiaPowerControl = pkgs.writeShellScriptBin "nvidia-power-control" ''
     set -eu
 
-    GPU_CONTROL="/sys/bus/pci/devices/0000:01:00.0/power/control"
+    GPU_CONTROL="/sys/bus/pci/devices/${nvidia.pciAddress}/power/control"
 
     ac_online() {
-      [ "$(cat /sys/class/power_supply/ADP0/online 2>/dev/null || echo 0)" = "1" ]
+      [ "$(cat /sys/class/power_supply/${nvidia.acAdapter}/online 2>/dev/null || echo 0)" = "1" ]
     }
 
     is_niri_on_nvidia() {
@@ -35,9 +39,9 @@ let
       if [ -f "$GPU_CONTROL" ]; then
         echo "NVIDIA GPU: Present"
         echo "Current Control: $(cat "$GPU_CONTROL")"
-        echo "Runtime Status: $(cat /sys/bus/pci/devices/0000:01:00.0/power/runtime_status 2>/dev/null || echo unknown)"
+        echo "Runtime Status: $(cat /sys/bus/pci/devices/${nvidia.pciAddress}/power/runtime_status 2>/dev/null || echo unknown)"
       else
-        echo "NVIDIA GPU: Not found at 0000:01:00.0"
+        echo "NVIDIA GPU: Not found at ${nvidia.pciAddress}"
       fi
 
       if is_niri_on_nvidia; then
@@ -80,47 +84,48 @@ in
 
   powerManagement.powertop.enable = false;
 
-  environment.systemPackages = [ nvidiaPowerControl ];
+  environment.systemPackages = lib.optional (nvidia.enable or false) nvidiaPowerControl;
 
-  systemd.services.battery-conservation-permissions = {
-    description = "Set permissions for ThinkBook battery conservation mode";
-    after = [ "systemd-modules-load.service" ];
-    wantedBy = [ "multi-user.target" ];
-    script = ''
-      for i in $(seq 1 15); do
-        if [ -f /sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode ]; then
-          chown lilya:users /sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode
-          chmod 664 /sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode
-          exit 0
-        fi
-        sleep 1
-      done
-    '';
-    serviceConfig.Type = "oneshot";
-  };
-
-  services.udev.extraRules = ''
+  services.udev.extraRules = lib.concatStringsSep "\n" (
     # Keep latency-sensitive HID devices awake. PowerTOP auto-tuning was putting
     # these behind USB autosuspend, which matched the observed mouse/keyboard stalls.
-    ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="1532", ATTR{idProduct}=="0099", TEST=="power/control", ATTR{power/control}="on"
-    ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="320f", ATTR{idProduct}=="5088", TEST=="power/control", ATTR{power/control}="on"
-    ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="2109", ATTR{idProduct}=="2822", TEST=="power/control", ATTR{power/control}="on"
+    map (device:
+      ''ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="${device.vendor}", ATTR{idProduct}=="${device.product}", TEST=="power/control", ATTR{power/control}="on"''
+    ) keepAwakeUsbDevices
+    ++ lib.optional (nvidia.enable or false)
+      ''SUBSYSTEM=="power_supply", KERNEL=="${nvidia.acAdapter}", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-power-control-change.service"''
+  );
 
-    # dGPU-only mode is intentional for now; this keeps the device awake across AC events.
-    SUBSYSTEM=="power_supply", KERNEL=="ADP0", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-power-control-change.service"
-  '';
+  systemd.services = lib.optionalAttrs (batteryConservationPath != null) {
+    battery-conservation-permissions = {
+      description = "Set permissions for battery conservation mode";
+      after = [ "systemd-modules-load.service" ];
+      wantedBy = [ "multi-user.target" ];
+      script = ''
+        for i in $(seq 1 15); do
+          if [ -f ${batteryConservationPath} ]; then
+            chown ${hostProfile.user.userName}:${hostProfile.user.group} ${batteryConservationPath}
+            chmod 664 ${batteryConservationPath}
+            exit 0
+          fi
+          sleep 1
+        done
+      '';
+      serviceConfig.Type = "oneshot";
+    };
+  } // lib.optionalAttrs (nvidia.enable or false) {
+    nvidia-power-control-boot = {
+      description = "Keep NVIDIA dGPU awake at boot";
+      after = [ "local-fs.target" ];
+      wantedBy = [ "multi-user.target" ];
+      script = "${nvidiaPowerControl}/bin/nvidia-power-control boot";
+      serviceConfig.Type = "oneshot";
+    };
 
-  systemd.services.nvidia-power-control-boot = {
-    description = "Keep NVIDIA dGPU awake at boot";
-    after = [ "local-fs.target" ];
-    wantedBy = [ "multi-user.target" ];
-    script = "${nvidiaPowerControl}/bin/nvidia-power-control boot";
-    serviceConfig.Type = "oneshot";
-  };
-
-  systemd.services.nvidia-power-control-change = {
-    description = "Keep NVIDIA dGPU awake after AC power changes";
-    script = "${nvidiaPowerControl}/bin/nvidia-power-control change";
-    serviceConfig.Type = "oneshot";
+    nvidia-power-control-change = {
+      description = "Keep NVIDIA dGPU awake after AC power changes";
+      script = "${nvidiaPowerControl}/bin/nvidia-power-control change";
+      serviceConfig.Type = "oneshot";
+    };
   };
 }

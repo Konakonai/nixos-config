@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ hostProfile, pkgs, ... }:
 
 {
   imports = [
@@ -15,10 +15,10 @@
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "simple";
-      ExecStart = "${pkgs.openlist}/bin/OpenList server --data /home/lilya/.config/openlist";
+      ExecStart = "${pkgs.openlist}/bin/OpenList server --data ${hostProfile.services.openlistDataDir}";
       Restart = "always";
-      User = "lilya";
-      Group = "users";
+      User = hostProfile.user.userName;
+      Group = hostProfile.user.group;
     };
   };
 
@@ -27,8 +27,15 @@
   services.kmscon = {
     enable = true;
     hwRender = true;
+    fonts = [
+      {
+        name = "Noto Sans CJK SC";
+        package = pkgs.noto-fonts-cjk-sans;
+      }
+    ];
+    term = "xterm-256color";
+    useXkbConfig = true;
     extraConfig = ''
-      font-name=Noto Sans CJK SC
       font-size=16
       multi-monitor=largest
     '';

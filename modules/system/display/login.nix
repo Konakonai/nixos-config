@@ -1,7 +1,11 @@
-{ pkgs, inputs, lib, ... }:
+{ pkgs, inputs, hostProfile, lib, ... }:
 
 let
   lilyaGlass = import ../../glass-settings.nix;
+  nvidia = hostProfile.graphics.nvidia or { enable = false; };
+  internalDisplay = hostProfile.display.internal;
+  externalDisplay = hostProfile.display.external or null;
+  pos = position: "${builtins.toString position.x} ${builtins.toString position.y}";
 
   niriBase = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
   niriPatched = pkgs.runCommandLocal "${niriBase.name}-patched-session" {
@@ -10,6 +14,9 @@ let
     cargoBuildNoDefaultFeatures = niriBase.cargoBuildNoDefaultFeatures;
     cargoBuildFeatures = niriBase.cargoBuildFeatures;
   } ''
+    # niri-session normally imports a small allowlist of environment variables.
+    # The desktop session here relies on richer Home Manager/session env, so keep
+    # exporting the full current process environment until upstream covers this.
     cp -a ${niriBase} $out
     chmod -R u+w $out
     substituteInPlace $out/bin/niri-session \
@@ -18,9 +25,17 @@ let
   niriSession = "${niriPatched}/bin/niri-session";
   niriLoginCommand = "Niri";
   niriLogin = pkgs.writeShellScriptBin niriLoginCommand ''
-    export GBM_BACKEND=nvidia-drm
-    export __GLX_VENDOR_LIBRARY_NAME=nvidia
-    export NIRI_CONFIG="$HOME/.config/niri/config-nvidia.kdl"
+    ${if nvidia.enable or false then ''
+      if [ "$(cat /sys/class/power_supply/${nvidia.acAdapter}/online 2>/dev/null || echo 0)" = "1" ]; then
+        export GBM_BACKEND=nvidia-drm
+        export __GLX_VENDOR_LIBRARY_NAME=nvidia
+        export NIRI_CONFIG="$HOME/.config/niri/config-nvidia.kdl"
+      else
+        export NIRI_CONFIG="$HOME/.config/niri/config-intel.kdl"
+      fi
+    '' else ''
+      export NIRI_CONFIG="$HOME/.config/niri/config-intel.kdl"
+    ''}
     exec ${niriSession} "$@"
   '';
   niriLoginPath = lib.getExe niriLogin;
@@ -127,6 +142,25 @@ int config_update_command_selector(GtkWidget *combobox) {' \
   '';
 
   gtkgreetCommand = pkgs.writeShellScript "gtkgreet-command" ''
+    ${if externalDisplay != null then ''
+      external="$(${lib.getExe' pkgs.sway "swaymsg"} -t get_outputs | ${lib.getExe pkgs.jq} -r \
+        --arg connector ${lib.escapeShellArg externalDisplay.connector} \
+        --arg make ${lib.escapeShellArg externalDisplay.make} \
+        --arg model ${lib.escapeShellArg externalDisplay.model} \
+        --arg serial ${lib.escapeShellArg externalDisplay.serial} \
+        'first(.[] | select(.active and (.name == $connector or (.make == $make and .model == $model and .serial == $serial))) | .name) // ""' \
+        2>/dev/null || true)"
+
+      if [ -n "$external" ]; then
+        ${lib.getExe' pkgs.sway "swaymsg"} output "$external" enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.loginPosition} >/dev/null 2>&1 || true
+        ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} disable >/dev/null 2>&1 || true
+      else
+        ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null 2>&1 || true
+      fi
+    '' else ''
+      ${lib.getExe' pkgs.sway "swaymsg"} output ${lib.escapeShellArg internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null 2>&1 || true
+    ''}
+
     ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriLoginPath}
     ${lib.getExe' pkgs.sway "swaymsg"} exit
   '';
@@ -136,8 +170,6 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     seat seat0 xcursor_theme ${lilyaGlass.cursorThemeName} 48
 
     output * bg ${lilyaGlass.palette.base} solid_color
-    output eDP-1 scale 1.75 pos 0 149
-    output DP-2 scale 1.5 pos 1829 0
 
     exec ${gtkgreetCommand}
   '';

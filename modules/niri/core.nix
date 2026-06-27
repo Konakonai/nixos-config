@@ -1,7 +1,9 @@
-{ config, pkgs, ... }:
+{ config, hostProfile, lib, pkgs, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
+  internalDisplay = hostProfile.display.internal;
+  externalDisplay = hostProfile.display.external or null;
   steamGameBarGuard = pkgs.writeShellScript "steam-game-bar-guard" ''
     set -euo pipefail
 
@@ -96,20 +98,18 @@ in
     };
 
     outputs = {
-      "eDP-1" = {
-        scale = 1.75;
+      "${internalDisplay.connector}" = {
+        scale = internalDisplay.scale;
         position = {
-          x = 2560;
-          y = 149;
+          inherit (internalDisplay.position) x y;
         };
       };
-
-      "Philips Consumer Electronics Company PHL 27E2F7901 UHB2341003696" = {
+    } // lib.optionalAttrs (externalDisplay != null) {
+      "${externalDisplay.niriName}" = {
         focus-at-startup = true;
-        scale = 1.5;
+        scale = externalDisplay.scale;
         position = {
-          x = 0;
-          y = 0;
+          inherit (externalDisplay.position) x y;
         };
       };
     };

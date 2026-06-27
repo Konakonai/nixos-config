@@ -1,13 +1,16 @@
-{ config, ... }:
+{ config, hostProfile, lib, ... }:
 
+let
+  nvidia = hostProfile.graphics.nvidia or { enable = false; };
+in
 {
-  services.xserver.videoDrivers = [ "nvidia" ];
 
   hardware.graphics = {
     enable = true;
     enable32Bit = true;
   };
-
+} // lib.optionalAttrs (nvidia.enable or false) {
+  services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;
     open = false;
@@ -23,8 +26,8 @@
         enable = true;
         enableOffloadCmd = true;
       };
-      intelBusId = "PCI:0:2:0";
-      nvidiaBusId = "PCI:1:0:0";
+      intelBusId = nvidia.intelBusId;
+      nvidiaBusId = nvidia.nvidiaBusId;
     };
 
     package = config.boot.kernelPackages.nvidiaPackages.stable;

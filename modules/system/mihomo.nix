@@ -1,9 +1,9 @@
-{ pkgs, ... }:
+{ hostProfile, pkgs, ... }:
 
 let
-  configDir = "/home/lilya/.config/mihomo";
+  configDir = hostProfile.services.mihomo.configDir;
   configFile = "${configDir}/config.yaml";
-  identityFile = "/home/lilya/.config/age/mihomo.txt";
+  identityFile = hostProfile.services.mihomo.identityFile;
   configBeforeProxies = ./mihomo/config-before-proxies.yaml;
   configAfterProxies = ./mihomo/config-after-proxies.yaml;
   encryptedProxies = ../../secrets/mihomo-proxies.yaml.age;

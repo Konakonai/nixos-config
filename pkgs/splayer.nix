@@ -22,7 +22,8 @@ pkgs.appimageTools.wrapType2 {
     install -Dm444 ${appimageContents}/SPlayer.desktop -t $out/share/applications/
     cp -r ${appimageContents}/usr/share/icons $out/share/
 
-    # Fix the Exec path in the desktop file
+    # The upstream AppImage desktop file points at AppRun; the wrapped Nix
+    # package should launch through the generated splayer wrapper instead.
     substituteInPlace $out/share/applications/SPlayer.desktop \
       --replace-fail 'Exec=AppRun --no-sandbox %U' 'Exec=splayer %U'
   '';

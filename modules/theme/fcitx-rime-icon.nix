@@ -5,8 +5,7 @@ let
   iconThemeName = lilyaGlass.iconThemeName;
 in
 {
-  xdg.dataFile."icons/${iconThemeName}/status/22/fcitx-rime.svg".source = ../../assets/fcitx-rime.svg;
-  xdg.dataFile."icons/${iconThemeName}/status/24/fcitx-rime.svg".source = ../../assets/fcitx-rime.svg;
-  xdg.dataFile."icons/${iconThemeName}/status/16/fcitx-rime.svg".source = ../../assets/fcitx-rime.svg;
+  # Colloid status icons are copied into the Flatpak-visible theme tree by
+  # modules/theme/flatpak-assets.nix, so Home Manager only owns hicolor here.
   xdg.dataFile."icons/hicolor/scalable/apps/fcitx-rime.svg".source = ../../assets/fcitx-rime.svg;
 }

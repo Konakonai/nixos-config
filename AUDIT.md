@@ -1,15 +1,22 @@
-# NixOS 配置最终审计与修复记录
+# NixOS 配置历史审计与修复记录
 
 日期：2026-06-25
 
-范围：审阅 `/home/lilya/nixos-config`，结合当前配置、git 历史、当前 boot 日志、前一 boot 日志，以及你补充的意图说明。本文记录最终判断、已实施修复，以及需要 rebuild/reboot 后继续观察的项目。
+范围：审阅 `/home/lilya/nixos-config`，结合当时配置、git 历史、boot 日志，以及你补充的意图说明。本文是历史记录；当前状态以仓库配置和 README 复刻清单为准。
 
-## 已确认事实
+## 2026-06-27 当前状态更新
+
+- `zramSwap.enable = true`，当前系统有 zram swap。
+- `services.kmscon.enable = true` 是最终目标，不再按“临时禁用 kmscon”处理。
+- 本机硬件、显示器、GPU、AC/BAT 和用户路径硬编码已集中到 `hosts/lilya-thinkbook/`。
+- 登录时按 AC 状态选择 niri Intel/NVIDIA 配置；运行中不做 GPU 热切换。
+
+## 2026-06-25 当时已确认事实
 
 - 当前系统 generation：269，NixOS `26.05.20260608.bd0ff2d`，kernel `7.0.11`。
 - `nix flake check --no-build` 曾通过，说明当前配置不是基础语法或普通 option 求值失败。
-- 当前启动使用 dGPU 直连路径：Niri 从 `/home/lilya/.config/niri/config-nvidia.kdl` 加载，并使用 `/dev/dri/renderD128` 作为 render node。
-- 当前系统没有 swap，`zramSwap.enable = false`，`swapDevices = []`。
+- 当时启动使用 dGPU 直连路径：Niri 从 `/home/lilya/.config/niri/config-nvidia.kdl` 加载，并使用 `/dev/dri/renderD128` 作为 render node。
+- 历史状态：当时系统没有 swap，后续已改为 zram swap。
 - OpenList 端口开放是有意行为，不再作为错误处理。
 - NVIDIA 电源切换被关闭是有意的临时止血：动态切换阶段确实出现过连续 OOM。
 
@@ -18,7 +25,7 @@
 1. Fcitx：移除 Home Manager 侧的重复 daemon 和重复包管理，只保留系统侧 `i18n.inputMethod` 负责启动，Home Manager 继续保留用户配置和 Flatpak 兼容环境变量。
 2. OOM：新增 `modules/system/memory.nix`，启用 zram swap 作为 Electron/Niri/Noctalia 突发内存压力缓冲；不恢复 NVIDIA 动态切换。
 3. 外设延迟：关闭全局 `powertop --auto-tune`，并给 Razer 鼠标、Telink 键盘、VIA hub 添加 USB autosuspend 禁用规则。
-4. kmscon：暂时禁用 `services.kmscon`，回退普通 getty，用于验证外接显示器开机控制台全屏问题是否消失。
+4. kmscon：历史上曾建议临时禁用用于 A/B 验证；当前策略是保留 kmscon，并把配置整理为最终路径。
 5. gtkgreet：调整 greeter 输出名、字体、宽度、padding、圆角和阴影比例，让登录界面更克制，并减少多显示器命名漂移。
 6. 主题：删除未启用的旧 Nordic/Kvantum 字段和 `KvNordLight` 资产。
 7. Zen：保留禁止 session/crash restore 的重复窗口修复，但改用 Zen profile 声明式配置，而不是直接覆盖随机 profile 下的 `user.js`。
@@ -166,7 +173,7 @@ kmscon 在多显示器、高 DPI、dGPU 直连、GRUB framebuffer/NVIDIA DRM 组
 
 你说明这个配置是为了解决 prefs/session 导致每次启动打开两个一模一样窗口的问题。这个目标是合理的，不能简单删除。
 
-现状：
+历史现状：
 
 - 当前把 `user.js` 写到 `zen/i41yvfec.Default Profile/user.js`。
 - `force = true` 会强制覆盖该 profile 的本地修改。

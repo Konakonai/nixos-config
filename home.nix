@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ inputs, hostProfile, ... }:
 
 {
   imports = [
@@ -26,8 +26,8 @@
   ];
 
   home = {
-    username = "lilya";
-    homeDirectory = "/home/lilya";
+    username = hostProfile.user.userName;
+    homeDirectory = hostProfile.user.homeDirectory;
     stateVersion = "26.05";
   };
 

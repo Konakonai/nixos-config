@@ -1,9 +1,9 @@
-{ pkgs, ... }:
+{ hostProfile, pkgs, ... }:
 
 {
-  users.users.lilya = {
+  users.users.${hostProfile.user.userName} = {
     isNormalUser = true;
-    description = "lilya";
+    description = hostProfile.user.userName;
     shell = pkgs.fish;
 
     extraGroups = [

@@ -21,7 +21,6 @@
     btop
     fastfetch
 
-    appimage-run
     xwayland-satellite
     brightnessctl
     imagemagick

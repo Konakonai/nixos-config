@@ -1,7 +1,7 @@
-{ config, lib, pkgs, ... }:
+{ config, hostProfile, lib, pkgs, ... }:
 
 let
-  internalDisplayKernelParam = "video=eDP-1:d";
+  internalDisplayKernelParam = hostProfile.boot.disableInternalDisplayParam or null;
 
   touhouGrubTheme = pkgs.stdenvNoCC.mkDerivation {
     pname = "grub-theme-touhou-project";
@@ -208,16 +208,15 @@ in
   };
   boot.kernelParams = [
     "quiet"
-    # Default to an external-only boot splash. GRUB still provides an
-    # internal-display-fallback specialisation for boots without a monitor.
-    internalDisplayKernelParam
     "udev.log_level=3"
-  ];
+  ] ++ lib.optional (internalDisplayKernelParam != null) internalDisplayKernelParam;
   boot.supportedFilesystems.ntfs = true;
 
-  specialisation.internal-display-fallback.configuration = {
-    system.nixos.tags = [ "internal-display-fallback" ];
-    boot.kernelParams = lib.mkForce fallbackKernelParams;
+  specialisation = lib.optionalAttrs (internalDisplayKernelParam != null) {
+    internal-display-fallback.configuration = {
+      system.nixos.tags = [ "internal-display-fallback" ];
+      boot.kernelParams = lib.mkForce fallbackKernelParams;
+    };
   };
 
   environment.systemPackages = [ pkgs.efibootmgr ];

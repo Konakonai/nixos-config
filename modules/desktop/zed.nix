@@ -1,7 +1,8 @@
-{ ... }:
+{ config, lib, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
+  zed = lib.getExe config.programs.zed-editor.package;
 in
 
 {
@@ -9,7 +10,7 @@ in
     name = "Zed";
     genericName = "Text Editor";
     comment = "A high-performance, multiplayer code editor.";
-    exec = "zeditor %U";
+    exec = "${zed} %U";
     icon = "zed";
     type = "Application";
     categories = [ "Utility" "TextEditor" "Development" "IDE" ];
@@ -26,7 +27,7 @@ in
     ];
     settings.StartupNotify = "true";
     actions.NewWorkspace = {
-      exec = "zeditor --new %U";
+      exec = "${zed} --new %U";
       name = "Open a new workspace";
     };
   };

@@ -1,8 +1,8 @@
-{ ... }:
+{ hostProfile, ... }:
 
 {
   imports = [
-    ./hardware-configuration.nix
+    hostProfile.hardwareConfiguration
     ./modules/system/audio.nix
     ./modules/system/boot.nix
     ./modules/system/display.nix

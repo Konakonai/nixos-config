@@ -13,6 +13,8 @@ let
     mkdir -p "$out"
     tar -xzf "$src" --strip-components=1 -C "$out"
 
+    # Antigravity's loading overlay can size itself too early on this Wayland
+    # setup; trigger a few delayed bounds refreshes after window changes.
     asar extract "$out/resources/app.asar" app
     substituteInPlace app/dist/loadingOverlay.js \
       --replace-fail "    updateBounds();" "    updateBounds();

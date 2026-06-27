@@ -18,7 +18,6 @@ in
     python3
     lua
     git-lfs
-    zed-editor
 
     inputs.hermes-agent.packages.${system}.default
     unstable.officecli

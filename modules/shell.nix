@@ -1,14 +1,14 @@
-{ config, pkgs, ... }:
+{ config, hostProfile, pkgs, ... }:
 
 let
   nh = pkgs.lib.getExe pkgs.nh;
   rebuild = pkgs.writeShellScriptBin "rebuild" ''
     export PATH="/run/wrappers/bin:$PATH"
-    exec ${nh} os switch /home/lilya/nixos-config -- --impure "$@"
+    exec ${nh} os switch ${hostProfile.user.nixosConfigPath} "$@"
   '';
   testbuild = pkgs.writeShellScriptBin "testbuild" ''
     export PATH="/run/wrappers/bin:$PATH"
-    exec ${nh} os test /home/lilya/nixos-config -- --impure "$@"
+    exec ${nh} os test ${hostProfile.user.nixosConfigPath} "$@"
   '';
 in
 

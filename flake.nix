@@ -41,12 +41,16 @@
     };
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, niri, noctalia, millennium, ... }: {
+  outputs = inputs@{ nixpkgs, home-manager, niri, noctalia, millennium, ... }:
+  let
+    hostProfile = import ./hosts/lilya-thinkbook;
+  in
+  {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
 
       specialArgs = {
-        inherit inputs;
+        inherit inputs hostProfile;
       };
 
       modules = [
@@ -67,10 +71,10 @@
           home-manager.backupFileExtension = "backup";
 
           home-manager.extraSpecialArgs = {
-            inherit inputs;
+            inherit inputs hostProfile;
           };
 
-          home-manager.users.lilya = import ./home.nix;
+          home-manager.users.${hostProfile.user.userName} = import ./home.nix;
         }
       ];
     };

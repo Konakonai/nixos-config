@@ -3,11 +3,8 @@
 {
   home.packages = with pkgs; [
     aria2
-    unzip
     zip
-    git
     sshfs
-    ripgrep
     jq
     python3Packages.ddgs
     nh
@@ -19,7 +16,6 @@
     ripdrag
     unrar
     _7zz
-    p7zip
     pigz
 
     wl-clipboard
