@@ -4,6 +4,7 @@
   home.packages = with pkgs; [
     chromium
     file-roller
+    gnome-font-viewer
     nemo-with-extensions
     pavucontrol
     mission-center

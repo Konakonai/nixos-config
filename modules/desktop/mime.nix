@@ -2,7 +2,9 @@
 
 let
   ebookReader = "com.github.johnfactotum.Foliate.desktop";
+  fontViewer = "org.gnome.font-viewer.desktop";
   imageViewer = "org.gnome.Loupe.desktop";
+  mediaPlayer = "io.github.celluloid_player.Celluloid.desktop";
 in
 {
   xdg.mimeApps = {
@@ -47,17 +49,39 @@ in
       "image/x-xbitmap" = imageViewer;
       "image/x-xpixmap" = imageViewer;
 
-      "video/mp4" = "io.github.celluloid_player.Celluloid.desktop";
-      "video/x-matroska" = "io.github.celluloid_player.Celluloid.desktop";
-      "video/webm" = "io.github.celluloid_player.Celluloid.desktop";
-      "video/mpeg" = "io.github.celluloid_player.Celluloid.desktop";
-      "video/avi" = "io.github.celluloid_player.Celluloid.desktop";
-      "video/quicktime" = "io.github.celluloid_player.Celluloid.desktop";
-      "video/x-flv" = "io.github.celluloid_player.Celluloid.desktop";
-      "video/3gp" = "io.github.celluloid_player.Celluloid.desktop";
-      "video/3gpp" = "io.github.celluloid_player.Celluloid.desktop";
-      "video/x-ms-wmv" = "io.github.celluloid_player.Celluloid.desktop";
-      "video/x-msvideo" = "io.github.celluloid_player.Celluloid.desktop";
+      "application/ogg" = mediaPlayer;
+      "application/x-flac" = mediaPlayer;
+      "audio/3gpp" = mediaPlayer;
+      "audio/aac" = mediaPlayer;
+      "audio/flac" = mediaPlayer;
+      "audio/m4a" = mediaPlayer;
+      "audio/mp4" = mediaPlayer;
+      "audio/mpeg" = mediaPlayer;
+      "audio/ogg" = mediaPlayer;
+      "audio/opus" = mediaPlayer;
+      "audio/wav" = mediaPlayer;
+      "audio/webm" = mediaPlayer;
+      "audio/x-aac" = mediaPlayer;
+      "audio/x-flac" = mediaPlayer;
+      "audio/x-m4a" = mediaPlayer;
+      "audio/x-matroska" = mediaPlayer;
+      "audio/x-mp3" = mediaPlayer;
+      "audio/x-mpeg" = mediaPlayer;
+      "audio/x-ogg" = mediaPlayer;
+      "audio/x-opus+ogg" = mediaPlayer;
+      "audio/x-vorbis+ogg" = mediaPlayer;
+      "audio/x-wav" = mediaPlayer;
+      "video/mp4" = mediaPlayer;
+      "video/x-matroska" = mediaPlayer;
+      "video/webm" = mediaPlayer;
+      "video/mpeg" = mediaPlayer;
+      "video/avi" = mediaPlayer;
+      "video/quicktime" = mediaPlayer;
+      "video/x-flv" = mediaPlayer;
+      "video/3gp" = mediaPlayer;
+      "video/3gpp" = mediaPlayer;
+      "video/x-ms-wmv" = mediaPlayer;
+      "video/x-msvideo" = mediaPlayer;
 
       "application/zip" = "org.gnome.FileRoller.desktop";
       "application/x-tar" = "org.gnome.FileRoller.desktop";
@@ -81,6 +105,17 @@ in
       "application/x-fictionbook+xml" = ebookReader;
       "application/x-mobipocket-ebook" = ebookReader;
       "application/x-zip-compressed-fb2" = ebookReader;
+
+      "application/vnd.ms-opentype" = fontViewer;
+      "application/x-font-otf" = fontViewer;
+      "application/x-font-pcf" = fontViewer;
+      "application/x-font-ttf" = fontViewer;
+      "application/x-font-type1" = fontViewer;
+      "font/collection" = fontViewer;
+      "font/otf" = fontViewer;
+      "font/ttf" = fontViewer;
+      "font/woff" = fontViewer;
+      "font/woff2" = fontViewer;
 
       "application/msword" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = "org.onlyoffice.desktopeditors.desktop";
