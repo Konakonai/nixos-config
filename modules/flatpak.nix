@@ -52,9 +52,23 @@ in
         Environment = themeEnv;
       };
 
-      "com.qq.QQ".Environment = themeEnv // fcitxCompatEnv;
+      "com.qq.QQ" = {
+        Context.sockets = [
+          "x11"
+          "!wayland"
+          "!fallback-x11"
+        ];
+        Environment = themeEnv // fcitxCompatEnv // {
+          ELECTRON_OZONE_PLATFORM_HINT = "x11";
+          NIXOS_OZONE_WL = "0";
+        };
+      };
       "org.onlyoffice.desktopeditors".Environment = themeEnv // fcitxCompatEnv;
       "com.tencent.WeChat".Environment = themeEnv // fcitxCompatEnv // electronColorEnv;
     };
   };
+
+  home.file.".var/app/com.qq.QQ/config/qq-flags.conf".text = ''
+    --ozone-platform=x11
+  '';
 }
