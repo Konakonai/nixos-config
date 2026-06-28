@@ -1,4 +1,4 @@
-{ config, fcitxCompatEnv, ... }:
+{ config, fcitxCompatEnv, lib, ... }:
 
 let
   lilyaGlass = import ./glass-settings.nix;
@@ -71,7 +71,10 @@ in
     };
   };
 
-  home.file.".var/app/com.qq.QQ/config/qq-flags.conf".text = ''
-    --ozone-platform=x11
+  home.activation.qqFlatpakFlags = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    qq_config="$HOME/.var/app/com.qq.QQ/config"
+    mkdir -p "$qq_config"
+    rm -f "$qq_config/qq-flags.conf"
+    printf '%s\n' "--ozone-platform=x11" > "$qq_config/qq-flags.conf"
   '';
 }
