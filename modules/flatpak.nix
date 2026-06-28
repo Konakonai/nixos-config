@@ -53,16 +53,17 @@ in
       };
 
       "com.qq.QQ" = {
-        # Keep QQ rendering on Wayland while giving legacy clipboard paths the
-        # real XWayland socket instead of the private Xvfb used by its launcher.
+        # QQ's Wayland clipboard path is still unreliable upstream. Force only
+        # this app through XWayland so copied content reaches the real desktop
+        # clipboard instead of the private Xvfb fallback used by its launcher.
         Context.sockets = [
-          "wayland"
           "x11"
+          "!wayland"
           "!fallback-x11"
         ];
         Environment = themeEnv // fcitxCompatEnv // {
-          ELECTRON_OZONE_PLATFORM_HINT = "wayland";
-          NIXOS_OZONE_WL = "1";
+          ELECTRON_OZONE_PLATFORM_HINT = "x11";
+          NIXOS_OZONE_WL = "0";
         };
       };
       "org.onlyoffice.desktopeditors".Environment = themeEnv // fcitxCompatEnv;
@@ -71,8 +72,6 @@ in
   };
 
   home.file.".var/app/com.qq.QQ/config/qq-flags.conf".text = ''
-    --ozone-platform=wayland
-    --enable-wayland-ime
-    --wayland-text-input-version=3
+    --ozone-platform=x11
   '';
 }
