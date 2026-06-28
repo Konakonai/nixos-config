@@ -1,5 +1,11 @@
 # lilya's NixOS configuration
 
+## Agent Notice
+
+If you are an automated coding agent working in this repository, read
+`AGENTS.md` before making changes. It defines the required workflow,
+verification, commit, and push rules for this machine configuration.
+
 Personal NixOS + Home Manager configuration for a light niri desktop.
 
 ## Layout
