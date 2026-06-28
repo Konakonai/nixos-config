@@ -53,14 +53,16 @@ in
       };
 
       "com.qq.QQ" = {
+        # Keep QQ rendering on Wayland while giving legacy clipboard paths the
+        # real XWayland socket instead of the private Xvfb used by its launcher.
         Context.sockets = [
+          "wayland"
           "x11"
-          "!wayland"
           "!fallback-x11"
         ];
         Environment = themeEnv // fcitxCompatEnv // {
-          ELECTRON_OZONE_PLATFORM_HINT = "x11";
-          NIXOS_OZONE_WL = "0";
+          ELECTRON_OZONE_PLATFORM_HINT = "wayland";
+          NIXOS_OZONE_WL = "1";
         };
       };
       "org.onlyoffice.desktopeditors".Environment = themeEnv // fcitxCompatEnv;
@@ -69,6 +71,8 @@ in
   };
 
   home.file.".var/app/com.qq.QQ/config/qq-flags.conf".text = ''
-    --ozone-platform=x11
+    --ozone-platform=wayland
+    --enable-wayland-ime
+    --wayland-text-input-version=3
   '';
 }
