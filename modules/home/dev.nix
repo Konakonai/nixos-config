@@ -19,6 +19,7 @@ in
     lua
     git-lfs
 
+    (import ../../pkgs/mcp-server-brave-search.nix { inherit pkgs lib; })
     inputs.hermes-agent.packages.${system}.default
     unstable.officecli
   ];

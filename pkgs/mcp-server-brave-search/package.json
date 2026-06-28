@@ -1,0 +1,7 @@
+{
+  "name": "mcp-server-brave-search",
+  "version": "0.6.2",
+  "dependencies": {
+    "@modelcontextprotocol/server-brave-search": "0.6.2"
+  }
+}
