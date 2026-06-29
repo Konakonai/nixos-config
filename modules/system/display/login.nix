@@ -9,7 +9,8 @@ let
   niriBasePackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
   niriPackage = niriBasePackage.overrideAttrs (oldAttrs: {
     patches = (oldAttrs.patches or [ ]) ++ [
-      ../../../patches/niri-linear-cross-gpu-output-buffers.patch
+      # Work around niri-wm/niri#4113 on NVIDIA hybrid output until upstream fixes it.
+      ../../../patches/niri-disable-xrgb2101010.patch
     ];
   });
   niriSession = "${niriPackage}/bin/niri-session";

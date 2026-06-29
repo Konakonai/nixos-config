@@ -1,0 +1,7 @@
+diff --git a/src/backend/tty.rs b/src/backend/tty.rs
+--- a/src/backend/tty.rs
++++ b/src/backend/tty.rs
+@@ -73,2 +73,1 @@
+-const SUPPORTED_COLOR_FORMATS: [Fourcc; 8] = [
+-    Fourcc::Xrgb2101010,
++const SUPPORTED_COLOR_FORMATS: [Fourcc; 7] = [
