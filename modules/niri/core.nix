@@ -1,16 +1,7 @@
-{ config, hostProfile, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
-  internalDisplay = hostProfile.display.internal;
-  externalDisplay = hostProfile.display.external or null;
-  outputName = display: "${display.make} ${display.model} ${display.serial}";
-  internalOutput = {
-    scale = internalDisplay.scale;
-    position = {
-      inherit (internalDisplay.position) x y;
-    };
-  };
   steamGameBarGuard = pkgs.writeShellScript "steam-game-bar-guard" ''
     set -euo pipefail
 
@@ -120,21 +111,6 @@ in
       };
 
       mouse.natural-scroll = false;
-    };
-
-    outputs = {
-      "*" = {
-        scale = internalDisplay.scale;
-      };
-      "${outputName internalDisplay}" = internalOutput;
-    } // lib.optionalAttrs (externalDisplay != null) {
-      "${outputName externalDisplay}" = {
-        focus-at-startup = true;
-        scale = externalDisplay.scale;
-        position = {
-          inherit (externalDisplay.position) x y;
-        };
-      };
     };
 
     layout = {

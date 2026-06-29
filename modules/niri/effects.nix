@@ -5,6 +5,7 @@ let
   internalDisplay = hostProfile.display.internal;
   externalDisplay = hostProfile.display.external or null;
   nvidia = hostProfile.graphics.nvidia or { enable = false; };
+  kdlString = builtins.toJSON;
   outputName = display: "${display.make} ${display.model} ${display.serial}";
   renderDeviceDebug = renderNode: lib.optionalString (nvidia.enable or false) ''
     debug {
@@ -14,8 +15,22 @@ let
   intelDebug = renderDeviceDebug nvidia.intelRenderNode;
   nvidiaDebug = renderDeviceDebug nvidia.nvidiaRenderNode;
   outputOff = display: ''
-    output ${builtins.toJSON (outputName display)} {
+    output ${kdlString (outputName display)} {
         off
+    }
+  '';
+  outputOn = display: focusAtStartup: ''
+    output ${kdlString (outputName display)} {
+        scale ${builtins.toString display.scale}
+        ${lib.optionalString focusAtStartup "focus-at-startup"}
+        transform "normal"
+        position x=${builtins.toString display.position.x} y=${builtins.toString display.position.y}
+    }
+  '';
+  wildcardOutput = ''
+    output "*" {
+        scale ${builtins.toString internalDisplay.scale}
+        transform "normal"
     }
   '';
 
@@ -102,9 +117,19 @@ let
     ${debugConfig}
   '';
   internalConfig = mkSessionConfig intelDebug (
-    lib.optionalString (externalDisplay != null) (outputOff externalDisplay)
+    ''
+      ${wildcardOutput}
+      ${outputOn internalDisplay false}
+      ${lib.optionalString (externalDisplay != null) (outputOff externalDisplay)}
+    ''
   );
-  externalConfig = mkSessionConfig nvidiaDebug (outputOff internalDisplay);
+  externalConfig = mkSessionConfig nvidiaDebug (
+    ''
+      ${wildcardOutput}
+      ${outputOff internalDisplay}
+      ${lib.optionalString (externalDisplay != null) (outputOn externalDisplay true)}
+    ''
+  );
 in
 {
   xdg.configFile = {
