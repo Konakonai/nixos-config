@@ -7,29 +7,13 @@ let
   loginWallpaper = hostProfile.display.loginWallpaper or null;
   pos = position: "${builtins.toString position.x} ${builtins.toString position.y}";
 
-  niriBase = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
-  niriPatched = pkgs.runCommandLocal "${niriBase.name}-patched-session" {
-    passthru = niriBase.passthru or { };
-    meta = niriBase.meta or { };
-    cargoBuildNoDefaultFeatures = niriBase.cargoBuildNoDefaultFeatures;
-    cargoBuildFeatures = niriBase.cargoBuildFeatures;
-  } ''
-    # niri-session normally imports a small allowlist of environment variables.
-    # The desktop session here relies on richer Home Manager/session env, but
-    # don't propagate driver-forcing variables from a stale parent environment.
-    cp -a ${niriBase} $out
-    chmod -R u+w $out
-    substituteInPlace $out/bin/niri-session \
-      --replace-fail 'systemctl --user import-environment' 'systemctl --user unset-environment GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME NIRI_CONFIG; env | cut -d= -f1 | grep -Ev "^(GBM_BACKEND|__GLX_VENDOR_LIBRARY_NAME)$" | xargs -r systemctl --user import-environment'
-  '';
-  niriSession = "${niriPatched}/bin/niri-session";
+  niriPackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
+  niriSession = "${niriPackage}/bin/niri-session";
   niriLoginCommand = "Niri";
   niriLogin = pkgs.writeShellScriptBin niriLoginCommand ''
     unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
-    ${pkgs.systemd}/bin/systemctl --user unset-environment GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME NIRI_CONFIG 2>/dev/null || true
 
     export NIRI_CONFIG="$HOME/.config/niri/config-intel.kdl"
-    ${pkgs.systemd}/bin/systemctl --user import-environment NIRI_CONFIG 2>/dev/null || true
     exec ${niriSession} "$@"
   '';
   niriLoginPath = lib.getExe niriLogin;
@@ -41,7 +25,7 @@ let
   loginOutputConfig =
     if externalDisplay != null then
       ''
-        output * enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition}
+        output * enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position}
         output ${externalDisplay.connector} enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position}
       ''
     else
@@ -181,7 +165,16 @@ in
 {
   programs.niri = {
     enable = true;
-    package = niriPatched;
+    package = niriPackage;
+  };
+
+  systemd.user.units."niri.service" = {
+    overrideStrategy = "asDropin";
+    text = ''
+      [Service]
+      Environment=NIRI_CONFIG=%h/.config/niri/config-intel.kdl
+      UnsetEnvironment=GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
+    '';
   };
 
   services.greetd = {
