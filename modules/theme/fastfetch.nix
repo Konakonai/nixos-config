@@ -17,8 +17,8 @@ in
     logo = {
       type = "kitty-direct";
       source = "${logoPng}";
-      width = 48;
-      height = 18;
+      width = 60;
+      height = 20;
       preserveAspectRatio = true;
       padding = {
         top = 0;
@@ -46,12 +46,12 @@ in
     modules = [
       {
         type = "title";
-        format = "{user-name}@{host-name}";
+        format = "{user-name-colored}{at-symbol-colored}{host-name-colored}";
       }
       {
         type = "separator";
-        string = "─";
-        times = 20;
+        string = "┄";
+        times = 22;
         outputColor = "blue";
       }
       {
@@ -72,13 +72,19 @@ in
       }
       {
         type = "packages";
-        key = "├ Packages";
+        key = "╰ Packages";
         combined = false;
         disabled = [ "winget" ];
       }
       {
+        type = "separator";
+        string = "┄";
+        times = 22;
+        outputColor = "blue";
+      }
+      {
         type = "wm";
-        key = "├ WM";
+        key = "╭ WM";
       }
       {
         type = "display";
@@ -95,11 +101,17 @@ in
       }
       {
         type = "shell";
-        key = "├ Shell";
+        key = "╰ Shell";
+      }
+      {
+        type = "separator";
+        string = "┄";
+        times = 22;
+        outputColor = "blue";
       }
       {
         type = "cpu";
-        key = "├ CPU";
+        key = "╭ CPU";
       }
       {
         type = "gpu";
