@@ -90,6 +90,7 @@ in
     };
 
     environment = {
+      GSK_RENDERER = "ngl";
       GTK_USE_PORTAL = "1";
       NIXOS_OZONE_WL = "1";
       QT_QPA_PLATFORMTHEME = "qt6ct";

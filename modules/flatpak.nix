@@ -4,6 +4,7 @@ let
   lilyaGlass = import ./glass-settings.nix;
 
   themeEnv = {
+    GSK_RENDERER = "ngl";
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     XCURSOR_THEME = lilyaGlass.cursorThemeName;

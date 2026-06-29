@@ -5,6 +5,7 @@ let
 in
 {
   home.sessionVariables = {
+    GSK_RENDERER = "ngl";
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "qt6ct";
