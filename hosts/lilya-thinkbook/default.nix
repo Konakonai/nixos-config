@@ -25,7 +25,6 @@ in
     loginWallpaper = ../../assets/sddm-wallpaper.jpg;
 
     internal = {
-      connector = "eDP-1";
       scale = 1.75;
       # Keep the external display at the global origin for XWayland/Steam games
       # while matching the physical layout: the laptop panel sits on the left.

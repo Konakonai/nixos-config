@@ -53,7 +53,7 @@ let
 
     case "''${1:-status}" in
       boot|change)
-        # dGPU-only mode: keep the NVIDIA device awake until hybrid profiles are stable again.
+        # Keep the NVIDIA device awake for the external display connector.
         set_power on
         ;;
       ac|on)

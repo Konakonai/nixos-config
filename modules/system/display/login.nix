@@ -2,7 +2,6 @@
 
 let
   lilyaGlass = import ../../glass-settings.nix;
-  nvidia = hostProfile.graphics.nvidia or { enable = false; };
   internalDisplay = hostProfile.display.internal;
   externalDisplay = hostProfile.display.external or null;
   loginWallpaper = hostProfile.display.loginWallpaper or null;
@@ -29,15 +28,7 @@ let
     unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
     ${pkgs.systemd}/bin/systemctl --user unset-environment GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME 2>/dev/null || true
 
-    ${if nvidia.enable or false then ''
-      if [ "$(cat /sys/class/power_supply/${nvidia.acAdapter}/online 2>/dev/null || echo 0)" = "1" ]; then
-        export NIRI_CONFIG="$HOME/.config/niri/config-nvidia.kdl"
-      else
-        export NIRI_CONFIG="$HOME/.config/niri/config-intel.kdl"
-      fi
-    '' else ''
-      export NIRI_CONFIG="$HOME/.config/niri/config-intel.kdl"
-    ''}
+    export NIRI_CONFIG="$HOME/.config/niri/config-intel.kdl"
     exec ${niriSession} "$@"
   '';
   niriLoginPath = lib.getExe niriLogin;
@@ -49,12 +40,12 @@ let
   loginOutputConfig =
     if externalDisplay != null then
       ''
+        output * enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition}
         output ${externalDisplay.connector} enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position}
-        output ${internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position}
       ''
     else
       ''
-        output ${internalDisplay.connector} enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition}
+        output * enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition}
       '';
   loginBackgroundCommand =
     if loginWallpaper != null then

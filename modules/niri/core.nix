@@ -116,7 +116,7 @@ in
     };
 
     outputs = {
-      "${internalDisplay.connector}" = {
+      "*" = {
         scale = internalDisplay.scale;
         position = {
           inherit (internalDisplay.position) x y;

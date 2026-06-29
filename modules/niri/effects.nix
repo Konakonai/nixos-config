@@ -6,7 +6,6 @@ let
   intelDebug = lib.optionalString (nvidia.enable or false) ''
     debug {
         render-drm-device "${nvidia.intelRenderNode}"
-        ignore-drm-device "${nvidia.nvidiaRenderNode}"
     }
   '';
   nvidiaDebug = lib.optionalString (nvidia.enable or false) ''
