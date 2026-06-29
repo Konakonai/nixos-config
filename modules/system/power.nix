@@ -17,7 +17,11 @@ let
     is_niri_on_nvidia() {
       niri_pid=$(${pkgs.procps}/bin/pgrep -x niri || true)
       [ -z "$niri_pid" ] && return 1
-      ${pkgs.gnugrep}/bin/grep -q "NIRI_CONFIG=.*config-nvidia.kdl" "/proc/$niri_pid/environ" 2>/dev/null
+      niri_config="$(${pkgs.coreutils}/bin/tr '\0' '\n' < "/proc/$niri_pid/environ" \
+        | ${pkgs.gnugrep}/bin/grep '^NIRI_CONFIG=' \
+        | ${pkgs.coreutils}/bin/head -n 1)"
+      niri_config="''${niri_config#NIRI_CONFIG=}"
+      [ -r "$niri_config" ] && ${pkgs.gnugrep}/bin/grep -q 'render-drm-device "${nvidia.nvidiaRenderNode}"' "$niri_config"
     }
 
     set_power() {
@@ -45,9 +49,9 @@ let
       fi
 
       if is_niri_on_nvidia; then
-        echo "Niri Session: Running on NVIDIA (dGPU)"
+        echo "Niri Render Config: NVIDIA render node"
       else
-        echo "Niri Session: Running on Intel (iGPU) or not running"
+        echo "Niri Render Config: Intel/hybrid or not running"
       fi
     }
 

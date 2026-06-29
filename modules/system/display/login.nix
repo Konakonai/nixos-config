@@ -20,15 +20,16 @@ let
     cp -a ${niriBase} $out
     chmod -R u+w $out
     substituteInPlace $out/bin/niri-session \
-      --replace-fail 'systemctl --user import-environment' 'systemctl --user unset-environment GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME; env | cut -d= -f1 | grep -Ev "^(GBM_BACKEND|__GLX_VENDOR_LIBRARY_NAME)$" | xargs -r systemctl --user import-environment'
+      --replace-fail 'systemctl --user import-environment' 'systemctl --user unset-environment GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME NIRI_CONFIG; env | cut -d= -f1 | grep -Ev "^(GBM_BACKEND|__GLX_VENDOR_LIBRARY_NAME)$" | xargs -r systemctl --user import-environment'
   '';
   niriSession = "${niriPatched}/bin/niri-session";
   niriLoginCommand = "Niri";
   niriLogin = pkgs.writeShellScriptBin niriLoginCommand ''
     unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
-    ${pkgs.systemd}/bin/systemctl --user unset-environment GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME 2>/dev/null || true
+    ${pkgs.systemd}/bin/systemctl --user unset-environment GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME NIRI_CONFIG 2>/dev/null || true
 
     export NIRI_CONFIG="$HOME/.config/niri/config-intel.kdl"
+    ${pkgs.systemd}/bin/systemctl --user import-environment NIRI_CONFIG 2>/dev/null || true
     exec ${niriSession} "$@"
   '';
   niriLoginPath = lib.getExe niriLogin;

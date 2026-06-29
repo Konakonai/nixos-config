@@ -8,11 +8,6 @@ let
         render-drm-device "${nvidia.intelRenderNode}"
     }
   '';
-  nvidiaDebug = lib.optionalString (nvidia.enable or false) ''
-    debug {
-        render-drm-device "${nvidia.nvidiaRenderNode}"
-    }
-  '';
 
   baseConfig = ''
     ${config.programs.niri.finalConfig}
@@ -105,6 +100,6 @@ in
 
   xdg.configFile."niri/config-nvidia.kdl".text = ''
     ${baseConfig}
-    ${nvidiaDebug}
+    ${intelDebug}
   '';
 }
