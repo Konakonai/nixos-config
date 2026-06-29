@@ -18,77 +18,25 @@ let
   niriLoginPath = lib.getExe niriLogin;
   gtkgreetGtkThemeName = "adw-gtk3";
   gtkgreetGtkThemePackage = pkgs.adw-gtk3;
-  gtkgreetFontSize = 17;
-  gtkgreetClockFontSize = 32;
-  gtkgreetCardWidth = 560;
-  gtkgreetCardPadding = 40;
-  gtkgreetControlHeight = 48;
-  loginConfigureOutputs = pkgs.writeShellScript "gtkgreet-configure-outputs" (''
-    set -eu
-
-    swaymsg=${lib.escapeShellArg (lib.getExe' pkgs.sway "swaymsg")}
-    jq=${lib.escapeShellArg (lib.getExe pkgs.jq)}
-
-    outputs=""
-    for _ in $(${pkgs.coreutils}/bin/seq 1 20); do
-      outputs="$("$swaymsg" -t get_outputs 2>/dev/null || true)"
-      output_count="$(printf '%s' "$outputs" | "$jq" 'length' 2>/dev/null || echo 0)"
-      if [ "$output_count" -gt 0 ] 2>/dev/null; then
-        break
-      fi
-
-      ${pkgs.coreutils}/bin/sleep 0.1
-    done
-
-    output_names() {
-      printf '%s' "$outputs" | "$jq" -r '.[].name' 2>/dev/null || true
+  gtkgreetFontSize = 20;
+  gtkgreetClockFontSize = 44;
+  gtkgreetCardWidth = 720;
+  gtkgreetCardPadding = 56;
+  gtkgreetControlHeight = 58;
+  kdlString = builtins.toJSON;
+  outputName = display: "${display.make} ${display.model} ${display.serial}";
+  greeterOutput = display: focusAtStartup: ''
+    output ${kdlString (outputName display)} {
+        scale ${builtins.toString display.scale}
+        ${lib.optionalString focusAtStartup "focus-at-startup"}
+        transform "normal"
+        position x=${builtins.toString display.position.x} y=${builtins.toString display.position.y}
+        background-color ${kdlString lilyaGlass.palette.base}
     }
-
-    place_output() {
-      output_name="$1"
-      scale="$2"
-      x="$3"
-      y="$4"
-
-      "$swaymsg" output "$output_name" enable scale "$scale" pos "$x" "$y" >/dev/null
-    }
-  '' + (if externalDisplay != null then ''
-    external_name="$(
-      printf '%s' "$outputs" \
-        | "$jq" -r \
-          --arg make ${lib.escapeShellArg externalDisplay.make} \
-          --arg model ${lib.escapeShellArg externalDisplay.model} \
-          --arg serial ${lib.escapeShellArg externalDisplay.serial} \
-          '.[] | select(.make == $make and .model == $model and .serial == $serial) | .name' \
-        | ${pkgs.coreutils}/bin/head -n 1
-    )"
-
-    if [ -n "$external_name" ] && [ "$external_name" != "null" ]; then
-      output_names | while IFS= read -r output_name; do
-        [ -n "$output_name" ] || continue
-        [ "$output_name" != "$external_name" ] || continue
-        place_output "$output_name" "${builtins.toString internalDisplay.scale}" "${builtins.toString internalDisplay.position.x}" "${builtins.toString internalDisplay.position.y}"
-      done
-
-      place_output "$external_name" "${builtins.toString externalDisplay.scale}" "${builtins.toString externalDisplay.position.x}" "${builtins.toString externalDisplay.position.y}"
-      "$swaymsg" focus output "$external_name" >/dev/null 2>&1 || true
-    else
-      output_names | while IFS= read -r output_name; do
-        [ -n "$output_name" ] || continue
-        place_output "$output_name" "${builtins.toString internalDisplay.scale}" "${builtins.toString internalDisplay.loginPosition.x}" "${builtins.toString internalDisplay.loginPosition.y}"
-      done
-    fi
-  '' else ''
-    output_names | while IFS= read -r output_name; do
-      [ -n "$output_name" ] || continue
-      place_output "$output_name" "${builtins.toString internalDisplay.scale}" "${builtins.toString internalDisplay.loginPosition.x}" "${builtins.toString internalDisplay.loginPosition.y}"
-    done
-  ''));
-  loginBackgroundCommand =
-    if loginWallpaper != null then
-      "output * bg ${loginWallpaper} fill"
-    else
-      "output * bg ${lilyaGlass.palette.base} solid_color";
+  '';
+  externalGreeterOutput = lib.optionalString (externalDisplay != null) (
+    greeterOutput externalDisplay true
+  );
 
   gtkgreet = pkgs.gtkgreet.overrideAttrs (oldAttrs: {
     postPatch = (oldAttrs.postPatch or "") + ''
@@ -191,18 +139,65 @@ int config_update_command_selector(GtkWidget *combobox) {' \
   '';
 
   gtkgreetCommand = pkgs.writeShellScript "gtkgreet-command" ''
-    ${loginConfigureOutputs}
+    ${lib.optionalString (loginWallpaper != null) ''
+      ${lib.getExe pkgs.swaybg} -i ${loginWallpaper} -m fill &
+      wallpaper_pid=$!
+      trap 'kill "$wallpaper_pid" >/dev/null 2>&1 || true' EXIT
+    ''}
+
     ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriLoginPath}
-    ${lib.getExe' pkgs.sway "swaymsg"} exit
+    ${niriPackage}/bin/niri msg action quit --skip-confirmation
   '';
 
-  gtkgreetSwayConfig = pkgs.writeText "gtkgreet-sway-config" ''
-    font pango:${lilyaGlass.fonts.sans} 11
-    seat seat0 xcursor_theme ${lilyaGlass.cursorThemeName} 48
+  gtkgreetNiriConfig = pkgs.writeText "gtkgreet-niri-config.kdl" ''
+    input {
+        keyboard {
+            xkb {
+                layout "us"
+            }
+        }
 
-    ${loginBackgroundCommand}
+        touchpad {
+            tap
+            natural-scroll
+        }
+    }
 
-    exec ${gtkgreetCommand}
+    output "*" {
+        scale ${builtins.toString internalDisplay.scale}
+        transform "normal"
+        background-color ${kdlString lilyaGlass.palette.base}
+    }
+
+    ${greeterOutput internalDisplay false}
+    ${externalGreeterOutput}
+
+    cursor {
+        xcursor-theme ${kdlString lilyaGlass.cursorThemeName}
+        xcursor-size 48
+    }
+
+    hotkey-overlay { skip-at-startup; }
+
+    environment {
+        "GDK_DEBUG" "no-portals"
+        "GTK_USE_PORTAL" "0"
+        "XCURSOR_SIZE" "48"
+        "XCURSOR_THEME" ${kdlString lilyaGlass.cursorThemeName}
+    }
+
+    layout {
+        gaps 0
+        center-focused-column "always"
+        default-column-width { proportion 1.000000; }
+        focus-ring { off; }
+        border { off; }
+        shadow { off; }
+        background-color "transparent"
+    }
+
+    prefer-no-csd
+    spawn-at-startup ${kdlString "${gtkgreetCommand}"}
   '';
 
   gtkgreetSession = pkgs.writeShellScript "gtkgreet-session" ''
@@ -211,7 +206,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     export XCURSOR_SIZE=48
     export XDG_DATA_DIRS=${gtkgreetGtkThemePackage}/share:${pkgs.colloid-icon-theme}/share:${pkgs.nordzy-cursor-theme}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
 
-    exec ${pkgs.dbus}/bin/dbus-run-session ${lib.getExe pkgs.sway} --unsupported-gpu --config ${gtkgreetSwayConfig}
+    exec ${pkgs.dbus}/bin/dbus-run-session ${niriPackage}/bin/niri -c ${gtkgreetNiriConfig}
   '';
 in
 {
