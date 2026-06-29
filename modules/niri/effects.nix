@@ -2,7 +2,10 @@
 
 let
   lilyaGlass = import ../glass-settings.nix;
+  internalDisplay = hostProfile.display.internal;
+  externalDisplay = hostProfile.display.external or null;
   nvidia = hostProfile.graphics.nvidia or { enable = false; };
+  outputName = display: "${display.make} ${display.model} ${display.serial}";
   renderDeviceDebug = renderNode: lib.optionalString (nvidia.enable or false) ''
     debug {
         render-drm-device "${renderNode}"
@@ -10,6 +13,11 @@ let
   '';
   intelDebug = renderDeviceDebug nvidia.intelRenderNode;
   nvidiaDebug = renderDeviceDebug nvidia.nvidiaRenderNode;
+  outputOff = display: ''
+    output ${builtins.toJSON (outputName display)} {
+        off
+    }
+  '';
 
   baseConfig = ''
     ${config.programs.niri.finalConfig}
@@ -88,20 +96,21 @@ let
         saturation ${lilyaGlass.blur.saturation}
     }
   '';
+  mkSessionConfig = debugConfig: extraOutputConfig: ''
+    ${baseConfig}
+    ${extraOutputConfig}
+    ${debugConfig}
+  '';
+  internalConfig = mkSessionConfig intelDebug (
+    lib.optionalString (externalDisplay != null) (outputOff externalDisplay)
+  );
+  externalConfig = mkSessionConfig nvidiaDebug (outputOff internalDisplay);
 in
 {
-  xdg.configFile.niri-config.source = lib.mkForce (pkgs.writeText "niri-config.kdl" ''
-    ${baseConfig}
-    ${intelDebug}
-  '');
-
-  xdg.configFile."niri/config-intel.kdl".text = ''
-    ${baseConfig}
-    ${intelDebug}
-  '';
-
-  xdg.configFile."niri/config-nvidia.kdl".text = ''
-    ${baseConfig}
-    ${nvidiaDebug}
-  '';
+  xdg.configFile = {
+    niri-config.source = lib.mkForce (pkgs.writeText "niri-config.kdl" internalConfig);
+    "niri/config-internal.kdl".text = internalConfig;
+  } // lib.optionalAttrs (externalDisplay != null) {
+    "niri/config-external.kdl".text = externalConfig;
+  };
 }

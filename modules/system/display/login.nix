@@ -6,13 +6,7 @@ let
   externalDisplay = hostProfile.display.external or null;
   loginWallpaper = hostProfile.display.loginWallpaper or null;
 
-  niriBasePackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
-  niriPackage = niriBasePackage.overrideAttrs (oldAttrs: {
-    patches = (oldAttrs.patches or [ ]) ++ [
-      # Work around niri-wm/niri#4113 on NVIDIA hybrid output until upstream fixes it.
-      ../../../patches/niri-disable-xrgb2101010.patch
-    ];
-  });
+  niriPackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
   niriSession = "${niriPackage}/bin/niri-session";
   mkNiriLogin = name: configPath: pkgs.writeShellScriptBin name ''
     unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
@@ -20,10 +14,11 @@ let
     export NIRI_CONFIG="${configPath}"
     exec ${niriSession} "$@"
   '';
-  niriLogin = mkNiriLogin "Niri" "$HOME/.config/niri/config-intel.kdl";
-  niriNvidiaLogin = mkNiriLogin "Niri-NVIDIA" "$HOME/.config/niri/config-nvidia.kdl";
-  niriLoginPath = lib.getExe niriLogin;
-  niriNvidiaLoginPath = lib.getExe niriNvidiaLogin;
+  niriInternalLogin = mkNiriLogin "Niri-Internal" "$HOME/.config/niri/config-internal.kdl";
+  niriExternalLogin = mkNiriLogin "Niri-External" "$HOME/.config/niri/config-external.kdl";
+  niriInternalLoginPath = lib.getExe niriInternalLogin;
+  niriExternalLoginPath = lib.getExe niriExternalLogin;
+  niriLoginPaths = [ niriInternalLoginPath ] ++ lib.optional (externalDisplay != null) niriExternalLoginPath;
   gtkgreetGtkThemeName = "adw-gtk3";
   gtkgreetGtkThemePackage = pkgs.adw-gtk3;
   gtkgreetFontSize = 18;
@@ -163,7 +158,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
       trap 'kill "$wallpaper_pid" >/dev/null 2>&1 || true' EXIT
     ''}
 
-    ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriLoginPath}
+    ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriInternalLoginPath}
     ${niriPackage}/bin/niri msg action quit --skip-confirmation
   '';
 
@@ -250,8 +245,5 @@ in
     };
   };
 
-  environment.etc."greetd/environments".text = ''
-    ${niriLoginPath}
-    ${niriNvidiaLoginPath}
-  '';
+  environment.etc."greetd/environments".text = "${lib.concatStringsSep "\n" niriLoginPaths}\n";
 }
