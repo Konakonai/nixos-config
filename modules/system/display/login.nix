@@ -18,11 +18,12 @@ let
   niriLoginPath = lib.getExe niriLogin;
   gtkgreetGtkThemeName = "adw-gtk3";
   gtkgreetGtkThemePackage = pkgs.adw-gtk3;
-  gtkgreetFontSize = 20;
-  gtkgreetClockFontSize = 44;
-  gtkgreetCardWidth = 720;
-  gtkgreetCardPadding = 56;
-  gtkgreetControlHeight = 58;
+  gtkgreetFontSize = 18;
+  gtkgreetClockFocusedSize = 64000;
+  gtkgreetClockIdleSize = 96000;
+  gtkgreetCardWidth = 560;
+  gtkgreetCardPadding = 28;
+  gtkgreetControlHeight = 46;
   kdlString = builtins.toJSON;
   outputName = display: "${display.make} ${display.model} ${display.serial}";
   greeterOutput = display: focusAtStartup: ''
@@ -40,10 +41,10 @@ let
 
   gtkgreet = pkgs.gtkgreet.overrideAttrs (oldAttrs: {
     postPatch = (oldAttrs.postPatch or "") + ''
-      # Give the greeter enough room for high-DPI input widgets.
+      # Keep the focused-screen clock legible after gtkgreet opens the login form.
       substituteInPlace gtkgreet/window.c \
-        --replace-fail "size = 32000;" "size = 52000;" \
-        --replace-fail "size = 96000;" "size = 128000;"
+        --replace-fail "size = 96000;" "size = ${builtins.toString gtkgreetClockIdleSize};" \
+        --replace-fail "size = 32000;" "size = ${builtins.toString gtkgreetClockFocusedSize};"
       # Show friendly command names while keeping the full command as selected value.
       substituteInPlace gtkgreet/config.c \
         --replace-fail '#include <stdio.h>' '#include <stdio.h>
@@ -84,9 +85,8 @@ int config_update_command_selector(GtkWidget *combobox) {' \
 
     #clock {
       color: @accent_fg_color;
-      font-size: ${builtins.toString gtkgreetClockFontSize}px;
       font-weight: 600;
-      margin-bottom: 28px;
+      margin-bottom: 18px;
       text-shadow: 0 2px 8px alpha(@shadow_color, 0.40);
     }
 
@@ -109,7 +109,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
       border-radius: ${builtins.toString lilyaGlass.radius.windows}px;
       color: @accent_fg_color;
       min-height: ${builtins.toString gtkgreetControlHeight}px;
-      padding: 10px 18px;
+      padding: 8px 16px;
     }
 
     button:hover {
@@ -124,7 +124,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
       border-radius: ${builtins.toString lilyaGlass.radius.windows}px;
       color: @window_fg_color;
       min-height: ${builtins.toString gtkgreetControlHeight}px;
-      padding: 10px 14px;
+      padding: 8px 12px;
     }
 
     entry:focus,
