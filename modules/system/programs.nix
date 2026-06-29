@@ -24,5 +24,8 @@ in
     pkgs.kdePackages.ksshaskpass
   ];
 
-  environment.variables.GIT_ASKPASS = askPass;
+  environment.variables = {
+    GIT_ASKPASS = askPass;
+    GIT_EXEC_PATH = "${pkgs.git}/libexec/git-core";
+  };
 }
