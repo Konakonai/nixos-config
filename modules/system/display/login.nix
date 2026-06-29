@@ -8,14 +8,16 @@ let
 
   niriPackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
   niriSession = "${niriPackage}/bin/niri-session";
-  niriLoginCommand = "Niri";
-  niriLogin = pkgs.writeShellScriptBin niriLoginCommand ''
+  mkNiriLogin = name: configPath: pkgs.writeShellScriptBin name ''
     unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
 
-    export NIRI_CONFIG="$HOME/.config/niri/config-intel.kdl"
+    export NIRI_CONFIG="${configPath}"
     exec ${niriSession} "$@"
   '';
+  niriLogin = mkNiriLogin "Niri" "$HOME/.config/niri/config-intel.kdl";
+  niriNvidiaLogin = mkNiriLogin "Niri-NVIDIA" "$HOME/.config/niri/config-nvidia.kdl";
   niriLoginPath = lib.getExe niriLogin;
+  niriNvidiaLoginPath = lib.getExe niriNvidiaLogin;
   gtkgreetGtkThemeName = "adw-gtk3";
   gtkgreetGtkThemePackage = pkgs.adw-gtk3;
   gtkgreetFontSize = 18;
@@ -229,7 +231,6 @@ in
     overrideStrategy = "asDropin";
     text = ''
       [Service]
-      Environment=NIRI_CONFIG=%h/.config/niri/config-intel.kdl
       UnsetEnvironment=GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
     '';
   };
@@ -245,5 +246,6 @@ in
 
   environment.etc."greetd/environments".text = ''
     ${niriLoginPath}
+    ${niriNvidiaLoginPath}
   '';
 }
