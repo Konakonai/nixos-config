@@ -38,6 +38,23 @@ let
       update_bar
     done < <("$niri" msg --json event-stream)
   '';
+  xwaylandCoreFonts = pkgs.writeShellScript "xwayland-core-fonts" ''
+    set -euo pipefail
+
+    xset="${pkgs.xset}/bin/xset"
+    font_dir="${pkgs.unifont}/share/fonts"
+
+    for _ in {1..50}; do
+      if "$xset" q >/dev/null 2>&1; then
+        "$xset" -fp "$font_dir" >/dev/null 2>&1 || true
+        "$xset" +fp "$font_dir" >/dev/null 2>&1 || true
+        "$xset" fp rehash >/dev/null 2>&1 || true
+        exit 0
+      fi
+
+      sleep 0.2
+    done
+  '';
 in
 {
   systemd.user.services.steam-game-bar-guard = {
@@ -62,6 +79,7 @@ in
     spawn-at-startup = [
       { command = [ "noctalia" ]; }
       { command = [ "xwayland-satellite" ]; }
+      { command = [ "${xwaylandCoreFonts}" ]; }
       { command = [ "xrdb" "-merge" "${config.home.homeDirectory}/.Xresources" ]; }
       { command = [ "wl-paste" "--watch" "cliphist" "store" ]; }
     ];
