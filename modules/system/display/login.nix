@@ -45,6 +45,9 @@ let
       substituteInPlace gtkgreet/window.c \
         --replace-fail "size = 96000;" "size = ${builtins.toString gtkgreetClockIdleSize};" \
         --replace-fail "size = 32000;" "size = ${builtins.toString gtkgreetClockFocusedSize};"
+      # Center the form contents inside the card instead of right-aligning every row.
+      substituteInPlace gtkgreet/window.c \
+        --replace-fail "GTK_ALIGN_END" "GTK_ALIGN_CENTER"
       # Show friendly command names while keeping the full command as selected value.
       substituteInPlace gtkgreet/config.c \
         --replace-fail '#include <stdio.h>' '#include <stdio.h>
