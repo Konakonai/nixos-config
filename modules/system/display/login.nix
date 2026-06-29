@@ -48,6 +48,13 @@ let
       # Center the form contents inside the card instead of right-aligning every row.
       substituteInPlace gtkgreet/window.c \
         --replace-fail "GTK_ALIGN_END" "GTK_ALIGN_CENTER"
+      # Drop username/password prompt labels so input rows line up with the session selector.
+      substituteInPlace gtkgreet/window.c \
+        --replace-fail 'GtkWidget *label = gtk_label_new(question);
+            gtk_widget_set_halign(label, GTK_ALIGN_CENTER);
+            gtk_container_add(GTK_CONTAINER(question_box), label);
+
+            ctx->input_field = gtk_entry_new();' 'ctx->input_field = gtk_entry_new();'
       # Show friendly command names while keeping the full command as selected value.
       substituteInPlace gtkgreet/config.c \
         --replace-fail '#include <stdio.h>' '#include <stdio.h>
