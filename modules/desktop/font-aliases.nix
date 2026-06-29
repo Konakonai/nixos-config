@@ -10,6 +10,12 @@ let
     { from = "STXihei"; to = "Noto Sans CJK SC"; }
     { from = "Arial"; to = "Noto Sans CJK SC"; }
     { from = "Calibri"; to = "Noto Sans CJK SC"; }
+    { from = "Helvetica"; to = "Noto Sans CJK SC"; }
+    { from = "Motiva"; to = "Noto Sans CJK SC"; }
+    { from = "Motiva Sans"; to = "Noto Sans CJK SC"; }
+    { from = "Motiva Sans Light"; to = "Noto Sans CJK SC"; }
+    { from = "Motiva Sans Medium"; to = "Noto Sans CJK SC"; }
+    { from = "Motiva Sans Bold"; to = "Noto Sans CJK SC"; }
 
     { from = "宋体"; to = "Noto Serif CJK SC"; }
     { from = "SimSun"; to = "Noto Serif CJK SC"; }
@@ -54,8 +60,25 @@ let
       </prefer>
     </alias>
   '';
+
+  steamFontConfigXml = ''
+    <?xml version="1.0"?>
+    <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+    <fontconfig>
+      <include ignore_missing="yes">/etc/fonts/fonts.conf</include>
+      <include ignore_missing="yes">conf.d</include>
+    </fontconfig>
+  '';
+
+  steamFontConfigStamp = builtins.hashString "sha256" ''
+    ${steamFontConfigXml}
+    ${defaultFontConfigXml}
+    ${fontConfigXml}
+  '';
 in
 {
+  xdg.configFile."fontconfig/fonts.conf".text = steamFontConfigXml;
+
   xdg.configFile."fontconfig/conf.d/99-simsun-alias.conf".text = ''
     <?xml version="1.0"?>
     <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
@@ -64,4 +87,19 @@ in
       ${fontConfigXml}
     </fontconfig>
   '';
+
+  home.activation.refreshSteamFontCache =
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      stamp_dir="$HOME/.local/state/nixos-config"
+      stamp_file="$stamp_dir/steam-fontconfig-stamp"
+      stamp=${lib.escapeShellArg steamFontConfigStamp}
+
+      if [ "$(cat "$stamp_file" 2>/dev/null || true)" != "$stamp" ]; then
+        rm -rf "$HOME/.local/share/Steam/fontconfig" \
+          "$HOME/.local/share/Steam/ubuntu12_32/fontconfig" \
+          "$HOME/.local/share/Steam/ubuntu12_64/fontconfig"
+        mkdir -p "$stamp_dir"
+        printf '%s' "$stamp" > "$stamp_file"
+      fi
+    '';
 }
