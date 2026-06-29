@@ -5,7 +5,6 @@ let
   internalDisplay = hostProfile.display.internal;
   externalDisplay = hostProfile.display.external or null;
   loginWallpaper = hostProfile.display.loginWallpaper or null;
-  pos = position: "${builtins.toString position.x} ${builtins.toString position.y}";
 
   niriPackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
   niriSession = "${niriPackage}/bin/niri-session";
@@ -19,9 +18,11 @@ let
   niriLoginPath = lib.getExe niriLogin;
   gtkgreetGtkThemeName = "adw-gtk3";
   gtkgreetGtkThemePackage = pkgs.adw-gtk3;
-  gtkgreetFontSize = 14;
-  gtkgreetCardWidth = 440;
-  gtkgreetCardPadding = 30;
+  gtkgreetFontSize = 17;
+  gtkgreetClockFontSize = 32;
+  gtkgreetCardWidth = 560;
+  gtkgreetCardPadding = 40;
+  gtkgreetControlHeight = 48;
   loginConfigureOutputs = pkgs.writeShellScript "gtkgreet-configure-outputs" (''
     set -eu
 
@@ -38,6 +39,19 @@ let
 
       ${pkgs.coreutils}/bin/sleep 0.1
     done
+
+    output_names() {
+      printf '%s' "$outputs" | "$jq" -r '.[].name' 2>/dev/null || true
+    }
+
+    place_output() {
+      output_name="$1"
+      scale="$2"
+      x="$3"
+      y="$4"
+
+      "$swaymsg" output "$output_name" enable scale "$scale" pos "$x" "$y" >/dev/null
+    }
   '' + (if externalDisplay != null then ''
     external_name="$(
       printf '%s' "$outputs" \
@@ -50,13 +64,25 @@ let
     )"
 
     if [ -n "$external_name" ] && [ "$external_name" != "null" ]; then
-      "$swaymsg" output "*" enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position} >/dev/null
-      "$swaymsg" output "$external_name" enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position} >/dev/null
+      output_names | while IFS= read -r output_name; do
+        [ -n "$output_name" ] || continue
+        [ "$output_name" != "$external_name" ] || continue
+        place_output "$output_name" "${builtins.toString internalDisplay.scale}" "${builtins.toString internalDisplay.position.x}" "${builtins.toString internalDisplay.position.y}"
+      done
+
+      place_output "$external_name" "${builtins.toString externalDisplay.scale}" "${builtins.toString externalDisplay.position.x}" "${builtins.toString externalDisplay.position.y}"
+      "$swaymsg" focus output "$external_name" >/dev/null 2>&1 || true
     else
-      "$swaymsg" output "*" enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null
+      output_names | while IFS= read -r output_name; do
+        [ -n "$output_name" ] || continue
+        place_output "$output_name" "${builtins.toString internalDisplay.scale}" "${builtins.toString internalDisplay.loginPosition.x}" "${builtins.toString internalDisplay.loginPosition.y}"
+      done
     fi
   '' else ''
-    "$swaymsg" output "*" enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null
+    output_names | while IFS= read -r output_name; do
+      [ -n "$output_name" ] || continue
+      place_output "$output_name" "${builtins.toString internalDisplay.scale}" "${builtins.toString internalDisplay.loginPosition.x}" "${builtins.toString internalDisplay.loginPosition.y}"
+    done
   ''));
   loginBackgroundCommand =
     if loginWallpaper != null then
@@ -110,8 +136,9 @@ int config_update_command_selector(GtkWidget *combobox) {' \
 
     #clock {
       color: @accent_fg_color;
+      font-size: ${builtins.toString gtkgreetClockFontSize}px;
       font-weight: 600;
-      margin-bottom: 22px;
+      margin-bottom: 28px;
       text-shadow: 0 2px 8px alpha(@shadow_color, 0.40);
     }
 
@@ -133,8 +160,8 @@ int config_update_command_selector(GtkWidget *combobox) {' \
       border: 1px solid @accent_bg_color;
       border-radius: ${builtins.toString lilyaGlass.radius.windows}px;
       color: @accent_fg_color;
-      min-height: 38px;
-      padding: 8px 16px;
+      min-height: ${builtins.toString gtkgreetControlHeight}px;
+      padding: 10px 18px;
     }
 
     button:hover {
@@ -148,8 +175,8 @@ int config_update_command_selector(GtkWidget *combobox) {' \
       border: 1px solid alpha(@border_color, 0.92);
       border-radius: ${builtins.toString lilyaGlass.radius.windows}px;
       color: @window_fg_color;
-      min-height: 38px;
-      padding: 8px 12px;
+      min-height: ${builtins.toString gtkgreetControlHeight}px;
+      padding: 10px 14px;
     }
 
     entry:focus,
