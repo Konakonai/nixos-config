@@ -2,6 +2,7 @@
 
 let
   nh = pkgs.lib.getExe pkgs.nh;
+  touhouLogo = "${hostProfile.user.homeDirectory}/Pictures/touhou/55c1cb43593362af769ceb149def07eb12ab0bac_2_750x750.jpeg";
   rebuild = pkgs.writeShellScriptBin "rebuild" ''
     export PATH="/run/wrappers/bin:$PATH"
     exec ${nh} os switch ${hostProfile.user.nixosConfigPath} "$@"
@@ -17,6 +18,20 @@ in
     rebuild
     testbuild
   ];
+
+  xdg.configFile."fastfetch/config.jsonc".text = ''
+    {
+      "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+      "logo": {
+        "source": "${touhouLogo}",
+        "type": "auto",
+        "height": 16,
+        "padding": {
+          "right": 2
+        }
+      }
+    }
+  '';
 
   # Fish Shell 配置
   programs.fish = {
