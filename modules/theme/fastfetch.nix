@@ -17,8 +17,8 @@ in
     logo = {
       type = "kitty-direct";
       source = "${logoPng}";
-      width = 60;
-      height = 20;
+      width = 48;
+      height = 18;
       preserveAspectRatio = true;
       padding = {
         top = 0;
