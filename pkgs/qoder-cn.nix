@@ -101,7 +101,6 @@ pkgs.stdenvNoCC.mkDerivation {
 
     makeWrapper "$out/share/qoder-cn/qoder-cn" "$out/bin/qoder-cn" \
       "''${gappsWrapperArgs[@]}" \
-      --prefix PATH : "${lib.makeBinPath [ pkgs.bubblewrap ]}" \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath runtimeLibs}" \
       --set-default ELECTRON_OZONE_PLATFORM_HINT auto \
       --set-default NIXOS_OZONE_WL 1 \

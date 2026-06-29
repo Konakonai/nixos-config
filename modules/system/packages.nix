@@ -20,6 +20,7 @@
     killall
     btop
     fastfetch
+    bubblewrap
 
     xwayland-satellite
     brightnessctl
