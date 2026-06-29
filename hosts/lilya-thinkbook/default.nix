@@ -12,15 +12,6 @@ in
     nixosConfigPath = "${homeDirectory}/nixos-config";
   };
 
-  boot = {
-    # Prefer the external panel during kernel/Plymouth takeover without
-    # disabling the internal panel. Force the digital connector only; let DRM
-    # pick the monitor's EDID preferred mode instead of a CVT user mode that
-    # NVIDIA may reject during early boot. Use the internal-display-fallback
-    # specialisation when booting away from the dock.
-    preferredDisplayParam = "video=DP-2:D";
-  };
-
   display = {
     loginWallpaper = ../../assets/sddm-wallpaper.jpg;
 
@@ -33,7 +24,6 @@ in
     };
 
     external = {
-      connector = "DP-2";
       make = "Philips Consumer Electronics Company";
       model = "PHL 27E2F7901";
       serial = "UHB2341003696";

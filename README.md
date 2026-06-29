@@ -28,8 +28,8 @@ Local source archives under `sources/` are intentionally ignored and are not par
 ## Reproducing this machine
 
 `main` is the exact ThinkBook profile. It expects the host facts declared in
-`hosts/lilya-thinkbook`, including NVIDIA/Intel render nodes, the internal and
-external display identities, AC/battery sysfs names, and selected USB devices.
+`hosts/lilya-thinkbook`, including NVIDIA/Intel render nodes, display
+identities, AC/battery sysfs names, and selected USB devices.
 
 The Nix store build is reproducible from the repository and `flake.lock`, but a
 fully working user session also needs these external state files restored:
@@ -39,6 +39,6 @@ fully working user session also needs these external state files restored:
 - `/home/lilya/.config/openlist/`: OpenList runtime config and database.
 - `/home/lilya/.config/rclone/rclone.conf`: WebDAV mount credentials.
 
-The default boot path targets the external display by disabling the internal
-panel at the kernel command line. Use the `internal-display-fallback`
-specialisation when booting without an external monitor.
+Display layout is applied in the login and niri sessions from stable monitor
+identity data rather than DRM connector names, which may change across hybrid
+GPU boot paths.

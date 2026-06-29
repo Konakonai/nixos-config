@@ -22,16 +22,42 @@ let
   gtkgreetFontSize = 14;
   gtkgreetCardWidth = 440;
   gtkgreetCardPadding = 30;
-  loginOutputConfig =
-    if externalDisplay != null then
-      ''
-        output * enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position}
-        output ${externalDisplay.connector} enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position}
-      ''
+  loginConfigureOutputs = pkgs.writeShellScript "gtkgreet-configure-outputs" (''
+    set -eu
+
+    swaymsg=${lib.escapeShellArg (lib.getExe' pkgs.sway "swaymsg")}
+    jq=${lib.escapeShellArg (lib.getExe pkgs.jq)}
+
+    outputs=""
+    for _ in $(${pkgs.coreutils}/bin/seq 1 20); do
+      outputs="$("$swaymsg" -t get_outputs 2>/dev/null || true)"
+      output_count="$(printf '%s' "$outputs" | "$jq" 'length' 2>/dev/null || echo 0)"
+      if [ "$output_count" -gt 0 ] 2>/dev/null; then
+        break
+      fi
+
+      ${pkgs.coreutils}/bin/sleep 0.1
+    done
+  '' + (if externalDisplay != null then ''
+    external_name="$(
+      printf '%s' "$outputs" \
+        | "$jq" -r \
+          --arg make ${lib.escapeShellArg externalDisplay.make} \
+          --arg model ${lib.escapeShellArg externalDisplay.model} \
+          --arg serial ${lib.escapeShellArg externalDisplay.serial} \
+          '.[] | select(.make == $make and .model == $model and .serial == $serial) | .name' \
+        | ${pkgs.coreutils}/bin/head -n 1
+    )"
+
+    if [ -n "$external_name" ] && [ "$external_name" != "null" ]; then
+      "$swaymsg" output "*" enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.position} >/dev/null
+      "$swaymsg" output "$external_name" enable scale ${builtins.toString externalDisplay.scale} pos ${pos externalDisplay.position} >/dev/null
     else
-      ''
-        output * enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition}
-      '';
+      "$swaymsg" output "*" enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null
+    fi
+  '' else ''
+    "$swaymsg" output "*" enable scale ${builtins.toString internalDisplay.scale} pos ${pos internalDisplay.loginPosition} >/dev/null
+  ''));
   loginBackgroundCommand =
     if loginWallpaper != null then
       "output * bg ${loginWallpaper} fill"
@@ -138,6 +164,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
   '';
 
   gtkgreetCommand = pkgs.writeShellScript "gtkgreet-command" ''
+    ${loginConfigureOutputs}
     ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriLoginPath}
     ${lib.getExe' pkgs.sway "swaymsg"} exit
   '';
@@ -145,8 +172,6 @@ int config_update_command_selector(GtkWidget *combobox) {' \
   gtkgreetSwayConfig = pkgs.writeText "gtkgreet-sway-config" ''
     font pango:${lilyaGlass.fonts.sans} 11
     seat seat0 xcursor_theme ${lilyaGlass.cursorThemeName} 48
-
-    ${loginOutputConfig}
 
     ${loginBackgroundCommand}
 
