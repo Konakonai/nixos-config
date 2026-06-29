@@ -14,12 +14,27 @@ let
       [ "$(cat /sys/class/power_supply/${nvidia.acAdapter}/online 2>/dev/null || echo 0)" = "1" ]
     }
 
+    find_niri_session_pid() {
+      for pid in $(${pkgs.procps}/bin/pgrep -x niri || true); do
+        cmdline="$(${pkgs.coreutils}/bin/tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null || true)"
+        case "$cmdline" in
+          *"/bin/niri --session"*|*" niri --session"*)
+            echo "$pid"
+            return 0
+            ;;
+        esac
+      done
+
+      return 1
+    }
+
     is_niri_on_nvidia() {
-      niri_pid=$(${pkgs.procps}/bin/pgrep -x niri || true)
+      niri_pid="$(find_niri_session_pid || true)"
       [ -z "$niri_pid" ] && return 1
       niri_config="$(${pkgs.coreutils}/bin/tr '\0' '\n' < "/proc/$niri_pid/environ" \
         | ${pkgs.gnugrep}/bin/grep '^NIRI_CONFIG=' \
-        | ${pkgs.coreutils}/bin/head -n 1)"
+        | ${pkgs.coreutils}/bin/head -n 1 || true)"
+      [ -z "$niri_config" ] && return 1
       niri_config="''${niri_config#NIRI_CONFIG=}"
       [ -r "$niri_config" ] && ${pkgs.gnugrep}/bin/grep -q 'render-drm-device "${nvidia.nvidiaRenderNode}"' "$niri_config"
     }

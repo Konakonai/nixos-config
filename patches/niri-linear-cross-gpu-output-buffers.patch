@@ -1,0 +1,35 @@
+diff --git a/src/backend/tty.rs b/src/backend/tty.rs
+--- a/src/backend/tty.rs
++++ b/src/backend/tty.rs
+@@ -1391,13 +1391,19 @@ impl Tty {
+         let render_node = device.render_node.unwrap_or(self.primary_render_node);
+         let renderer = self.gpu_manager.single_renderer(&render_node)?;
+         let egl_context = renderer.as_ref().egl_context();
+         let render_formats = egl_context.dmabuf_render_formats();
++        let is_cross_gpu_output = matches!(
++            device.render_node,
++            Some(render_node) if render_node != self.primary_render_node
++        );
+ 
+         // Filter out the CCS modifiers as they have increased bandwidth, causing some monitor
+         // configurations to stop working.
+         //
+-        // For display only devices, restrict to linear buffers for best compatibility.
++        // For display-only and cross-GPU output devices, restrict to linear buffers for best
++        // compatibility. On hybrid laptops, non-linear iGPU output buffers can fail to import into
++        // the dGPU renderer and leak failed dma-bufs while retrying every frame.
+         //
+         // The invalid modifier attempt below should make this unnecessary in some cases, but it
+         // would still be a bad idea to remove this until Smithay has some kind of full-device
+         // modesetting test that is able to "downgrade" existing connector modifiers to get enough
+         // bandwidth for a newly connected one.
+@@ -1405,7 +1411,7 @@ impl Tty {
+             .iter()
+             .copied()
+             .filter(|format| {
+-                if device.render_node.is_none() {
++                if device.render_node.is_none() || is_cross_gpu_output {
+                     return format.modifier == Modifier::Linear;
+                 }
+ 
+                 let is_ccs = matches!(

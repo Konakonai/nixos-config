@@ -6,7 +6,12 @@ let
   externalDisplay = hostProfile.display.external or null;
   loginWallpaper = hostProfile.display.loginWallpaper or null;
 
-  niriPackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
+  niriBasePackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
+  niriPackage = niriBasePackage.overrideAttrs (oldAttrs: {
+    patches = (oldAttrs.patches or [ ]) ++ [
+      ../../../patches/niri-linear-cross-gpu-output-buffers.patch
+    ];
+  });
   niriSession = "${niriPackage}/bin/niri-session";
   mkNiriLogin = name: configPath: pkgs.writeShellScriptBin name ''
     unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
