@@ -17,8 +17,11 @@ in
     nvidiaSettings = true;
 
     powerManagement = {
-      enable = true;
-      finegrained = true;
+      # Keep the regular profile focused on dGPU reliability. The
+      # battery-saver specialisation disables NVIDIA entirely when power saving
+      # matters, so avoid RTD3/runtime power management here.
+      enable = false;
+      finegrained = false;
     };
 
     prime = {
