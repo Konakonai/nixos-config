@@ -10,64 +10,41 @@ let
 
     LIMIT_PATH="${batteryConservationPath}"
 
-    status() {
-      if [ ! -e "$LIMIT_PATH" ]; then
-        echo "charge limit control not found: $LIMIT_PATH" >&2
-        exit 1
-      fi
+    if [ "$#" -ne 0 ]; then
+      echo "usage: charge-limit" >&2
+      exit 1
+    fi
 
-      case "$(${pkgs.coreutils}/bin/cat "$LIMIT_PATH")" in
-        1)
-          echo "80%"
-          ;;
-        0)
-          echo "100%"
-          ;;
-        *)
-          echo "unknown"
-          ;;
-      esac
+    if [ ! -e "$LIMIT_PATH" ]; then
+      echo "charge limit control not found: $LIMIT_PATH" >&2
+      exit 1
+    fi
+
+    if [ ! -w "$LIMIT_PATH" ]; then
+      echo "charge limit control is not writable: $LIMIT_PATH" >&2
+      exit 1
+    fi
+
+    notify() {
+      ${pkgs.libnotify}/bin/notify-send \
+        --app-name=charge-limit \
+        "Charge limit" \
+        "Now charging up to $1" >/dev/null 2>&1 || true
     }
 
-    set_limit() {
-      value="$1"
-      label="$2"
-
-      if [ ! -w "$LIMIT_PATH" ]; then
-        echo "charge limit control is not writable: $LIMIT_PATH" >&2
-        exit 1
-      fi
-
-      echo "$value" > "$LIMIT_PATH"
-      echo "$label"
-    }
-
-    case "''${1:-toggle}" in
-      80|limit|on)
-        set_limit 1 "80%"
+    case "$(${pkgs.coreutils}/bin/cat "$LIMIT_PATH")" in
+      1)
+        echo 0 > "$LIMIT_PATH"
+        echo "100%"
+        notify "100%"
         ;;
-      100|full|off)
-        set_limit 0 "100%"
-        ;;
-      status)
-        status
-        ;;
-      toggle)
-        case "$(status)" in
-          80%)
-            set_limit 0 "100%"
-            ;;
-          100%)
-            set_limit 1 "80%"
-            ;;
-          *)
-            echo "cannot toggle unknown charge limit state" >&2
-            exit 1
-            ;;
-        esac
+      0)
+        echo 1 > "$LIMIT_PATH"
+        echo "80%"
+        notify "80%"
         ;;
       *)
-        echo "usage: $0 [toggle|80|100|status]" >&2
+        echo "cannot toggle unknown charge limit state" >&2
         exit 1
         ;;
     esac
