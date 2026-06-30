@@ -4,7 +4,14 @@ let
   power = hostProfile.power or { };
   batteryConservationPath = power.batteryConservationPath or null;
   keepAwakeUsbDevices = power.keepAwakeUsbDevices or [ ];
-  nvidiaKernelModules = [ "nvidia" "nvidia_drm" "nvidia_modeset" "nvidia_uvm" ];
+  nvidiaKernelModules = [
+    "nouveau"
+    "nvidia"
+    "nvidia_drm"
+    "nvidia_modeset"
+    "nvidia_uvm"
+    "nvidiafb"
+  ];
   chargeLimit = pkgs.writeShellScriptBin "charge-limit" ''
     set -eu
 
@@ -294,6 +301,15 @@ in
       builtins.filter (module: !(builtins.elem module nvidiaKernelModules)) config.boot.initrd.kernelModules
     );
     boot.blacklistedKernelModules = lib.mkAfter nvidiaKernelModules;
+    boot.extraModprobeConfig = lib.mkAfter ''
+      blacklist nouveau
+      blacklist nvidia
+      blacklist nvidia_drm
+      blacklist nvidia_modeset
+      blacklist nvidia_uvm
+      blacklist nvidiafb
+      options nouveau modeset=0
+    '';
     boot.kernelParams = lib.mkAfter [
       "i915.enable_fbc=1"
       "i915.enable_psr=1"
@@ -312,8 +328,16 @@ in
 
     systemd.services.battery-saver = {
       description = "Apply battery saver settings";
-      after = [ "power-profiles-daemon.service" ];
-      wantedBy = [ "multi-user.target" ];
+      after = [
+        "multi-user.target"
+        "power-profiles-daemon.service"
+        "thermald.service"
+      ];
+      wants = [
+        "power-profiles-daemon.service"
+        "thermald.service"
+      ];
+      wantedBy = [ "graphical.target" ];
       path = [
         pkgs.coreutils
         pkgs.gnugrep
