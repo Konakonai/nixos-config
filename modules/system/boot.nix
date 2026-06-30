@@ -165,6 +165,7 @@ in
     efiSupport = true;
     configurationLimit = 30;
     theme = touhouGrubTheme;
+    splashImage = ../../assets/boot-background.png;
     # Keep large kernel/initrd artifacts off the small ESP. GRUB writes its
     # boot files under /boot-grub on the root filesystem, while /boot remains
     # only the EFI system partition.
