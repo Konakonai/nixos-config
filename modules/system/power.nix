@@ -55,7 +55,8 @@ let
     RAPL_LONG_UW=8000000
     RAPL_SHORT_UW=12000000
     CPU_MAX_PERF_PCT=35
-    CPU_ONLINE_COUNT=4
+    PERFORMANCE_CPU_KEEP=2
+    EFFICIENT_CPU_KEEP=4
 
     write_sysfs() {
       path="$1"
@@ -108,18 +109,55 @@ let
     }
 
     apply_cpu_core_limits() {
-      for cpu_path in /sys/devices/system/cpu/cpu[0-9]*; do
+      max_freq=0
+      for cpu_path in $(printf '%s\n' /sys/devices/system/cpu/cpu[0-9]* | sort -V); do
         [ -d "$cpu_path" ] || continue
-        cpu="''${cpu_path##*/cpu}"
-
-        case "$cpu" in
-          ''|*[!0-9]*)
+        freq="$(cat "$cpu_path/cpufreq/cpuinfo_max_freq" 2>/dev/null || echo 0)"
+        case "$freq" in
+          ""|*[!0-9]*)
             continue
             ;;
         esac
 
-        if [ "$cpu" -ge "$CPU_ONLINE_COUNT" ]; then
-          write_sysfs "$cpu_path/online" 0
+        if [ "$freq" -gt "$max_freq" ]; then
+          max_freq="$freq"
+        fi
+      done
+
+      if [ "$max_freq" -le 0 ]; then
+        echo "skip cpu hotplug: cannot classify CPU core types" >&2
+        return 0
+      fi
+
+      performance_threshold="$((max_freq * 85 / 100))"
+      performance_seen=0
+      efficient_seen=0
+
+      for cpu_path in $(printf '%s\n' /sys/devices/system/cpu/cpu[0-9]* | sort -V); do
+        [ -d "$cpu_path" ] || continue
+        cpu="''${cpu_path##*/cpu}"
+        freq="$(cat "$cpu_path/cpufreq/cpuinfo_max_freq" 2>/dev/null || echo 0)"
+
+        case "$cpu:$freq" in
+          *[!0-9:]*|:*|*:)
+            continue
+            ;;
+        esac
+
+        if [ "$freq" -ge "$performance_threshold" ]; then
+          performance_seen="$((performance_seen + 1))"
+          if [ "$performance_seen" -le "$PERFORMANCE_CPU_KEEP" ]; then
+            write_sysfs "$cpu_path/online" 1
+          else
+            write_sysfs "$cpu_path/online" 0
+          fi
+        else
+          efficient_seen="$((efficient_seen + 1))"
+          if [ "$efficient_seen" -le "$EFFICIENT_CPU_KEEP" ]; then
+            write_sysfs "$cpu_path/online" 1
+          else
+            write_sysfs "$cpu_path/online" 0
+          fi
         fi
       done
     }
