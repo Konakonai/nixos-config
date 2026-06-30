@@ -3,7 +3,6 @@
 let
   ccSwitch = pkgs.callPackage ../../pkgs/cc-switch-cli/default.nix {};
   antigravity = import ../../pkgs/antigravity.nix { inherit pkgs lib; };
-  qoderCn = import ../../pkgs/qoder-cn.nix { inherit pkgs lib; };
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
@@ -62,41 +61,6 @@ in
     categories = [ "Utility" ];
     terminal = false;
     mimeType = [ "x-scheme-handler/antigravity" ];
-  };
-
-  xdg.desktopEntries."qoder-cn" = {
-    name = "Qoder CN";
-    genericName = "Code Editor";
-    comment = "Agentic Coding Platform for Real Software";
-    exec = "${lib.getExe qoderCn} %F";
-    icon = "${qoderCn}/share/pixmaps/QoderCN.png";
-    type = "Application";
-    categories = [ "Development" "IDE" ];
-    terminal = false;
-    mimeType = [ "application/x-qoder-cn-workspace" ];
-    settings = {
-      StartupNotify = "false";
-      StartupWMClass = "QoderCN";
-      Keywords = "qoder;";
-    };
-  };
-
-  xdg.desktopEntries."qoder-cn-url-handler" = {
-    name = "Qoder CN - URL Handler";
-    genericName = "Code Editor";
-    comment = "Agentic Coding Platform for Real Software";
-    exec = "${lib.getExe qoderCn} --open-url %U";
-    icon = "${qoderCn}/share/pixmaps/QoderCN.png";
-    type = "Application";
-    categories = [ "Utility" "Development" "IDE" ];
-    terminal = false;
-    noDisplay = true;
-    mimeType = [ "x-scheme-handler/qoder-cn" ];
-    settings = {
-      StartupNotify = "true";
-      StartupWMClass = "QoderCN";
-      Keywords = "qoder;";
-    };
   };
 
   xdg.desktopEntries."yazi" = {

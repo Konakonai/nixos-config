@@ -34,6 +34,14 @@ let
         rm -f "$desktopFile"
         substitute "$target" "$desktopFile" \
           --replace-fail "${codexDesktopBase}/bin/codex-desktop" "$out/bin/codex-desktop"
+        substituteInPlace "$desktopFile" \
+          --replace-fail "Actions=new-window;CheckForUpdates;InstallReadyUpdate;" "Actions=new-window;"
+        awk '
+          /^\[Desktop Action (CheckForUpdates|InstallReadyUpdate)\]$/ { skip = 1; next }
+          /^\[/ { skip = 0 }
+          !skip
+        ' "$desktopFile" > "$desktopFile.cleaned"
+        mv "$desktopFile.cleaned" "$desktopFile"
       fi
     '';
     meta = codexDesktopBase.meta or { };
@@ -145,29 +153,6 @@ in
   ];
 
   home.sessionVariables.CODEX_CLI_PATH = "${codexCli}/bin/codex";
-
-  xdg.desktopEntries.codex-desktop = {
-    name = "Codex Desktop";
-    comment = "Run Codex Desktop on Linux";
-    exec = "${codexDesktop}/bin/codex-desktop %u";
-    icon = "codex-desktop";
-    terminal = false;
-    type = "Application";
-    categories = [ "Development" ];
-    mimeType = [
-      "x-scheme-handler/codex"
-      "x-scheme-handler/codex-browser-sidebar"
-    ];
-    settings = {
-      StartupNotify = "true";
-      StartupWMClass = "codex-desktop";
-      X-GNOME-WMClass = "codex-desktop";
-    };
-    actions.new-window = {
-      name = "New Window";
-      exec = "${codexDesktop}/bin/codex-desktop --new-instance";
-    };
-  };
 
   systemd.user.services.codex-desktop-update = {
     Unit = {
