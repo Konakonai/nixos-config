@@ -5,6 +5,73 @@ let
   power = hostProfile.power or { };
   batteryConservationPath = power.batteryConservationPath or null;
   keepAwakeUsbDevices = power.keepAwakeUsbDevices or [ ];
+  chargeLimit = pkgs.writeShellScriptBin "charge-limit" ''
+    set -eu
+
+    LIMIT_PATH="${batteryConservationPath}"
+
+    status() {
+      if [ ! -e "$LIMIT_PATH" ]; then
+        echo "charge limit control not found: $LIMIT_PATH" >&2
+        exit 1
+      fi
+
+      case "$(${pkgs.coreutils}/bin/cat "$LIMIT_PATH")" in
+        1)
+          echo "80%"
+          ;;
+        0)
+          echo "100%"
+          ;;
+        *)
+          echo "unknown"
+          ;;
+      esac
+    }
+
+    set_limit() {
+      value="$1"
+      label="$2"
+
+      if [ ! -w "$LIMIT_PATH" ]; then
+        echo "charge limit control is not writable: $LIMIT_PATH" >&2
+        exit 1
+      fi
+
+      echo "$value" > "$LIMIT_PATH"
+      echo "$label"
+    }
+
+    case "''${1:-toggle}" in
+      80|limit|on)
+        set_limit 1 "80%"
+        ;;
+      100|full|off)
+        set_limit 0 "100%"
+        ;;
+      status)
+        status
+        ;;
+      toggle)
+        case "$(status)" in
+          80%)
+            set_limit 0 "100%"
+            ;;
+          100%)
+            set_limit 1 "80%"
+            ;;
+          *)
+            echo "cannot toggle unknown charge limit state" >&2
+            exit 1
+            ;;
+        esac
+        ;;
+      *)
+        echo "usage: $0 [toggle|80|100|status]" >&2
+        exit 1
+        ;;
+    esac
+  '';
   nvidiaPowerControl = pkgs.writeShellScriptBin "nvidia-power-control" ''
     set -eu
 
@@ -103,7 +170,9 @@ in
 
   powerManagement.powertop.enable = false;
 
-  environment.systemPackages = lib.optional (nvidia.enable or false) nvidiaPowerControl;
+  environment.systemPackages =
+    lib.optional (batteryConservationPath != null) chargeLimit
+    ++ lib.optional (nvidia.enable or false) nvidiaPowerControl;
 
   services.udev.extraRules = lib.concatStringsSep "\n" (
     # Keep latency-sensitive HID devices awake. PowerTOP auto-tuning was putting
