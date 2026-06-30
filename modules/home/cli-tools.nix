@@ -20,8 +20,6 @@
     ffmpeg-full
 
     wl-clipboard
-    grim
-    slurp
     cliphist
     hyprsunset
     wlsunset

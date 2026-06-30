@@ -1,8 +1,6 @@
-{ config, hostProfile, lib, pkgs, ... }:
+{ pkgs, ... }:
 
 let
-  preferredDisplayKernelParam = hostProfile.boot.preferredDisplayParam or null;
-
   touhouGrubTheme = pkgs.stdenvNoCC.mkDerivation {
     pname = "grub-theme-touhou-project";
     version = "2023-04-19";
@@ -158,8 +156,6 @@ EOF
       platforms = pkgs.lib.platforms.linux;
     };
   };
-
-  fallbackKernelParams = builtins.filter (param: param != preferredDisplayKernelParam) config.boot.kernelParams;
 in
 {
   boot.loader.systemd-boot.enable = false;
@@ -230,15 +226,7 @@ in
     # non-fullscreen kernel console is less likely to flash during handoff.
     "fbcon=vc:2-6"
     "vt.global_cursor_default=0"
-  ] ++ lib.optional (preferredDisplayKernelParam != null) preferredDisplayKernelParam;
-  boot.supportedFilesystems.ntfs = true;
-
-  specialisation = lib.optionalAttrs (preferredDisplayKernelParam != null) {
-    internal-display-fallback.configuration = {
-      system.nixos.tags = [ "internal-display-fallback" ];
-      boot.kernelParams = lib.mkForce fallbackKernelParams;
-    };
-  };
+  ];
 
   environment.systemPackages = [ pkgs.efibootmgr ];
 
