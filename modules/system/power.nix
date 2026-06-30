@@ -1,10 +1,10 @@
-{ hostProfile, lib, pkgs, ... }:
+{ config, hostProfile, lib, pkgs, ... }:
 
 let
-  nvidia = hostProfile.graphics.nvidia or { enable = false; };
   power = hostProfile.power or { };
   batteryConservationPath = power.batteryConservationPath or null;
   keepAwakeUsbDevices = power.keepAwakeUsbDevices or [ ];
+  nvidiaKernelModules = [ "nvidia" "nvidia_drm" "nvidia_modeset" "nvidia_uvm" ];
   chargeLimit = pkgs.writeShellScriptBin "charge-limit" ''
     set -eu
 
@@ -49,98 +49,13 @@ let
         ;;
     esac
   '';
-  nvidiaPowerControl = pkgs.writeShellScriptBin "nvidia-power-control" ''
+  batterySaver = pkgs.writeShellScriptBin "battery-saver" ''
     set -eu
 
-    GPU_CONTROL="/sys/bus/pci/devices/${nvidia.pciAddress}/power/control"
-
-    ac_online() {
-      [ "$(cat /sys/class/power_supply/${nvidia.acAdapter}/online 2>/dev/null || echo 0)" = "1" ]
-    }
-
-    find_niri_session_pid() {
-      for pid in $(${pkgs.procps}/bin/pgrep -x niri || true); do
-        cmdline="$(${pkgs.coreutils}/bin/tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null || true)"
-        case "$cmdline" in
-          *"/bin/niri --session"*|*" niri --session"*)
-            echo "$pid"
-            return 0
-            ;;
-        esac
-      done
-
-      return 1
-    }
-
-    is_niri_on_nvidia() {
-      niri_pid="$(find_niri_session_pid || true)"
-      [ -z "$niri_pid" ] && return 1
-      niri_config="$(${pkgs.coreutils}/bin/tr '\0' '\n' < "/proc/$niri_pid/environ" \
-        | ${pkgs.gnugrep}/bin/grep '^NIRI_CONFIG=' \
-        | ${pkgs.coreutils}/bin/head -n 1 || true)"
-      [ -z "$niri_config" ] && return 1
-      niri_config="''${niri_config#NIRI_CONFIG=}"
-      [ -r "$niri_config" ] && ${pkgs.gnugrep}/bin/grep -q 'render-drm-device "${nvidia.nvidiaRenderNode}"' "$niri_config"
-    }
-
-    set_power() {
-      mode="$1"
-      if [ -f "$GPU_CONTROL" ]; then
-        echo "$mode" > "$GPU_CONTROL"
-        echo "NVIDIA power control set to $mode"
-      fi
-    }
-
-    status() {
-      echo "=== NVIDIA Power Control Status ==="
-      if ac_online; then
-        echo "AC Power: Online (Plugged in)"
-      else
-        echo "AC Power: Offline (On Battery)"
-      fi
-
-      if [ -f "$GPU_CONTROL" ]; then
-        echo "NVIDIA GPU: Present"
-        echo "Current Control: $(cat "$GPU_CONTROL")"
-        echo "Runtime Status: $(cat /sys/bus/pci/devices/${nvidia.pciAddress}/power/runtime_status 2>/dev/null || echo unknown)"
-      else
-        echo "NVIDIA GPU: Not found at ${nvidia.pciAddress}"
-      fi
-
-      if is_niri_on_nvidia; then
-        echo "Niri Render Config: NVIDIA render node"
-      else
-        echo "Niri Render Config: Intel/hybrid or not running"
-      fi
-    }
-
-    case "''${1:-status}" in
-      boot|change)
-        # Keep the NVIDIA device awake for the external display connector.
-        set_power on
-        ;;
-      ac|on)
-        set_power on
-        ;;
-      battery|auto)
-        set_power auto
-        ;;
-      status)
-        status
-        ;;
-      *)
-        echo "usage: $0 [boot|change|ac|battery|status]" >&2
-        exit 1
-        ;;
-    esac
-  '';
-  temporaryLowPower12w = pkgs.writeShellScriptBin "temporary-low-power-12w" ''
-    set -eu
-
-    NVIDIA_PCI_ADDRESS="${nvidia.pciAddress or ""}"
     RAPL_LONG_UW=8000000
     RAPL_SHORT_UW=12000000
     CPU_MAX_PERF_PCT=35
+    CPU_ONLINE_COUNT=4
 
     write_sysfs() {
       path="$1"
@@ -192,6 +107,23 @@ let
       done
     }
 
+    apply_cpu_core_limits() {
+      for cpu_path in /sys/devices/system/cpu/cpu[0-9]*; do
+        [ -d "$cpu_path" ] || continue
+        cpu="''${cpu_path##*/cpu}"
+
+        case "$cpu" in
+          ''|*[!0-9]*)
+            continue
+            ;;
+        esac
+
+        if [ "$cpu" -ge "$CPU_ONLINE_COUNT" ]; then
+          write_sysfs "$cpu_path/online" 0
+        fi
+      done
+    }
+
     apply_rapl_limits() {
       for zone in /sys/devices/virtual/powercap/intel-rapl*/intel-rapl*:0; do
         [ -d "$zone" ] || continue
@@ -212,9 +144,20 @@ let
       done
     }
 
-    apply_dgpu_runtime_pm() {
-      if [ -n "$NVIDIA_PCI_ADDRESS" ]; then
-        write_sysfs "/sys/bus/pci/devices/$NVIDIA_PCI_ADDRESS/power/control" auto
+    apply_device_savings() {
+      for device in /sys/bus/pci/devices/*; do
+        [ -d "$device" ] || continue
+        write_sysfs "$device/power/control" auto
+      done
+
+      write_sysfs /sys/module/snd_hda_intel/parameters/power_save 1
+      write_sysfs /sys/module/snd_hda_intel/parameters/power_save_controller Y
+
+      if command -v iw >/dev/null 2>&1; then
+        for iface in /sys/class/net/*; do
+          [ -d "$iface/wireless" ] || continue
+          iw dev "''${iface##*/}" set power_save on >/dev/null 2>&1 || true
+        done
       fi
     }
 
@@ -227,6 +170,8 @@ let
       show_sysfs "platform profile" /sys/firmware/acpi/platform_profile
       show_sysfs "intel_pstate no_turbo" /sys/devices/system/cpu/intel_pstate/no_turbo
       show_sysfs "intel_pstate max_perf_pct" /sys/devices/system/cpu/intel_pstate/max_perf_pct
+      printf 'online cpus: '
+      cat /sys/devices/system/cpu/online 2>/dev/null || true
 
       for zone in /sys/devices/virtual/powercap/intel-rapl*/intel-rapl*:0; do
         [ -d "$zone" ] || continue
@@ -234,9 +179,14 @@ let
         show_sysfs "$(basename "$zone") short term" "$zone/constraint_1_power_limit_uw"
       done
 
-      if [ -n "$NVIDIA_PCI_ADDRESS" ]; then
-        show_sysfs "NVIDIA power control" "/sys/bus/pci/devices/$NVIDIA_PCI_ADDRESS/power/control"
-        show_sysfs "NVIDIA runtime status" "/sys/bus/pci/devices/$NVIDIA_PCI_ADDRESS/power/runtime_status"
+      if [ -r /proc/modules ]; then
+        printf 'nvidia modules: '
+        if grep -q '^nvidia' /proc/modules; then
+          grep '^nvidia' /proc/modules | cut -d' ' -f1 | tr '\n' ' '
+          printf '\n'
+        else
+          echo none
+        fi
       fi
     }
 
@@ -244,8 +194,9 @@ let
       apply)
         apply_platform_profile
         apply_cpu_limits
+        apply_cpu_core_limits
         apply_rapl_limits
-        apply_dgpu_runtime_pm
+        apply_device_savings
         ;;
       status)
         status
@@ -270,8 +221,7 @@ in
   powerManagement.powertop.enable = false;
 
   environment.systemPackages =
-    lib.optional (batteryConservationPath != null) chargeLimit
-    ++ lib.optional (nvidia.enable or false) nvidiaPowerControl;
+    lib.optional (batteryConservationPath != null) chargeLimit;
 
   services.udev.extraRules = lib.concatStringsSep "\n" (
     # Keep latency-sensitive HID devices awake. PowerTOP auto-tuning was putting
@@ -279,8 +229,6 @@ in
     map (device:
       ''ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="${device.vendor}", ATTR{idProduct}=="${device.product}", TEST=="power/control", ATTR{power/control}="on"''
     ) keepAwakeUsbDevices
-    ++ lib.optional (nvidia.enable or false)
-      ''SUBSYSTEM=="power_supply", KERNEL=="${nvidia.acAdapter}", TAG+="systemd", ENV{SYSTEMD_WANTS}+="nvidia-power-control-change.service"''
   );
 
   systemd.services = lib.optionalAttrs (batteryConservationPath != null) {
@@ -300,53 +248,43 @@ in
       '';
       serviceConfig.Type = "oneshot";
     };
-  } // lib.optionalAttrs (nvidia.enable or false) {
-    nvidia-power-control-boot = {
-      description = "Keep NVIDIA dGPU awake at boot";
-      after = [ "local-fs.target" ];
-      wantedBy = [ "multi-user.target" ];
-      script = "${nvidiaPowerControl}/bin/nvidia-power-control boot";
-      serviceConfig.Type = "oneshot";
-    };
-
-    nvidia-power-control-change = {
-      description = "Keep NVIDIA dGPU awake after AC power changes";
-      script = "${nvidiaPowerControl}/bin/nvidia-power-control change";
-      serviceConfig.Type = "oneshot";
-    };
   };
 
-  specialisation.temporary-low-power-12w.configuration = {
-    system.nixos.tags = [ "temporary-low-power-12w" ];
-    boot.kernelParams = lib.mkAfter [ "pcie_aspm.policy=powersupersave" ];
+  specialisation.battery-saver.configuration = {
+    system.nixos.tags = [ "battery-saver" ];
+    boot.initrd.kernelModules = lib.mkForce (
+      builtins.filter (module: !(builtins.elem module nvidiaKernelModules)) config.boot.initrd.kernelModules
+    );
+    boot.blacklistedKernelModules = lib.mkAfter nvidiaKernelModules;
+    boot.kernelParams = lib.mkAfter [
+      "i915.enable_fbc=1"
+      "i915.enable_psr=1"
+      "module_blacklist=${lib.concatStringsSep "," nvidiaKernelModules}"
+      "pcie_aspm.policy=powersupersave"
+    ];
+    services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
+    hardware.nvidia.modesetting.enable = lib.mkForce false;
+    hardware.nvidia.nvidiaSettings = lib.mkForce false;
+    hardware.nvidia.powerManagement.enable = lib.mkForce false;
+    hardware.nvidia.powerManagement.finegrained = lib.mkForce false;
+    hardware.nvidia.prime.offload.enable = lib.mkForce false;
+    hardware.nvidia.prime.offload.enableOffloadCmd = lib.mkForce false;
     powerManagement.cpuFreqGovernor = lib.mkForce "powersave";
-    environment.systemPackages = [ temporaryLowPower12w ];
+    environment.systemPackages = [ batterySaver ];
 
-    systemd.services = {
-      temporary-low-power-12w = {
-        description = "Apply temporary low-power settings targeting about 12W";
-        after = [
-          "power-profiles-daemon.service"
-          "nvidia-power-control-boot.service"
-        ];
-        wantedBy = [ "multi-user.target" ];
-        path = [
-          pkgs.coreutils
-          pkgs.power-profiles-daemon
-        ];
-        script = "${temporaryLowPower12w}/bin/temporary-low-power-12w apply";
-        serviceConfig.Type = "oneshot";
-      };
-    } // lib.optionalAttrs (nvidia.enable or false) {
-      nvidia-power-control-boot = {
-        description = lib.mkForce "Allow NVIDIA runtime power management in temporary low-power mode";
-        script = lib.mkForce "${temporaryLowPower12w}/bin/temporary-low-power-12w apply";
-      };
-
-      nvidia-power-control-change = {
-        description = lib.mkForce "Keep NVIDIA runtime power management enabled in temporary low-power mode";
-        script = lib.mkForce "${temporaryLowPower12w}/bin/temporary-low-power-12w apply";
-      };
+    systemd.services.battery-saver = {
+      description = "Apply battery saver settings";
+      after = [ "power-profiles-daemon.service" ];
+      wantedBy = [ "multi-user.target" ];
+      path = [
+        pkgs.coreutils
+        pkgs.gnugrep
+        pkgs.gnused
+        pkgs.iw
+        pkgs.power-profiles-daemon
+      ];
+      script = "${batterySaver}/bin/battery-saver apply";
+      serviceConfig.Type = "oneshot";
     };
   };
 }
