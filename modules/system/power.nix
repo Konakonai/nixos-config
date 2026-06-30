@@ -297,6 +297,7 @@ in
 
   specialisation.battery-saver.configuration = {
     system.nixos.tags = [ "battery-saver" ];
+    system.nixos.label = "battery-saver";
     boot.initrd.kernelModules = lib.mkForce (
       builtins.filter (module: !(builtins.elem module nvidiaKernelModules)) config.boot.initrd.kernelModules
     );
