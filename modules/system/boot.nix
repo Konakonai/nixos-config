@@ -19,6 +19,21 @@ let
       mkdir -p "$out"
       cp -r "$src/Touhou Project/Touhou-project/." "$out/"
       test -f "$out/theme.txt"
+
+      substituteInPlace "$out/theme.txt" \
+        --replace-fail 'message-font: "Terminus Regular Bold 14"' 'message-font: "DejaVu Sans Regular 24"' \
+        --replace-fail '    left = 18%' '    left = 16%' \
+        --replace-fail '    top = 22%' '    top = 20%' \
+        --replace-fail '    width = 60%' '    width = 62%' \
+        --replace-fail '    height = 60%' '    height = 62%' \
+        --replace-fail '    item_font = "Terminus Regular Bold 14"' '    item_font = "DejaVu Sans Regular 24"' \
+        --replace-fail '    icon_width = 32' '    icon_width = 48' \
+        --replace-fail '    icon_height= 32' '    icon_height= 48' \
+        --replace-fail '    item_icon_space = 20' '    item_icon_space = 28' \
+        --replace-fail '    item_height = 36' '    item_height = 58' \
+        --replace-fail '    item_padding = 5' '    item_padding = 8' \
+        --replace-fail '    item_spacing = 10' '    item_spacing = 14' \
+        --replace-fail '    height = 4%' '    height = 2.5%'
     '';
 
     meta = {
