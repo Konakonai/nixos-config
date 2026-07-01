@@ -15,6 +15,8 @@ let
     dontConfigure = true;
     dontBuild = true;
 
+    nativeBuildInputs = [ pkgs.imagemagick ];
+
     installPhase = ''
       mkdir -p "$out"
       cp -r "$src/Touhou Project/Touhou-project/." "$out/"
@@ -34,6 +36,11 @@ let
         --replace-fail '    item_padding = 5' '    item_padding = 8' \
         --replace-fail '    item_spacing = 10' '    item_spacing = 14' \
         --replace-fail '    height = 4%' '    height = 3%'
+
+      magick "$out/select_w.png" -filter Lanczos -resize x58 PNG32:"$out/select_w.resized.png"
+      mv "$out/select_w.resized.png" "$out/select_w.png"
+      magick "$out/select_c.png" -filter Lanczos -resize x58 PNG32:"$out/select_c.resized.png"
+      mv "$out/select_c.resized.png" "$out/select_c.png"
     '';
 
     meta = {
