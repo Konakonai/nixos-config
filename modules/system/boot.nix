@@ -33,7 +33,7 @@ let
         --replace-fail '    item_height = 36' '    item_height = 58' \
         --replace-fail '    item_padding = 5' '    item_padding = 8' \
         --replace-fail '    item_spacing = 10' '    item_spacing = 14' \
-        --replace-fail '    height = 4%' '    height = 2.5%'
+        --replace-fail '    height = 4%' '    height = 3%'
     '';
 
     meta = {
