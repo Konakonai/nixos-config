@@ -30,7 +30,7 @@ let
     fixed=${qtFixedFont}
     general=${qtFont}
   '';
-  qtColors = ''
+  fallbackQtColors = ''
     [ColorScheme]
     active_colors=${lilyaGlass.palette.text}, #fffaf3, #ffffff, #f8f1ea, #dfdad9, #cecacd, ${lilyaGlass.palette.text}, #fffaf3, ${lilyaGlass.palette.text}, #fffaf3, ${lilyaGlass.palette.base}, ${lilyaGlass.palette.crust}, #e5cdcc, ${lilyaGlass.palette.text}, #56949f, ${lilyaGlass.palette.lavender}, ${lilyaGlass.palette.mantle}, #fffaf3, ${lilyaGlass.palette.mantle}, ${lilyaGlass.palette.text}, ${lilyaGlass.palette.overlay}, ${lilyaGlass.palette.accent}
     disabled_colors=${lilyaGlass.palette.overlay}, #fffaf3, #ffffff, #f8f1ea, ${lilyaGlass.palette.crust}, #cecacd, ${lilyaGlass.palette.overlay}, #fffaf3, ${lilyaGlass.palette.overlay}, #fffaf3, ${lilyaGlass.palette.base}, ${lilyaGlass.palette.crust}, #e5cdcc, ${lilyaGlass.palette.overlay}, #56949f, ${lilyaGlass.palette.lavender}, ${lilyaGlass.palette.mantle}, #fffaf3, ${lilyaGlass.palette.mantle}, ${lilyaGlass.palette.overlay}, ${lilyaGlass.palette.overlay}, ${lilyaGlass.palette.accent}
@@ -48,13 +48,72 @@ in
   };
 
   xdg.configFile."qt6ct/qt6ct.conf".text = qtctConfig "qt6ct";
-  xdg.configFile."qt6ct/colors/${qtColorSchemeName}".text = qtColors;
 
-  home.activation.darklyNoctaliaKdeColors = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  home.activation.darklyNoctaliaKdeColors = lib.hm.dag.entryAfter [ "onFilesChange" ] ''
+    source="$HOME/.config/qt6ct/colors/noctalia.conf"
+    target="$HOME/.config/qt6ct/colors/${qtColorSchemeName}"
+    mkdir -p "$(dirname "$target")"
+
+    if [ -f "$source" ]; then
+      tmp="$target.tmp"
+      ${pkgs.gawk}/bin/awk '
+        /^(active_colors|disabled_colors|inactive_colors)=/ {
+          split($0, kv, "=")
+          key = kv[1]
+          value = substr($0, length(key) + 2)
+          n = split(value, colors, ",")
+          for (i = 1; i <= n; i++) {
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", colors[i])
+          }
+          colors[14] = colors[1]
+          line = colors[1]
+          for (i = 2; i <= n; i++) {
+            line = line ", " colors[i]
+          }
+          print key "=" line
+          next
+        }
+        { print }
+      ' "$source" > "$tmp"
+      mv "$tmp" "$target"
+    else
+      cat > "$target" <<'EOF'
+${fallbackQtColors}
+EOF
+    fi
+
+    role_color() {
+      local role="$1"
+      ${pkgs.gawk}/bin/awk -F= -v role="$role" '
+        /^active_colors=/ {
+          split($2, colors, ",")
+          gsub(/^[[:space:]]+|[[:space:]]+$/, "", colors[role])
+          print colors[role]
+          exit
+        }
+      ' "$target"
+    }
+
+    hex_to_rgb() {
+      local hex="''${1#\#}"
+      if [ "''${#hex}" -ne 6 ]; then
+        printf '229,205,204'
+        return
+      fi
+      printf '%d,%d,%d' "0x''${hex:0:2}" "0x''${hex:2:2}" "0x''${hex:4:2}"
+    }
+
+    selection_bg="$(hex_to_rgb "$(role_color 13)")"
+    selection_fg="$(hex_to_rgb "$(role_color 14)")"
+
     kdeglobals="$HOME/.config/kdeglobals"
     if [ -f "$kdeglobals" ]; then
-      ${lib.getExe' pkgs.kdePackages.kconfig "kwriteconfig6"} --file "$kdeglobals" --group "Colors:View" --key "DecorationFocus" "229,205,204"
-      ${lib.getExe' pkgs.kdePackages.kconfig "kwriteconfig6"} --file "$kdeglobals" --group "Colors:View" --key "DecorationHover" "229,205,204"
+      ${lib.getExe' pkgs.kdePackages.kconfig "kwriteconfig6"} --file "$kdeglobals" --group "Colors:View" --key "DecorationFocus" "$selection_bg"
+      ${lib.getExe' pkgs.kdePackages.kconfig "kwriteconfig6"} --file "$kdeglobals" --group "Colors:View" --key "DecorationHover" "$selection_bg"
+      ${lib.getExe' pkgs.kdePackages.kconfig "kwriteconfig6"} --file "$kdeglobals" --group "Colors:Selection" --key "BackgroundAlternate" "$selection_bg"
+      ${lib.getExe' pkgs.kdePackages.kconfig "kwriteconfig6"} --file "$kdeglobals" --group "Colors:Selection" --key "BackgroundNormal" "$selection_bg"
+      ${lib.getExe' pkgs.kdePackages.kconfig "kwriteconfig6"} --file "$kdeglobals" --group "Colors:Selection" --key "ForegroundActive" "$selection_fg"
+      ${lib.getExe' pkgs.kdePackages.kconfig "kwriteconfig6"} --file "$kdeglobals" --group "Colors:Selection" --key "ForegroundNormal" "$selection_fg"
     fi
   '';
 }
