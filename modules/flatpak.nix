@@ -16,6 +16,14 @@ let
     ELECTRON_EXTRA_LAUNCH_ARGS = "--force-color-profile=srgb";
     QTWEBENGINE_CHROMIUM_FLAGS = "--force-color-profile=srgb";
   };
+
+  wechatPortalEnv = {
+    # WeChat's upload picker is backed by its bundled Qt/Chromium stack. Prefer
+    # the Qt portal platform theme when available so selected files are granted
+    # through xdg-desktop-portal instead of relying on broad Flatpak filesystem
+    # overrides.
+    QT_QPA_PLATFORMTHEME = "xdgdesktopportal";
+  };
 in
 {
   services.flatpak = {
@@ -68,7 +76,7 @@ in
         };
       };
       "org.onlyoffice.desktopeditors".Environment = themeEnv // fcitxCompatEnv;
-      "com.tencent.WeChat".Environment = themeEnv // fcitxCompatEnv // electronColorEnv;
+      "com.tencent.WeChat".Environment = themeEnv // fcitxCompatEnv // electronColorEnv // wechatPortalEnv;
     };
   };
 
