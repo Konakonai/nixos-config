@@ -54,6 +54,12 @@ pkgs.appimageTools.wrapAppImage {
         <edit name="family" mode="assign" binding="strong"><string>Noto Sans CJK SC</string></edit>
         <edit name="weight" mode="assign"><const>medium</const></edit>
       </match>
+
+      <match target="font">
+        <test name="family"><string>Noto Sans CJK SC</string></test>
+        <test name="style"><string>Regular</string></test>
+        <edit name="embolden" mode="assign"><bool>true</bool></edit>
+      </match>
     </fontconfig>
     EOF
 
