@@ -85,8 +85,10 @@ in
           transparency_mode = lilyaGlass.noctalia.panelTransparencyMode;
           borders = false;
           shadow = false;
-          launcher_placement = "centered";
-          clipboard_placement = "centered";
+          launcher_placement = "floating";
+          launcher_position = "center";
+          clipboard_placement = "floating";
+          clipboard_position = "center";
           control_center_placement = "floating";
           wallpaper_placement = "floating";
           session_placement = "floating";
