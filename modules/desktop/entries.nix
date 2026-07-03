@@ -1,6 +1,9 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, inputs, ... }:
 
 let
+  system = pkgs.stdenv.hostPlatform.system;
+  hermesDesktop = inputs.hermes-agent.packages.${system}.desktop;
+  hermesIcon = "${hermesDesktop}/share/hermes-desktop/dist/hermes.png";
   ccSwitch = pkgs.callPackage ../../pkgs/cc-switch-cli/default.nix {};
   antigravity = import ../../pkgs/antigravity.nix { inherit pkgs lib; };
   fontMimeTypes = [
@@ -115,5 +118,16 @@ in
     mimeType = fontMimeTypes;
     startupNotify = true;
     settings.DBusActivatable = "false";
+  };
+
+  xdg.desktopEntries."hermes-desktop" = {
+    name = "Hermes";
+    genericName = "AI Agent";
+    exec = "${hermesDesktop}/bin/hermes-desktop";
+    icon = hermesIcon;
+    type = "Application";
+    terminal = false;
+    categories = [ "Utility" "Development" "AI" ];
+    startupNotify = true;
   };
 }
