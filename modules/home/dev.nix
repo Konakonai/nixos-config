@@ -1,11 +1,6 @@
-{ pkgs, lib, inputs, hostProfile, ... }:
+{ pkgs, lib, hostProfile, ... }:
 
 let
-  system = pkgs.stdenv.hostPlatform.system;
-  unstable = import inputs.nixpkgs-unstable {
-    inherit system;
-    config.allowUnfree = true;
-  };
   braveSearchMcp = import ../../pkgs/mcp-server-brave-search.nix {
     inherit pkgs lib;
     braveApiEnvFile = hostProfile.mcp.braveSearch.envFile;
@@ -46,8 +41,6 @@ in
     git-lfs
 
     braveSearchMcp
-    inputs.hermes-agent.packages.${system}.default
-    unstable.officecli
   ];
 
   home.file.".gemini/config/mcp_config.json".text =
