@@ -19,8 +19,8 @@ let
   niriInternalLoginPath = lib.getExe niriInternalLogin;
   niriExternalLoginPath = lib.getExe niriExternalLogin;
   niriLoginPaths = [ niriInternalLoginPath ] ++ lib.optional (externalDisplay != null) niriExternalLoginPath;
-  gtkgreetGtkThemeName = "adw-gtk3";
-  gtkgreetGtkThemePackage = pkgs.adw-gtk3;
+  gtkgreetGtkThemeName = "rose-pine-dawn";
+  gtkgreetGtkThemePackage = pkgs.rose-pine-gtk-theme;
   gtkgreetFontSize = 18;
   gtkgreetClockFocusedSize = 64000;
   gtkgreetClockIdleSize = 96000;
@@ -77,16 +77,16 @@ int config_update_command_selector(GtkWidget *combobox) {' \
   });
 
   gtkgreetCss = pkgs.writeText "gtkgreet.css" ''
-    @define-color accent_color #5e81ac;
-    @define-color accent_bg_color #5e81ac;
-    @define-color accent_fg_color #eceff4;
-    @define-color window_bg_color #eceff4;
-    @define-color window_fg_color #2e3440;
-    @define-color card_bg_color #e5e9f0;
-    @define-color card_fg_color #2e3440;
-    @define-color border_color #d8dee9;
-    @define-color muted_fg_color #4c566a;
-    @define-color shadow_color #2e3440;
+    @define-color accent_color #56949f;
+    @define-color accent_bg_color #56949f;
+    @define-color accent_fg_color #faf4ed;
+    @define-color window_bg_color #faf4ed;
+    @define-color window_fg_color #575279;
+    @define-color card_bg_color #fffaf3;
+    @define-color card_fg_color #575279;
+    @define-color border_color #dfdad9;
+    @define-color muted_fg_color #797593;
+    @define-color shadow_color #575279;
 
     window,
     #window {
@@ -126,8 +126,8 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     }
 
     button:hover {
-      background-color: #6b8db6;
-      border-color: #6b8db6;
+      background-color: #6aa5ae;
+      border-color: #6aa5ae;
     }
 
     entry,
@@ -217,7 +217,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     export GTK_THEME=${gtkgreetGtkThemeName}
     export XCURSOR_THEME=${lib.escapeShellArg lilyaGlass.cursorThemeName}
     export XCURSOR_SIZE=48
-    export XDG_DATA_DIRS=${gtkgreetGtkThemePackage}/share:${pkgs.colloid-icon-theme}/share:${pkgs.nordzy-cursor-theme}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
+    export XDG_DATA_DIRS=${gtkgreetGtkThemePackage}/share:${pkgs.colloid-icon-theme}/share:${pkgs.rose-pine-cursor}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
 
     exec ${pkgs.dbus}/bin/dbus-run-session ${niriPackage}/bin/niri -c ${gtkgreetNiriConfig}
   '';

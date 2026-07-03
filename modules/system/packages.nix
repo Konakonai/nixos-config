@@ -31,7 +31,6 @@
 
     qadwaitadecorations-qt6
     qt6Packages.qt6ct
-    nordzy-cursor-theme
     opencode
   ];
 }

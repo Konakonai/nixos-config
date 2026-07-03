@@ -7,8 +7,8 @@ in
   gtk = {
     enable = true;
     theme = {
-      package = pkgs.adw-gtk3;
-      name = "adw-gtk3";
+      package = pkgs.rose-pine-gtk-theme;
+      name = "rose-pine-dawn";
     };
     iconTheme = {
       name = lilyaGlass.iconThemeName;
@@ -16,7 +16,7 @@ in
     };
     cursorTheme = {
       name = lilyaGlass.cursorThemeName;
-      package = pkgs.nordzy-cursor-theme;
+      package = pkgs.rose-pine-cursor;
       size = 48;
     };
 
@@ -31,7 +31,7 @@ in
 
     gtk4.extraConfig = {
       gtk-font-name = "${lilyaGlass.fonts.sans} ${builtins.toString lilyaGlass.fonts.size}";
-      gtk-theme-name = "adw-gtk3";
+      gtk-theme-name = "rose-pine-dawn";
       gtk-application-prefer-dark-theme = 0;
     };
   };

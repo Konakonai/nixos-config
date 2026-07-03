@@ -11,7 +11,7 @@ let
     fcitx5-gtk
     qt6Packages.fcitx5-qt
     fcitx5Configtool
-    fcitx5-nord
+    fcitx5-rose-pine
     (fcitx5-rime.override {
       rimeDataPkgs = with pkgs; [
         rime-data

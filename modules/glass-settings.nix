@@ -38,7 +38,7 @@
   };
 
   iconThemeName = "Colloid-Light";
-  cursorThemeName = "Nordzy-cursors";
+  cursorThemeName = "BreezeX-RosePineDawn-Linux";
 
   fonts = {
     sans = "Noto Sans CJK SC";

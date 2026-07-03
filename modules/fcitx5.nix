@@ -16,6 +16,6 @@ in
 
   xdg.configFile."fcitx5/conf/classicui.conf".text = ''
     Font="Noto Sans CJK SC 10"
-    Theme=Nord-Light
+    Theme=rose-pine-dawn
   '';
 }
