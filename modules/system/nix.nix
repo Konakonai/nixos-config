@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, hostProfile, ... }:
 
 let
   encryptedGithubAccessTokenConfig = ../../secrets/nix-github-access-token.conf.age;
@@ -7,9 +7,11 @@ in
 {
   age.secrets.nix-github-access-token-conf = {
     file = encryptedGithubAccessTokenConfig;
-    owner = "root";
-    group = "root";
+    path = "/run/nix-github-access-token.conf";
+    owner = hostProfile.user.userName;
+    group = hostProfile.user.group;
     mode = "0400";
+    symlink = false;
   };
 
   nix.settings = {
