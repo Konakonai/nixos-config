@@ -19,8 +19,6 @@ let
   fcitxExports = lib.concatStringsSep "\n" (
     lib.mapAttrsToList (name: value: "export ${name}=${lib.escapeShellArg value}") fcitxCompatEnv
   );
-
-  fontConfigPath = "$out/share/wechat-fontconfig/fonts.conf";
 in
 pkgs.appimageTools.wrapAppImage {
   inherit pname version;
@@ -33,36 +31,6 @@ pkgs.appimageTools.wrapAppImage {
     mkdir -p $out/share/icons/hicolor/256x256/apps
     cp ${appimageContents}/wechat.png $out/share/icons/hicolor/256x256/apps/
 
-    mkdir -p $out/share/wechat-fontconfig
-    cat > ${fontConfigPath} <<'EOF'
-    <?xml version="1.0"?>
-    <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
-    <fontconfig>
-      <include ignore_missing="yes">/etc/fonts/fonts.conf</include>
-      <include ignore_missing="yes">conf.d</include>
-
-      <match target="pattern">
-        <test qual="any" name="family"><string>Microsoft YaHei</string></test>
-        <test name="style"><string>Semi-Bold</string></test>
-        <edit name="family" mode="assign" binding="strong"><string>Noto Sans CJK SC</string></edit>
-        <edit name="weight" mode="assign"><const>medium</const></edit>
-      </match>
-
-      <match target="pattern">
-        <test qual="any" name="family"><string>PingFang SC</string></test>
-        <test name="style"><string>Semi-Bold</string></test>
-        <edit name="family" mode="assign" binding="strong"><string>Noto Sans CJK SC</string></edit>
-        <edit name="weight" mode="assign"><const>medium</const></edit>
-      </match>
-
-      <match target="font">
-        <test name="family"><string>Noto Sans CJK SC</string></test>
-        <test name="style"><string>Regular</string></test>
-        <edit name="embolden" mode="assign"><bool>true</bool></edit>
-      </match>
-    </fontconfig>
-    EOF
-
     substituteInPlace $out/share/applications/wechat.desktop \
       --replace-fail AppRun wechat
 
@@ -70,7 +38,6 @@ pkgs.appimageTools.wrapAppImage {
     cat > $out/bin/wechat <<EOF
     #!${pkgs.runtimeShell}
     ${fcitxExports}
-    export FONTCONFIG_FILE=${fontConfigPath}
     exec "$out/bin/.wechat-wrapped" "\$@"
     EOF
     chmod +x $out/bin/wechat
