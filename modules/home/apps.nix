@@ -3,7 +3,7 @@
 let
   lilyaGlass = import ../glass-settings.nix;
   appThemeEnv = {
-    GTK_THEME = "rose-pine-dawn";
+    GTK_THEME = "adw-gtk3";
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "qt6ct";

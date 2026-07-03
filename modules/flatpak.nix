@@ -5,15 +5,25 @@ let
 
   themeEnv = {
     GSK_RENDERER = "ngl";
-    GTK_THEME = "rose-pine-dawn";
+    GTK_THEME = "adw-gtk3";
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "qt6ct";
     QT_STYLE_OVERRIDE = "kvantum";
     XCURSOR_THEME = lilyaGlass.cursorThemeName;
     XCURSOR_SIZE = "48";
-    XCURSOR_PATH = "${config.home.homeDirectory}/.local/share/icons";
+    XCURSOR_PATH = "${config.home.homeDirectory}/.local/share/flatpak-icons:${config.home.homeDirectory}/.local/share/icons";
   };
+
+  themeFilesystems = [
+    "xdg-config/gtk-3.0:ro"
+    "xdg-config/gtk-4.0:ro"
+    "xdg-config/Kvantum:ro"
+    "xdg-config/qt6ct:ro"
+    "xdg-data/themes:ro"
+    "xdg-data/icons:ro"
+    "xdg-data/flatpak-icons:ro"
+  ];
 
 in
 {
@@ -49,6 +59,7 @@ in
           "x11"
           "!fallback-x11"
         ];
+        Context.filesystems = themeFilesystems;
         Environment = themeEnv // fcitxCompatEnv // {
           ELECTRON_OZONE_PLATFORM_HINT = "wayland";
           NIXOS_OZONE_WL = "1";
@@ -56,14 +67,7 @@ in
       };
 
       "org.onlyoffice.desktopeditors" = {
-        Context.filesystems = [
-          "xdg-config/gtk-3.0:ro"
-          "xdg-config/gtk-4.0:ro"
-          "xdg-config/Kvantum:ro"
-          "xdg-config/qt6ct:ro"
-          "xdg-data/themes:ro"
-          "xdg-data/icons:ro"
-        ];
+        Context.filesystems = themeFilesystems;
         Environment = themeEnv // fcitxCompatEnv;
       };
     };

@@ -2,8 +2,10 @@
 
 let
   lilyaGlass = import ../glass-settings.nix;
-  gtkThemeName = "rose-pine-dawn";
-  gtkThemePackage = pkgs.rose-pine-gtk-theme;
+  gtkThemeName = "adw-gtk3";
+  gtkThemePackage = pkgs.adw-gtk3;
+  cursorThemePackage = pkgs.rose-pine-cursor;
+  cursorThemeName = lilyaGlass.cursorThemeName;
   iconThemePackage = pkgs.colloid-icon-theme;
   iconThemeName = lilyaGlass.iconThemeName;
 in
@@ -24,6 +26,7 @@ in
     }
 
     copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}" "$HOME/.local/share/themes/${gtkThemeName}"
+    copy_theme_dir "${cursorThemePackage}/share/icons/${cursorThemeName}" "$HOME/.local/share/flatpak-icons/${cursorThemeName}"
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
 
     RIME_ICON="${../../assets/fcitx-rime.svg}"

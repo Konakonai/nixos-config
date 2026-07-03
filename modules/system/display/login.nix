@@ -19,8 +19,8 @@ let
   niriInternalLoginPath = lib.getExe niriInternalLogin;
   niriExternalLoginPath = lib.getExe niriExternalLogin;
   niriLoginPaths = [ niriInternalLoginPath ] ++ lib.optional (externalDisplay != null) niriExternalLoginPath;
-  gtkgreetGtkThemeName = "rose-pine-dawn";
-  gtkgreetGtkThemePackage = pkgs.rose-pine-gtk-theme;
+  gtkgreetGtkThemeName = "adw-gtk3";
+  gtkgreetGtkThemePackage = pkgs.adw-gtk3;
   gtkgreetFontSize = 18;
   gtkgreetClockFocusedSize = 64000;
   gtkgreetClockIdleSize = 96000;
