@@ -1,4 +1,4 @@
-{ pkgs, lib, fcitxCompatEnv ? { }, ... }:
+{ pkgs, lib, fcitxCompatEnv ? { }, appThemeEnv ? { }, ... }:
 
 let
   pname = "wechat";
@@ -16,8 +16,8 @@ let
     '';
   };
 
-  fcitxExports = lib.concatStringsSep "\n" (
-    lib.mapAttrsToList (name: value: "export ${name}=${lib.escapeShellArg value}") fcitxCompatEnv
+  appEnvExports = lib.concatStringsSep "\n" (
+    lib.mapAttrsToList (name: value: "export ${name}=${lib.escapeShellArg value}") (appThemeEnv // fcitxCompatEnv)
   );
 in
 pkgs.appimageTools.wrapAppImage {
@@ -37,7 +37,7 @@ pkgs.appimageTools.wrapAppImage {
     mv $out/bin/wechat $out/bin/.wechat-wrapped
     cat > $out/bin/wechat <<EOF
     #!${pkgs.runtimeShell}
-    ${fcitxExports}
+    ${appEnvExports}
     exec "$out/bin/.wechat-wrapped" "\$@"
     EOF
     chmod +x $out/bin/wechat

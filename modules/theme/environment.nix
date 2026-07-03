@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
@@ -13,5 +13,6 @@ in
     ELECTRON_OZONE_PLATFORM_HINT = "wayland";
     XCURSOR_THEME = lilyaGlass.cursorThemeName;
     XCURSOR_SIZE = "48";
+    XCURSOR_PATH = "${pkgs.rose-pine-cursor}/share/icons";
   };
 }

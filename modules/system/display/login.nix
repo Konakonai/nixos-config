@@ -197,6 +197,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
         "GTK_USE_PORTAL" "0"
         "XCURSOR_SIZE" "48"
         "XCURSOR_THEME" ${kdlString lilyaGlass.cursorThemeName}
+        "XCURSOR_PATH" ${kdlString "${pkgs.rose-pine-cursor}/share/icons"}
     }
 
     layout {
@@ -217,6 +218,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     export GTK_THEME=${gtkgreetGtkThemeName}
     export XCURSOR_THEME=${lib.escapeShellArg lilyaGlass.cursorThemeName}
     export XCURSOR_SIZE=48
+    export XCURSOR_PATH=${pkgs.rose-pine-cursor}/share/icons
     export XDG_DATA_DIRS=${gtkgreetGtkThemePackage}/share:${pkgs.colloid-icon-theme}/share:${pkgs.rose-pine-cursor}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
 
     exec ${pkgs.dbus}/bin/dbus-run-session ${niriPackage}/bin/niri -c ${gtkgreetNiriConfig}

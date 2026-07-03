@@ -1,13 +1,13 @@
 {
   palette = {
-    accent = "#5e81ac";
-    lavender = "#81a1c1";
-    text = "#2e3440";
-    base = "#eceff4";
-    mantle = "#e5e9f0";
-    crust = "#d8dee9";
-    overlay = "#4c566a";
-    shadow = "#3b425233";
+    accent = "#56949f";
+    lavender = "#907aa9";
+    text = "#575279";
+    base = "#faf4ed";
+    mantle = "#f2e9e1";
+    crust = "#dfdad9";
+    overlay = "#797593";
+    shadow = "#57527933";
   };
 
   opacity = {
