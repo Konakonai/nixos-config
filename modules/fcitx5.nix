@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 
 let
   fcitxCompatEnv = {
@@ -18,4 +18,7 @@ in
     Font="Noto Sans CJK SC 10"
     Theme=rose-pine-dawn
   '';
+
+  xdg.dataFile."fcitx5/themes/rose-pine-dawn".source =
+    "${pkgs.fcitx5-rose-pine}/share/fcitx5/themes/rose-pine-dawn";
 }
