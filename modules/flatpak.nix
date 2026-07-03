@@ -41,7 +41,18 @@ in
     };
 
     overrides = {
-      "com.qq.QQ".Environment = fcitxCompatEnv;
+      "com.qq.QQ" = {
+        Context.unset-environment = [
+          "GSK_RENDERER"
+          "GTK_THEME"
+          "QT_QPA_PLATFORMTHEME"
+          "QT_STYLE_OVERRIDE"
+          "XCURSOR_THEME"
+          "XCURSOR_SIZE"
+          "XCURSOR_PATH"
+        ];
+        Environment = fcitxCompatEnv;
+      };
 
       "org.onlyoffice.desktopeditors" = {
         Context.filesystems = [
