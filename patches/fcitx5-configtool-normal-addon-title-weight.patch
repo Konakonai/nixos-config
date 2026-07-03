@@ -1,0 +1,35 @@
+diff --git a/src/lib/configwidgetslib/addonselector.cpp b/src/lib/configwidgetslib/addonselector.cpp
+index 7f9a17c..b5f090e 100644
+--- a/src/lib/configwidgetslib/addonselector.cpp
++++ b/src/lib/configwidgetslib/addonselector.cpp
+@@ -74,7 +74,7 @@ int AddonDelegate::dependantLayoutValue(int value, int width,
+
+ QFont AddonDelegate::titleFont(const QFont &baseFont) const {
+     QFont retFont(baseFont);
+-    retFont.setBold(true);
++    retFont.setWeight(QFont::Medium);
+
+     return retFont;
+ }
+diff --git a/src/lib/configwidgetslib/categoryhelper.cpp b/src/lib/configwidgetslib/categoryhelper.cpp
+index e50fd42..6efdf78 100644
+--- a/src/lib/configwidgetslib/categoryhelper.cpp
++++ b/src/lib/configwidgetslib/categoryhelper.cpp
+@@ -25,7 +25,7 @@ void paintCategoryHeader(QPainter *painter, const QStyleOptionViewItem &option,
+     optRect.setWidth(optRect.width() - SPACING * 2);
+     optRect.setHeight(optRect.height() - SPACING * 2);
+     QFont font(QApplication::font());
+-    font.setBold(true);
++    font.setWeight(QFont::Medium);
+     const QFontMetrics fontMetrics = QFontMetrics(font);
+
+     QColor outlineColor = option.palette.text().color();
+@@ -118,7 +118,7 @@ void paintCategoryHeader(QPainter *painter, const QStyleOptionViewItem &option,
+
+ QSize categoryHeaderSizeHint() {
+     QFont font(QApplication::font());
+-    font.setBold(true);
++    font.setWeight(QFont::Medium);
+     QFontMetrics fontMetrics(font);
+     const int height = fontMetrics.height() + 1 /* 1 pixel-width gradient */
+                        + 11 /* top and bottom separation */ + SPACING;

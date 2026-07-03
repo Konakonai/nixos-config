@@ -1,5 +1,30 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
+let
+  fcitx5Configtool = pkgs.qt6Packages.fcitx5-configtool.overrideAttrs (oldAttrs: {
+    patches = (oldAttrs.patches or [ ]) ++ [
+      ../../patches/fcitx5-configtool-normal-addon-title-weight.patch
+    ];
+  });
+
+  fcitx5Addons = with pkgs; [
+    fcitx5-gtk
+    qt6Packages.fcitx5-qt
+    fcitx5Configtool
+    fcitx5-nord
+    (fcitx5-rime.override {
+      rimeDataPkgs = with pkgs; [
+        rime-data
+        rime-ice
+      ];
+    })
+  ];
+
+  fcitx5Package = pkgs.qt6Packages.fcitx5-with-addons.override {
+    addons = fcitx5Addons;
+    fcitx5-configtool = fcitx5Configtool;
+  };
+in
 {
   time.timeZone = "Asia/Taipei";
   i18n.defaultLocale = "zh_CN.UTF-8";
@@ -19,20 +44,13 @@
   i18n.inputMethod = {
     enable = true;
     type = "fcitx5";
+    package = lib.mkForce fcitx5Package;
     fcitx5 = {
       waylandFrontend = true;
-      addons = with pkgs; [
-        fcitx5-gtk
-        kdePackages.fcitx5-qt
-        kdePackages.fcitx5-configtool
-        fcitx5-nord
-        (fcitx5-rime.override {
-          rimeDataPkgs = with pkgs; [
-            rime-data
-            rime-ice
-          ];
-        })
-      ];
+      addons = fcitx5Addons;
     };
   };
+
+  environment.variables.QT_PLUGIN_PATH =
+    lib.mkForce [ "${fcitx5Package}/${pkgs.qt6.qtbase.qtPluginPrefix}" ];
 }
