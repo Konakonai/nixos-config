@@ -29,7 +29,6 @@
     (callPackage ../../pkgs/cc-switch-cli/default.nix {})
     (callPackage ../../pkgs/codex.nix {})
 
-    darkly
     qadwaitadecorations-qt6
     qt6Packages.qt6ct
     nordzy-cursor-theme
