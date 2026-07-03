@@ -41,7 +41,16 @@ in
     };
 
     overrides = {
-      "com.qq.QQ".Environment = fcitxCompatEnv;
+      "com.qq.QQ" = {
+        # Keep QQ on Wayland, but expose the real X11 socket so the Flathub
+        # launcher does not start its Xvfb fallback on Wayland sessions.
+        Context.sockets = [
+          "x11"
+          "wayland"
+          "!fallback-x11"
+        ];
+        Environment = fcitxCompatEnv;
+      };
 
       "org.onlyoffice.desktopeditors" = {
         Context.filesystems = [
