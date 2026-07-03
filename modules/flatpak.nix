@@ -76,10 +76,13 @@ in
     qq_config="$HOME/.var/app/com.qq.QQ/config"
     mkdir -p "$qq_config"
     rm -f "$qq_config/qq-flags.conf"
+    # QQ/Electron on niri/NVIDIA Wayland can flash black blocks via the hardware GL buffer path.
     printf '%s\n' \
       "--ozone-platform=wayland" \
       "--enable-wayland-ime" \
       "--wayland-text-input-version=3" \
+      "--use-gl=swiftshader" \
+      "--enable-unsafe-swiftshader" \
       > "$qq_config/qq-flags.conf"
   '';
 }
