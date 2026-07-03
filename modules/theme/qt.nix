@@ -4,6 +4,9 @@ let
   lilyaGlass = import ../glass-settings.nix;
   orchisKde = pkgs.callPackage ../../pkgs/orchis-kde/default.nix {};
   kvantumTheme = "Orchis";
+  qtFont = "${lilyaGlass.fonts.sans},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
+  qtFixedFont = "${lilyaGlass.fonts.mono},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
+  qtFontQss = "lilya-fonts.qss";
   qtctConfig = qtctDir: ''
     [Appearance]
     color_scheme_path=${config.home.homeDirectory}/.config/${qtctDir}/colors/noctalia.conf
@@ -21,9 +24,14 @@ let
     keyboard_scheme=2
     menus_have_icons=true
     show_shortcuts_in_context_menus=true
+    stylesheets=${config.home.homeDirectory}/.config/${qtctDir}/qss/${qtFontQss}
     toolbutton_style=4
     underline_shortcut=1
     wheel_scroll_lines=3
+
+    [Fonts]
+    fixed=${qtFixedFont}
+    general=${qtFont}
   '';
 in
 {
@@ -37,6 +45,17 @@ in
   };
 
   xdg.configFile."qt6ct/qt6ct.conf".text = qtctConfig "qt6ct";
+  xdg.configFile."qt6ct/qss/${qtFontQss}".text = ''
+    QWidget {
+      font-family: "${lilyaGlass.fonts.sans}";
+      font-size: ${builtins.toString lilyaGlass.fonts.size}pt;
+      font-weight: normal;
+    }
+
+    QGroupBox::title {
+      font-weight: 500;
+    }
+  '';
   xdg.configFile."Kvantum/${kvantumTheme}".source = "${orchisKde}/share/Kvantum/${kvantumTheme}";
   xdg.configFile."Kvantum/Orchis-solid".source = "${orchisKde}/share/Kvantum/Orchis-solid";
   xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
