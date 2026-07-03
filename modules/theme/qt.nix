@@ -1,14 +1,16 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
+  orchisKde = pkgs.callPackage ../../pkgs/orchis-kde/default.nix {};
+  kvantumTheme = "Orchis";
   qtctConfig = qtctDir: ''
     [Appearance]
     color_scheme_path=${config.home.homeDirectory}/.config/${qtctDir}/colors/noctalia.conf
-    custom_palette=true
+    custom_palette=false
     icon_theme=${lilyaGlass.iconThemeName}
     standard_dialogs=default
-    style=Fusion
+    style=kvantum
 
     [Interface]
     activate_item_on_single_click=1
@@ -25,10 +27,22 @@ let
   '';
 in
 {
+  home.packages = [
+    pkgs.kdePackages.qtstyleplugin-kvantum
+  ];
+
   qt = {
     enable = true;
     platformTheme.name = "qt6ct";
   };
 
   xdg.configFile."qt6ct/qt6ct.conf".text = qtctConfig "qt6ct";
+  xdg.configFile."Kvantum/${kvantumTheme}".source = "${orchisKde}/share/Kvantum/${kvantumTheme}";
+  xdg.configFile."Kvantum/Orchis-solid".source = "${orchisKde}/share/Kvantum/Orchis-solid";
+  xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
+    [General]
+    theme=${kvantumTheme}
+  '';
+  xdg.dataFile."color-schemes/Orchis.colors".source = "${orchisKde}/share/color-schemes/Orchis.colors";
+  xdg.dataFile."color-schemes/OrchisDark.colors".source = "${orchisKde}/share/color-schemes/OrchisDark.colors";
 }
