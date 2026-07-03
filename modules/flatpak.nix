@@ -9,7 +9,7 @@ let
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "qt6ct";
-    QT_STYLE_OVERRIDE = "kvantum";
+    QT_STYLE_OVERRIDE = "";
     XCURSOR_THEME = lilyaGlass.cursorThemeName;
     XCURSOR_SIZE = "48";
     XCURSOR_PATH = "${config.home.homeDirectory}/.local/share/flatpak-icons:${config.home.homeDirectory}/.local/share/icons";
@@ -18,7 +18,6 @@ let
   themeFilesystems = [
     "xdg-config/gtk-3.0:ro"
     "xdg-config/gtk-4.0:ro"
-    "xdg-config/Kvantum:ro"
     "xdg-config/qt6ct:ro"
     "xdg-data/themes:ro"
     "xdg-data/icons:ro"
