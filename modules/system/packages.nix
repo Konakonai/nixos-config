@@ -37,6 +37,7 @@ in
     (callPackage ../../pkgs/codex.nix {})
 
     inputs.hermes-agent.packages.${system}.default
+    inputs.hermes-agent.packages.${system}.desktop
     unstable.officecli
 
     qadwaitadecorations-qt6
