@@ -1,7 +1,7 @@
 {
   palette = {
-    accent = "#56949f";
-    lavender = "#907aa9";
+    accent = "#d7827e";
+    lavender = "#b4637a";
     text = "#575279";
     base = "#faf4ed";
     mantle = "#f2e9e1";

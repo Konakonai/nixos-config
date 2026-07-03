@@ -77,8 +77,8 @@ int config_update_command_selector(GtkWidget *combobox) {' \
   });
 
   gtkgreetCss = pkgs.writeText "gtkgreet.css" ''
-    @define-color accent_color #56949f;
-    @define-color accent_bg_color #56949f;
+    @define-color accent_color ${lilyaGlass.palette.accent};
+    @define-color accent_bg_color ${lilyaGlass.palette.accent};
     @define-color accent_fg_color #faf4ed;
     @define-color window_bg_color #faf4ed;
     @define-color window_fg_color #575279;
@@ -126,8 +126,8 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     }
 
     button:hover {
-      background-color: #6aa5ae;
-      border-color: #6aa5ae;
+      background-color: ${lilyaGlass.palette.lavender};
+      border-color: ${lilyaGlass.palette.lavender};
     }
 
     entry,
