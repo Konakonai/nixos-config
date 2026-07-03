@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, lib, fcitxCompatEnv ? { }, ... }:
 
 let
   pname = "wechat";
@@ -15,6 +15,10 @@ let
       patchelf --replace-needed libtiff.so.5 libtiff.so $out/opt/wechat/wechat
     '';
   };
+
+  fcitxExports = lib.concatStringsSep "\n" (
+    lib.mapAttrsToList (name: value: "export ${name}=${lib.escapeShellArg value}") fcitxCompatEnv
+  );
 in
 pkgs.appimageTools.wrapAppImage {
   inherit pname version;
@@ -29,6 +33,14 @@ pkgs.appimageTools.wrapAppImage {
 
     substituteInPlace $out/share/applications/wechat.desktop \
       --replace-fail AppRun wechat
+
+    mv $out/bin/wechat $out/bin/.wechat-wrapped
+    cat > $out/bin/wechat <<EOF
+    #!${pkgs.runtimeShell}
+    ${fcitxExports}
+    exec "$out/bin/.wechat-wrapped" "\$@"
+    EOF
+    chmod +x $out/bin/wechat
   '';
 
   meta = {
