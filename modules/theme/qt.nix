@@ -3,6 +3,16 @@
 let
   lilyaGlass = import ../glass-settings.nix;
   kvantumTheme = "rose-pine-dawn-foam";
+  patchedKvantumTheme = pkgs.runCommand "rose-pine-dawn-foam-kvantum-readable-selection" {} ''
+    theme_dir="$out/share/Kvantum/themes/${kvantumTheme}"
+    mkdir -p "$out/share/Kvantum/themes"
+    cp -r "${pkgs.rose-pine-kvantum}/share/Kvantum/themes/${kvantumTheme}" "$out/share/Kvantum/themes/"
+    chmod -R u+w "$theme_dir"
+    for kvconfig in "$theme_dir"/*.kvconfig; do
+      substituteInPlace "$kvconfig" \
+        --replace-fail "highlight.text.color=#faf4ed" "highlight.text.color=#575279"
+    done
+  '';
   qtFont = "${lilyaGlass.fonts.sans},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
   qtFixedFont = "${lilyaGlass.fonts.mono},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
   qtctConfig = qtctDir: ''
@@ -46,11 +56,11 @@ in
   xdg.configFile."qt6ct/qt6ct.conf".text = qtctConfig "qt6ct";
   xdg.configFile."qt6ct/colors/rose-pine-dawn.conf".text = ''
     [ColorScheme]
-    active_colors=#575279, #f2e9e1, #fffaf3, #f4ede8, #cecacd, #dfdad9, #575279, #fffaf3, #575279, #fffaf3, #faf4ed, #cecacd, #56949f, #faf4ed, #286983, #907aa9, #f2e9e1, #f4ede8, #fffaf3, #575279, #797593, #56949f
-    disabled_colors=#9893a5, #f2e9e1, #fffaf3, #f4ede8, #cecacd, #dfdad9, #9893a5, #fffaf3, #9893a5, #fffaf3, #faf4ed, #cecacd, #d7827e, #faf4ed, #9893a5, #9893a5, #f2e9e1, #f4ede8, #fffaf3, #9893a5, #9893a5, #9893a5
-    inactive_colors=#575279, #f2e9e1, #fffaf3, #f4ede8, #cecacd, #dfdad9, #575279, #fffaf3, #575279, #fffaf3, #faf4ed, #cecacd, #56949f, #faf4ed, #286983, #907aa9, #f2e9e1, #f4ede8, #fffaf3, #575279, #797593, #56949f
+    active_colors=#575279, #f2e9e1, #fffaf3, #f4ede8, #cecacd, #dfdad9, #575279, #fffaf3, #575279, #fffaf3, #faf4ed, #cecacd, #56949f, #575279, #286983, #907aa9, #f2e9e1, #f4ede8, #fffaf3, #575279, #797593, #56949f
+    disabled_colors=#9893a5, #f2e9e1, #fffaf3, #f4ede8, #cecacd, #dfdad9, #9893a5, #fffaf3, #9893a5, #fffaf3, #faf4ed, #cecacd, #d7827e, #575279, #9893a5, #9893a5, #f2e9e1, #f4ede8, #fffaf3, #9893a5, #9893a5, #9893a5
+    inactive_colors=#575279, #f2e9e1, #fffaf3, #f4ede8, #cecacd, #dfdad9, #575279, #fffaf3, #575279, #fffaf3, #faf4ed, #cecacd, #56949f, #575279, #286983, #907aa9, #f2e9e1, #f4ede8, #fffaf3, #575279, #797593, #56949f
   '';
-  xdg.configFile."Kvantum/${kvantumTheme}".source = "${pkgs.rose-pine-kvantum}/share/Kvantum/themes/${kvantumTheme}";
+  xdg.configFile."Kvantum/${kvantumTheme}".source = "${patchedKvantumTheme}/share/Kvantum/themes/${kvantumTheme}";
   xdg.configFile."Kvantum/kvantum.kvconfig".text = ''
     [General]
     theme=${kvantumTheme}
