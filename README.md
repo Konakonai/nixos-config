@@ -34,7 +34,7 @@ identities, AC/battery sysfs names, and selected USB devices.
 The Nix store build is reproducible from the repository and `flake.lock`, but a
 fully working user session also needs these external state files restored:
 
-- `/home/lilya/.config/age/mihomo.txt`: agenix identity used to decrypt the tracked Mihomo proxy secret.
+- `/home/lilya/.config/age/mihomo.txt`: agenix identity used to decrypt tracked machine secrets.
 - `/home/lilya/.config/antigravity/brave-search.env`: Brave Search API key used by the Antigravity MCP server.
 - `/home/lilya/.config/openlist/`: OpenList runtime config and database.
 - `/home/lilya/.config/rclone/rclone.conf`: WebDAV mount credentials.

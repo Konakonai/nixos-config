@@ -1,6 +1,17 @@
-{ ... }:
+{ config, ... }:
+
+let
+  encryptedGithubAccessTokenConfig = ../../secrets/nix-github-access-token.conf.age;
+in
 
 {
+  age.secrets.nix-github-access-token-conf = {
+    file = encryptedGithubAccessTokenConfig;
+    owner = "root";
+    group = "root";
+    mode = "0400";
+  };
+
   nix.settings = {
     experimental-features = [
       "nix-command"
@@ -26,6 +37,10 @@
       "noctalia.cachix.org-1:pCOR47nnMEo5thcxNDtzWpOxNFQsBRglJzxWPp3dkU4="
     ];
   };
+
+  nix.extraOptions = ''
+    !include ${config.age.secrets.nix-github-access-token-conf.path}
+  '';
 
   nix.gc = {
     automatic = true;

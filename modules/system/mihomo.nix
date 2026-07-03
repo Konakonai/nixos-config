@@ -1,23 +1,19 @@
-{ config, hostProfile, pkgs, ... }:
+{ config, pkgs, ... }:
 
 let
   runtimeDir = "/run/mihomo";
   configFile = "${runtimeDir}/config.yaml";
-  identityFile = hostProfile.services.mihomo.identityFile;
   proxiesFile = config.age.secrets.mihomo-proxies.path;
   configBeforeProxies = ./mihomo/config-before-proxies.yaml;
   configAfterProxies = ./mihomo/config-after-proxies.yaml;
   encryptedProxies = ../../secrets/mihomo-proxies.yaml.age;
 in
 {
-  age = {
-    identityPaths = [ identityFile ];
-    secrets.mihomo-proxies = {
-      file = encryptedProxies;
-      owner = "root";
-      group = "root";
-      mode = "0400";
-    };
+  age.secrets.mihomo-proxies = {
+    file = encryptedProxies;
+    owner = "root";
+    group = "root";
+    mode = "0400";
   };
 
   systemd.services.mihomo-config = {

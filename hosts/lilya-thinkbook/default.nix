@@ -1,6 +1,7 @@
 let
   userName = "lilya";
   homeDirectory = "/home/${userName}";
+  ageIdentityFile = "${homeDirectory}/.config/age/mihomo.txt";
 in
 {
   name = "lilya-thinkbook";
@@ -57,10 +58,9 @@ in
 
   services = {
     openlistDataDir = "${homeDirectory}/.config/openlist";
-    mihomo = {
-      identityFile = "${homeDirectory}/.config/age/mihomo.txt";
-    };
   };
+
+  secrets.identityFile = ageIdentityFile;
 
   mcp.braveSearch.envFile = "${homeDirectory}/.config/antigravity/brave-search.env";
 

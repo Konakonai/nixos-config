@@ -15,6 +15,7 @@
     ./modules/system/packages.nix
     ./modules/system/power.nix
     ./modules/system/programs.nix
+    ./modules/system/secrets.nix
     ./modules/system/services.nix
     ./modules/system/user.nix
   ];
