@@ -20,7 +20,6 @@
     ./modules/kitty.nix
     ./modules/shell.nix
     ./modules/theme.nix
-    ./modules/hermes-skin.nix
     ./modules/desktop.nix
     ./modules/codex.nix
     ./modules/flatpak.nix
