@@ -41,7 +41,9 @@ in
     };
 
     overrides = {
-      global = {
+      "com.qq.QQ".Environment = fcitxCompatEnv;
+
+      "org.onlyoffice.desktopeditors" = {
         Context.filesystems = [
           "xdg-config/gtk-3.0:ro"
           "xdg-config/gtk-4.0:ro"
@@ -50,11 +52,8 @@ in
           "xdg-data/themes:ro"
           "xdg-data/icons:ro"
         ];
-        Environment = themeEnv;
+        Environment = themeEnv // fcitxCompatEnv;
       };
-
-      "com.qq.QQ".Environment = themeEnv // fcitxCompatEnv;
-      "org.onlyoffice.desktopeditors".Environment = themeEnv // fcitxCompatEnv;
     };
   };
 }
