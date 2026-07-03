@@ -28,6 +28,7 @@ in
     ];
 
     packages = [
+      "com.qq.QQ"
       "org.onlyoffice.desktopeditors"
     ];
 
@@ -40,6 +41,8 @@ in
     };
 
     overrides = {
+      "com.qq.QQ".Environment = fcitxCompatEnv;
+
       "org.onlyoffice.desktopeditors" = {
         Context.filesystems = [
           "xdg-config/gtk-3.0:ro"
