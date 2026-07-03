@@ -48,27 +48,18 @@ in
       };
 
       "com.qq.QQ" = {
-        # QQ's Wayland clipboard path is still unreliable upstream. Force only
-        # this app through XWayland so copied content reaches the real desktop
-        # clipboard instead of the private Xvfb fallback used by its launcher.
         Context.sockets = [
-          "x11"
-          "!wayland"
-          "!fallback-x11"
+          "wayland"
+          "!x11"
+          "fallback-x11"
         ];
-        Environment = themeEnv // fcitxCompatEnv // {
-          ELECTRON_OZONE_PLATFORM_HINT = "x11";
-          NIXOS_OZONE_WL = "0";
-        };
+        Environment = themeEnv // fcitxCompatEnv;
       };
       "org.onlyoffice.desktopeditors".Environment = themeEnv // fcitxCompatEnv;
     };
   };
 
-  home.activation.qqFlatpakFlags = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    qq_config="$HOME/.var/app/com.qq.QQ/config"
-    mkdir -p "$qq_config"
-    rm -f "$qq_config/qq-flags.conf"
-    printf '%s\n' "--ozone-platform=x11" > "$qq_config/qq-flags.conf"
+  home.activation.qqFlatpakWaylandFlags = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    rm -f "$HOME/.var/app/com.qq.QQ/config/qq-flags.conf"
   '';
 }
