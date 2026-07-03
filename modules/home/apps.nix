@@ -16,6 +16,8 @@
 
     (import ../../pkgs/antigravity.nix { inherit pkgs lib; })
     (import ../../pkgs/qoder-cn.nix { inherit pkgs lib; })
+    (import ../../pkgs/qq-native.nix { inherit pkgs lib; })
     (import ../../pkgs/splayer.nix { inherit pkgs lib; })
+    (import ../../pkgs/wechat.nix { inherit pkgs lib; })
   ];
 }
