@@ -6,7 +6,7 @@ let
   qtFixedFont = "${lilyaGlass.fonts.mono},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
   qtctConfig = qtctDir: ''
     [Appearance]
-    color_scheme_path=${config.home.homeDirectory}/.config/${qtctDir}/colors/rose-pine-dawn.conf
+    color_scheme_path=${config.home.homeDirectory}/.config/${qtctDir}/colors/noctalia.conf
     custom_palette=true
     icon_theme=${lilyaGlass.iconThemeName}
     standard_dialogs=default
@@ -45,10 +45,4 @@ in
   };
 
   xdg.configFile."qt6ct/qt6ct.conf".text = qtctConfig "qt6ct";
-  xdg.configFile."qt6ct/colors/rose-pine-dawn.conf".text = ''
-    [ColorScheme]
-    active_colors=#575279, #f2e9e1, #fffaf3, #f4ede8, #cecacd, #dfdad9, #575279, #575279, #575279, #fffaf3, #faf4ed, #cecacd, #d7827e, #575279, #b4637a, #d7827e, #f2e9e1, #f4ede8, #fffaf3, #575279, #797593, #d7827e
-    disabled_colors=#9893a5, #f2e9e1, #fffaf3, #f4ede8, #cecacd, #dfdad9, #9893a5, #9893a5, #9893a5, #fffaf3, #faf4ed, #cecacd, #d7827e, #575279, #9893a5, #9893a5, #f2e9e1, #f4ede8, #fffaf3, #9893a5, #9893a5, #9893a5
-    inactive_colors=#575279, #f2e9e1, #fffaf3, #f4ede8, #cecacd, #dfdad9, #575279, #575279, #575279, #fffaf3, #faf4ed, #cecacd, #d7827e, #575279, #b4637a, #d7827e, #f2e9e1, #f4ede8, #fffaf3, #575279, #797593, #d7827e
-  '';
 }
