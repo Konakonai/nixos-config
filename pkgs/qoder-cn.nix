@@ -2,11 +2,11 @@
 
 let
   pname = "qoder-cn";
-  version = "1.4.2-1782560467";
+  version = "1.5.0-1782824334";
 
   src = pkgs.fetchurl {
     url = "https://ide.qoder.com.cn/qoder/release/lastest/qoder-cn_amd64.deb";
-    hash = "sha256-qcXgWLo4RVStdmInfROqFzE0mUJJnSKkieY83ava8/w=";
+    hash = "sha256-2VsTfzYztLlZIiHDuDVnJn3+08HVeJ8mn+GpHdjDMlw=";
   };
 
   runtimeLibs = with pkgs; [
@@ -97,7 +97,9 @@ pkgs.stdenvNoCC.mkDerivation {
     chmod +x "$out/share/qoder-cn/qoder-cn"
     chmod +x "$out/share/qoder-cn/chrome_crashpad_handler"
     chmod +x "$out/share/qoder-cn/resources/app/resources/bin/x86_64_linux/QoderCN"
-    chmod +x "$out/share/qoder-cn/resources/app/resources/bin/x86_64_linux/qodercncli"
+    if [ -e "$out/share/qoder-cn/resources/app/resources/bin/x86_64_linux/qodercncli" ]; then
+      chmod +x "$out/share/qoder-cn/resources/app/resources/bin/x86_64_linux/qodercncli"
+    fi
 
     makeWrapper "$out/share/qoder-cn/qoder-cn" "$out/bin/qoder-cn" \
       "''${gappsWrapperArgs[@]}" \
