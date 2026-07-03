@@ -1,4 +1,4 @@
-{ config, fcitxCompatEnv, ... }:
+{ config, fcitxCompatEnv, lib, ... }:
 
 let
   lilyaGlass = import ./glass-settings.nix;
@@ -45,11 +45,14 @@ in
         # Keep QQ on Wayland, but expose the real X11 socket so the Flathub
         # launcher does not start its Xvfb fallback on Wayland sessions.
         Context.sockets = [
-          "x11"
           "wayland"
+          "x11"
           "!fallback-x11"
         ];
-        Environment = fcitxCompatEnv;
+        Environment = themeEnv // fcitxCompatEnv // {
+          ELECTRON_OZONE_PLATFORM_HINT = "wayland";
+          NIXOS_OZONE_WL = "1";
+        };
       };
 
       "org.onlyoffice.desktopeditors" = {
@@ -65,4 +68,15 @@ in
       };
     };
   };
+
+  home.activation.qqFlatpakWaylandFlags = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    qq_config="$HOME/.var/app/com.qq.QQ/config"
+    mkdir -p "$qq_config"
+    rm -f "$qq_config/qq-flags.conf"
+    printf '%s\n' \
+      "--ozone-platform=wayland" \
+      "--enable-wayland-ime" \
+      "--wayland-text-input-version=3" \
+      > "$qq_config/qq-flags.conf"
+  '';
 }
