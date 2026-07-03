@@ -53,6 +53,7 @@ let
       pkgs.coreutils
       pkgs.gawk
       pkgs.git
+      pkgs.gh
       pkgs.gnugrep
       pkgs.jq
       pkgs.libnotify
@@ -79,6 +80,14 @@ let
 
       echo "== $(date --iso-8601=seconds) =="
       cd "$repo"
+
+      github_token="$(gh auth token 2>/dev/null || true)"
+      if [ -n "$github_token" ]; then
+        export NIX_CONFIG="''${NIX_CONFIG:-}
+access-tokens = github.com=$github_token"
+      else
+        echo "gh auth token unavailable; nix may use anonymous GitHub API"
+      fi
 
       if [ -n "$(git status --porcelain)" ]; then
         echo "working tree is not clean; skipping"
