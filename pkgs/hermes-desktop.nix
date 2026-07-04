@@ -18,13 +18,16 @@ pkgs.symlinkJoin {
       exit 1
     fi
 
-    # Hermes Desktop/Electron on niri/NVIDIA Wayland can flash black blocks via the hardware GL buffer path.
+    # Hermes Desktop/Electron on niri/NVIDIA Wayland can flash black blocks via the
+    # GPU memory buffer/overlay path. Full SwiftShader keeps the window from
+    # appearing, so use narrower compositor buffer flags here.
     rm -f "$out/bin/hermes-desktop"
     makeWrapper "$electron" "$out/bin/hermes-desktop" \
       --set HERMES_DESKTOP_HERMES "${hermes}/bin/hermes" \
       --set ELECTRON_IS_DEV 0 \
-      --add-flags "--use-gl=swiftshader" \
-      --add-flags "--enable-unsafe-swiftshader" \
+      --add-flags "--disable-gpu-memory-buffer-compositor-resources" \
+      --add-flags "--disable-native-gpu-memory-buffers" \
+      --add-flags "--disable-features=WaylandOverlayDelegation" \
       --add-flags "${hermesDesktopBase}/share/hermes-desktop"
 
     if [ -e "$out/share/applications/hermes-desktop.desktop" ]; then
