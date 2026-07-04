@@ -127,7 +127,7 @@ in
     icon = hermesIcon;
     type = "Application";
     terminal = false;
-    categories = [ "Utility" "Development" "AI" ];
+    categories = [ "Utility" "Development" ];
     startupNotify = true;
   };
 }
