@@ -101,12 +101,15 @@ pkgs.stdenvNoCC.mkDerivation {
       chmod +x "$out/share/qoder-cn/resources/app/resources/bin/x86_64_linux/qodercncli"
     fi
 
+    # Qoder/Electron on niri/NVIDIA Wayland can flash black blocks via the hardware GL buffer path.
     makeWrapper "$out/share/qoder-cn/qoder-cn" "$out/bin/qoder-cn" \
       "''${gappsWrapperArgs[@]}" \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath runtimeLibs}" \
       --set-default ELECTRON_OZONE_PLATFORM_HINT auto \
       --set-default NIXOS_OZONE_WL 1 \
-      --add-flags "--no-sandbox"
+      --add-flags "--no-sandbox" \
+      --add-flags "--use-gl=swiftshader" \
+      --add-flags "--enable-unsafe-swiftshader"
 
     ln -s qoder-cn "$out/bin/qoder-cn-desktop"
 
