@@ -108,6 +108,8 @@ pkgs.stdenvNoCC.mkDerivation {
       --set-default ELECTRON_OZONE_PLATFORM_HINT auto \
       --set-default NIXOS_OZONE_WL 1 \
       --add-flags "--no-sandbox" \
+      --add-flags "--locale=zh-cn" \
+      --add-flags "--lang=zh-CN" \
       --add-flags "--use-gl=swiftshader" \
       --add-flags "--enable-unsafe-swiftshader"
 

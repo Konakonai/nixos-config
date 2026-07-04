@@ -63,6 +63,15 @@ let
   '';
 in
 {
+  xdg.desktopEntries."dev.noctalia.Noctalia" = {
+    name = "Noctalia";
+    exec = "noctalia --daemon";
+    noDisplay = true;
+    terminal = false;
+    type = "Application";
+    categories = [ "Settings" "DesktopSettings" ];
+  };
+
   programs.noctalia = {
     enable = true;
 
