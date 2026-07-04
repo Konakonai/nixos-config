@@ -17,7 +17,7 @@
       flake = false;
     };
 
-    hermes-agent.url = "github:NousResearch/hermes-agent/v2026.7.1";
+    hermes-agent.url = "github:NousResearch/hermes-agent";
 
     home-manager = {
       url = "github:nix-community/home-manager/release-26.05";
