@@ -322,9 +322,7 @@ in
     '';
     boot.kernelParams = lib.mkAfter [
       "i915.enable_fbc=1"
-      "i915.enable_psr=1"
       "module_blacklist=${lib.concatStringsSep "," nvidiaKernelModules}"
-      "pcie_aspm.policy=powersupersave"
     ];
     services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
     hardware.nvidia.modesetting.enable = lib.mkForce false;
