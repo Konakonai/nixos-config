@@ -73,7 +73,6 @@ let
     CPU_POWER_LONG_UW=8000000
     CPU_POWER_SHORT_UW=12000000
     CPU_MAX_PERF_PCT=50
-    BACKLIGHT_MAX_PERCENT=10
 
     write_sysfs() {
       path="$1"
@@ -148,16 +147,6 @@ let
       # profile. Forcing every PCI function to auto also covers iGPU, USB, I2C,
       # SMBus, NVMe and bridge devices, which matched the remaining s2idle
       # resume instability seen after PSR/ASPM were removed.
-      for device in /sys/bus/pci/devices/*; do
-        [ -d "$device" ] || continue
-        case "$(cat "$device/vendor" 2>/dev/null || true)" in
-          0x10de)
-            write_sysfs "$device/power/control" auto
-            write_sysfs "$device/power/wakeup" disabled
-            ;;
-        esac
-      done
-
       write_sysfs /sys/module/snd_hda_intel/parameters/power_save 1
       write_sysfs /sys/module/snd_hda_intel/parameters/power_save_controller Y
 
@@ -168,30 +157,6 @@ let
         done
       fi
 
-      if command -v rfkill >/dev/null 2>&1; then
-        rfkill block bluetooth >/dev/null 2>&1 || true
-      fi
-
-      for backlight in /sys/class/backlight/*; do
-        [ -d "$backlight" ] || continue
-        max="$(cat "$backlight/max_brightness" 2>/dev/null || echo 0)"
-        current="$(cat "$backlight/brightness" 2>/dev/null || echo 0)"
-
-        case "$max:$current" in
-          *[!0-9:]*|:*|*:)
-            continue
-            ;;
-        esac
-
-        cap="$((max * BACKLIGHT_MAX_PERCENT / 100))"
-        if [ "$cap" -lt 1 ]; then
-          cap=1
-        fi
-
-        if [ "$current" -gt "$cap" ]; then
-          write_sysfs "$backlight/brightness" "$cap"
-        fi
-      done
     }
 
     status() {
@@ -213,11 +178,6 @@ let
         [ -d "$zone" ] || continue
         show_sysfs "$(basename "$zone") long term" "$zone/constraint_0_power_limit_uw"
         show_sysfs "$(basename "$zone") short term" "$zone/constraint_1_power_limit_uw"
-      done
-
-      for backlight in /sys/class/backlight/*; do
-        [ -d "$backlight" ] || continue
-        show_sysfs "$(basename "$backlight") brightness" "$backlight/brightness"
       done
 
       if [ -r /proc/modules ]; then
@@ -348,7 +308,6 @@ in
         pkgs.gnused
         pkgs.iw
         pkgs.power-profiles-daemon
-        pkgs.util-linux
       ];
       script = "${batterySaver}/bin/battery-saver apply";
       serviceConfig.Type = "oneshot";
