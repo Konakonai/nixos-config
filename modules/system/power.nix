@@ -70,9 +70,9 @@ let
       pkgs.power-profiles-daemon
     ]}:$PATH"
 
-    CPU_POWER_LONG_UW=15000000
-    CPU_POWER_SHORT_UW=25000000
-    CPU_MAX_PERF_PCT=70
+    CPU_POWER_LONG_UW=8000000
+    CPU_POWER_SHORT_UW=12000000
+    CPU_MAX_PERF_PCT=50
 
     write_sysfs() {
       path="$1"
