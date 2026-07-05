@@ -12,6 +12,11 @@ let
     "nvidia_uvm"
     "nvidiafb"
   ];
+  batterySaverBlockedKernelModules = nvidiaKernelModules ++ [
+    # This RAM SPD hwmon driver returns -ENXIO from its resume callback on this
+    # ThinkBook in the s2idle-only battery-saver boot, and is not needed there.
+    "spd5118"
+  ];
   chargeLimit = pkgs.writeShellScriptBin "charge-limit" ''
     set -eu
 
@@ -190,11 +195,10 @@ let
     }
 
     apply_device_savings() {
-      for device in /sys/bus/pci/devices/*; do
-        [ -d "$device" ] || continue
-        write_sysfs "$device/power/control" auto
-      done
-
+      # Keep PCI runtime PM at the kernel/default policy in this suspend-capable
+      # profile. Forcing every PCI function to auto also covers iGPU, USB, I2C,
+      # SMBus, NVMe and bridge devices, which matched the remaining s2idle
+      # resume instability seen after PSR/ASPM were removed.
       write_sysfs /sys/module/snd_hda_intel/parameters/power_save 1
       write_sysfs /sys/module/snd_hda_intel/parameters/power_save_controller Y
 
@@ -310,7 +314,7 @@ in
     boot.initrd.kernelModules = lib.mkForce (
       builtins.filter (module: !(builtins.elem module nvidiaKernelModules)) config.boot.initrd.kernelModules
     );
-    boot.blacklistedKernelModules = lib.mkAfter nvidiaKernelModules;
+    boot.blacklistedKernelModules = lib.mkAfter batterySaverBlockedKernelModules;
     boot.extraModprobeConfig = lib.mkAfter ''
       blacklist nouveau
       blacklist nvidia
@@ -318,11 +322,11 @@ in
       blacklist nvidia_modeset
       blacklist nvidia_uvm
       blacklist nvidiafb
+      blacklist spd5118
       options nouveau modeset=0
     '';
     boot.kernelParams = lib.mkAfter [
-      "i915.enable_fbc=1"
-      "module_blacklist=${lib.concatStringsSep "," nvidiaKernelModules}"
+      "module_blacklist=${lib.concatStringsSep "," batterySaverBlockedKernelModules}"
     ];
     services.xserver.videoDrivers = lib.mkForce [ "modesetting" ];
     hardware.nvidia.modesetting.enable = lib.mkForce false;
