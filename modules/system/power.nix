@@ -263,6 +263,14 @@ in
   services.power-profiles-daemon.enable = true;
   services.thermald.enable = true;
 
+  services.logind.settings.Login = {
+    # The panel already powers off when the lid is physically closed; keep the
+    # system awake to avoid unreliable s2idle resume on this machine.
+    HandleLidSwitch = "ignore";
+    HandleLidSwitchDocked = "ignore";
+    HandleLidSwitchExternalPower = "ignore";
+  };
+
   powerManagement.powertop.enable = false;
 
   environment.systemPackages =
