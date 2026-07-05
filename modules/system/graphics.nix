@@ -17,9 +17,10 @@ in
     nvidiaSettings = true;
 
     powerManagement = {
-      # Use NVIDIA's systemd suspend/resume hooks for reliable state restore,
-      # while keeping fine-grained RTD3 disabled for the regular profile.
-      enable = true;
+      # Keep the regular profile focused on dGPU reliability. The
+      # battery-saver specialisation disables NVIDIA entirely when power saving
+      # matters, so avoid RTD3/runtime power management here.
+      enable = false;
       finegrained = false;
     };
 
