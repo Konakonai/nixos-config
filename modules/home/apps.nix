@@ -25,6 +25,7 @@ in
     foliate
     localsend
     hyprpicker
+    heroic
     loupe
 
     (import ../../pkgs/antigravity.nix { inherit pkgs lib; })
