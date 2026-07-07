@@ -27,6 +27,8 @@ let
   '';
 in
 {
+  hardware.xpadneo.enable = true;
+
   programs.steam = {
     enable = true;
     package = pkgs.millennium-steam.override {

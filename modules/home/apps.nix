@@ -30,7 +30,7 @@ in
     pavucontrol
     protonup-qt
     resources
-    wineWow64Packages.stable
+    wineWow64Packages.stableFull
     winetricks
 
     (import ../../pkgs/antigravity.nix { inherit pkgs lib; })
