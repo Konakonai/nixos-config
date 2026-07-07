@@ -252,6 +252,53 @@ let
         ;;
     esac
   '';
+  batterySaverDisplayGuard = pkgs.writeShellScript "battery-saver-display-guard" ''
+    set -eu
+
+    log() {
+      level="$1"
+      message="$2"
+
+      ${pkgs.systemd}/bin/systemd-cat \
+        --identifier=battery-saver-display-guard \
+        --priority="$level" \
+        printf '%s\n' "$message" \
+        || printf '%s\n' "$message" >&2
+    }
+
+    intel_edp_connected() {
+      for status_path in /sys/class/drm/card*-eDP-*/status; do
+        [ -e "$status_path" ] || continue
+
+        status="$(cat "$status_path" 2>/dev/null || true)"
+        [ "$status" = connected ] || continue
+
+        connector="''${status_path%/status}"
+        connector_name="''${connector##*/}"
+        card="''${connector_name%%-*}"
+        vendor="$(cat "/sys/class/drm/$card/device/vendor" 2>/dev/null || true)"
+
+        if [ "$vendor" = "0x8086" ]; then
+          return 0
+        fi
+      done
+
+      return 1
+    }
+
+    for _ in $(seq 1 10); do
+      if intel_edp_connected; then
+        log info "battery-saver display guard passed: connected internal eDP is on Intel iGPU"
+        exit 0
+      fi
+
+      sleep 1
+    done
+
+    log crit "battery-saver requires the internal display on Intel iGPU; firmware appears to be in dGPU-only mode. Rebooting to firmware setup."
+    ${pkgs.systemd}/bin/systemctl --no-wall reboot --firmware-setup \
+      || ${pkgs.systemd}/bin/systemctl --no-wall reboot
+  '';
 in
 {
   hardware.bluetooth = {
@@ -340,6 +387,25 @@ in
     hardware.nvidia.prime.offload.enableOffloadCmd = lib.mkForce false;
     powerManagement.cpuFreqGovernor = lib.mkForce "powersave";
     environment.systemPackages = [ batterySaver ];
+
+    systemd.services.battery-saver-display-guard = {
+      description = "Guard battery saver against firmware dGPU-only mode";
+      after = [
+        "systemd-modules-load.service"
+        "systemd-udev-settle.service"
+      ];
+      before = [
+        "battery-saver.service"
+        "display-manager.service"
+        "greetd.service"
+        "graphical.target"
+      ];
+      wants = [ "systemd-udev-settle.service" ];
+      requiredBy = [ "graphical.target" ];
+      path = [ pkgs.coreutils ];
+      script = "${batterySaverDisplayGuard}";
+      serviceConfig.Type = "oneshot";
+    };
 
     systemd.services.battery-saver = {
       description = "Apply battery saver settings";
