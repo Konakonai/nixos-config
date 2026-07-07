@@ -26,7 +26,11 @@ in
     "Mod+Shift+Minus".action.set-window-height = [ "-10%" ];
     "Mod+Shift+Equal".action.set-window-height = [ "+10%" ];
 
+    # PrtSc-free screenshot variants for external keyboards.
     "Mod+Shift+S".action.screenshot = [];
+    "Mod+Shift+Ctrl+S".action.screenshot-screen = [];
+    "Mod+Shift+Alt+S".action.screenshot-window = [];
+
     "Print".action.screenshot = [];
     "Ctrl+Print".action.screenshot-screen = [];
     "Alt+Print".action.screenshot-window = [];
