@@ -4,21 +4,8 @@ let
   lilyaGlass = import ../glass-settings.nix;
   internalDisplay = hostProfile.display.internal;
   externalDisplay = hostProfile.display.external or null;
-  nvidia = hostProfile.graphics.nvidia or { enable = false; };
   kdlString = builtins.toJSON;
   outputName = display: "${display.make} ${display.model} ${display.serial}";
-  renderDeviceDebug = renderNode: lib.optionalString (nvidia.enable or false) ''
-    debug {
-        render-drm-device "${renderNode}"
-    }
-  '';
-  intelDebug = renderDeviceDebug nvidia.intelRenderNode;
-  nvidiaDebug = renderDeviceDebug nvidia.nvidiaRenderNode;
-  outputOff = display: ''
-    output ${kdlString (outputName display)} {
-        off
-    }
-  '';
   outputOn = display: focusAtStartup: ''
     output ${kdlString (outputName display)} {
         scale ${builtins.toString display.scale}
@@ -111,31 +98,13 @@ let
         saturation ${lilyaGlass.blur.saturation}
     }
   '';
-  mkSessionConfig = debugConfig: extraOutputConfig: ''
+  sessionConfig = ''
     ${baseConfig}
-    ${extraOutputConfig}
-    ${debugConfig}
+    ${wildcardOutput}
+    ${outputOn internalDisplay false}
+    ${lib.optionalString (externalDisplay != null) (outputOn externalDisplay true)}
   '';
-  internalConfig = mkSessionConfig intelDebug (
-    ''
-      ${wildcardOutput}
-      ${outputOn internalDisplay false}
-      ${lib.optionalString (externalDisplay != null) (outputOff externalDisplay)}
-    ''
-  );
-  externalConfig = mkSessionConfig nvidiaDebug (
-    ''
-      ${wildcardOutput}
-      ${outputOff internalDisplay}
-      ${lib.optionalString (externalDisplay != null) (outputOn externalDisplay true)}
-    ''
-  );
 in
 {
-  xdg.configFile = {
-    niri-config.source = lib.mkForce (pkgs.writeText "niri-config.kdl" internalConfig);
-    "niri/config-internal.kdl".text = internalConfig;
-  } // lib.optionalAttrs (externalDisplay != null) {
-    "niri/config-external.kdl".text = externalConfig;
-  };
+  xdg.configFile.niri-config.source = lib.mkForce (pkgs.writeText "niri-config.kdl" sessionConfig);
 }

@@ -43,8 +43,6 @@ in
     nvidiaBusId = "PCI:1:0:0";
     pciAddress = "0000:01:00.0";
     acAdapter = "ADP0";
-    intelRenderNode = "/dev/dri/by-path/pci-0000:00:02.0-render";
-    nvidiaRenderNode = "/dev/dri/by-path/pci-0000:01:00.0-render";
   };
 
   power = {

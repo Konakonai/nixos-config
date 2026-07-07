@@ -8,17 +8,13 @@ let
 
   niriPackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
   niriSession = "${niriPackage}/bin/niri-session";
-  mkNiriLogin = name: configPath: pkgs.writeShellScriptBin name ''
+  niriLogin = pkgs.writeShellScriptBin "Niri" ''
     unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
 
-    export NIRI_CONFIG="${configPath}"
+    export NIRI_CONFIG="$HOME/.config/niri/config.kdl"
     exec ${niriSession} "$@"
   '';
-  niriInternalLogin = mkNiriLogin "Niri-Internal" "$HOME/.config/niri/config-internal.kdl";
-  niriExternalLogin = mkNiriLogin "Niri-External" "$HOME/.config/niri/config-external.kdl";
-  niriInternalLoginPath = lib.getExe niriInternalLogin;
-  niriExternalLoginPath = lib.getExe niriExternalLogin;
-  niriLoginPaths = [ niriInternalLoginPath ] ++ lib.optional (externalDisplay != null) niriExternalLoginPath;
+  niriLoginPath = lib.getExe niriLogin;
   gtkgreetGtkThemeName = "adw-gtk3";
   gtkgreetGtkThemePackage = pkgs.adw-gtk3;
   gtkgreetFontSize = 18;
@@ -158,7 +154,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
       trap 'kill "$wallpaper_pid" >/dev/null 2>&1 || true' EXIT
     ''}
 
-    ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriInternalLoginPath}
+    ${lib.getExe gtkgreet} -l -s ${gtkgreetCss} -c ${lib.escapeShellArg niriLoginPath}
     ${niriPackage}/bin/niri msg action quit --skip-confirmation
   '';
 
@@ -248,5 +244,5 @@ in
     };
   };
 
-  environment.etc."greetd/environments".text = "${lib.concatStringsSep "\n" niriLoginPaths}\n";
+  environment.etc."greetd/environments".text = "${niriLoginPath}\n";
 }
