@@ -12,6 +12,7 @@
     ./modules/home/apps.nix
     ./modules/home/cli-tools.nix
     ./modules/home/dev.nix
+    ./modules/home/gaming.nix
     ./modules/home/noctalia.nix
     ./modules/home/yazi.nix
     ./modules/home/zen.nix

@@ -14,7 +14,7 @@ let
       app_id="$("$niri" msg --json focused-window 2>/dev/null | "$jq" -r '.app_id // ""' 2>/dev/null || true)"
 
       case "$app_id" in
-        steam_app_*)
+        steam_app_*|gamescope|Disco\ Elysium.exe)
           if [ "$state" != "hidden" ]; then
             "$noctalia" msg bar-hide main >/dev/null 2>&1 || true
             state="hidden"
@@ -166,6 +166,9 @@ in
       {
         matches = [
           { app-id = "^steam_app_.*$"; }
+          { app-id = "^gamescope$"; }
+          { app-id = "^Disco Elysium\\.exe$"; }
+          { title = "^Disco Elysium.*"; }
         ];
         open-on-workspace = "games";
         open-fullscreen = true;

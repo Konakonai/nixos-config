@@ -42,6 +42,10 @@ in
   };
 
   programs.gamemode.enable = true;
+  programs.gamescope = {
+    enable = true;
+    capSysNice = true;
+  };
   programs.kdeconnect.enable = true;
   programs.fish.enable = true;
   programs.nix-ld.enable = true;
