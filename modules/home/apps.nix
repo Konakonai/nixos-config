@@ -15,18 +15,23 @@ let
 in
 {
   home.packages = with pkgs; [
+    cabextract
     chromium
     file-roller
+    foliate
     gnome-font-viewer
+    heroic
+    hyprpicker
+    localsend
+    loupe
+    mangohud
+    mission-center
     nemo-with-extensions
     pavucontrol
-    mission-center
+    protonup-qt
     resources
-    foliate
-    localsend
-    hyprpicker
-    heroic
-    loupe
+    wineWow64Packages.stable
+    winetricks
 
     (import ../../pkgs/antigravity.nix { inherit pkgs lib; })
     (import ../../pkgs/qoder-cn.nix { inherit pkgs lib; })
