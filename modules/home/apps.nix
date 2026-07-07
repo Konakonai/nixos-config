@@ -24,6 +24,7 @@ in
     hyprpicker
     localsend
     loupe
+    gamescope
     mangohud
     mission-center
     nemo-with-extensions
