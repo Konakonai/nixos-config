@@ -33,6 +33,7 @@ in
     resources
     wineWow64Packages.stableFull
     winetricks
+    obsidian
 
     (import ../../pkgs/antigravity.nix { inherit pkgs lib; })
     (import ../../pkgs/qoder-cn.nix { inherit pkgs lib; })
