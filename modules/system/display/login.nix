@@ -167,6 +167,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
         keyboard {
             xkb {
                 layout "us"
+                options "caps:super"
             }
         }
 

@@ -7,6 +7,7 @@
     xkb = {
       layout = "us";
       variant = "";
+      options = "caps:super";
     };
   };
 

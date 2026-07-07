@@ -104,7 +104,7 @@ in
     input = {
       keyboard.xkb = {
         layout = "us";
-        options = "";
+        options = "caps:super";
       };
 
       touchpad = {
