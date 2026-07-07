@@ -61,8 +61,106 @@ let
 
     ${pkgs.dbus}/bin/dbus-send /KGlobalSettings org.kde.KGlobalSettings.notifyChange int32:0 int32:0 >/dev/null 2>&1 || true
   '';
+
+  heroicNoctaliaTemplate = pkgs.writeText "noctalia-heroic.css" ''
+    body.noctalia {
+      /* Text colors */
+      --text-default: {{colors.on_background.default.hex}};
+      --text-secondary: {{colors.on_surface_variant.default.hex}};
+      --text-tertiary: {{colors.on_primary_container.default.hex}};
+      --text-quartenary: {{colors.on_surface.default.hex}};
+      --text-hover: {{colors.primary.default.hex}};
+
+      /* Background colors */
+      --background: {{colors.surface.default.hex}};
+      --background-darker: {{colors.background.default.hex}};
+      --background-lighter: {{colors.surface_variant.default.hex}};
+      --body-background: {{colors.background.default.hex}};
+      --input-background: {{colors.surface_variant.default.hex}};
+      --controller-hints-background: transparent;
+      --current-background: var(--body-background);
+      --modal-background: {{colors.background.default.hex}};
+      --modal-backdrop: rgba(0, 0, 0, 0.85);
+      --modal-border: {{colors.outline.default.hex}};
+      --osk-background: var(--body-background);
+      --osk-button-background: var(--input-background);
+      --osk-button-border: {{colors.outline.default.hex}};
+      --search-bar-background: {{colors.surface.default.hex}};
+      --search-bar-border: {{colors.outline.default.hex}};
+
+      /* Action Icons */
+      --action-icon: {{colors.on_surface_variant.default.hex}};
+      --action-icon-hover: var(--text-hover);
+      --action-icon-active: {{colors.primary.default.hex}};
+      --icon-disabled: {{colors.surface_variant.default.hex}};
+      --icon-disabled-overlay: {{colors.outline.default.hex}};
+      --icons-background: {{colors.surface.default.hex}};
+
+      /* Buttons */
+      --primary-button: {{colors.primary.default.hex}};
+      --secondary-button: {{colors.secondary.default.hex}};
+      --button-stroke: {{colors.primary.default.hex}};
+      --secondary-button-overlay: {{colors.primary_container.default.hex}};
+      --tertiary-button: {{colors.tertiary.default.hex}};
+      --tertiary-button-overlay: {{colors.tertiary_container.default.hex}};
+      --success-button: #2e7d32;
+      --disabled-button: {{colors.surface_variant.default.hex}};
+      --disabled-button-overlay: {{colors.outline.default.hex}};
+      --play-button: var(--primary-button);
+      --install-button: var(--secondary-button);
+      --cancel-button: #c62828;
+      --cancel-button-overlay: #b71c1c;
+      --link-highlight: {{colors.primary.default.hex}};
+
+      /* Sidebar */
+      --navbar-active: {{colors.primary.default.hex}};
+      --navbar-inactive: {{colors.on_surface_variant.default.hex}};
+      --navbar-active-background: {{colors.surface_variant.default.hex}};
+      --navbar-accent: {{colors.primary.default.hex}};
+      --navbar-background: {{colors.surface.default.hex}};
+      --divider: {{colors.outline_variant.default.hex}};
+
+      /* Accents / Status */
+      --accent: {{colors.primary.default.hex}};
+      --accent-overlay: {{colors.primary_container.default.hex}};
+      --success: #2e7d32;
+      --success-hover: #1b5e20;
+      --status-success: #2e7d32;
+      --status-warning: #f57c00;
+      --status-warning-hover: #e65100;
+      --status-info: {{colors.secondary.default.hex}};
+      --status-default: {{colors.primary.default.hex}};
+      --status-denied: #c62828;
+    }
+
+    body.noctalia {
+      font-family: "${lilyaGlass.fonts.sans}", sans-serif !important;
+    }
+
+    body.noctalia .sidebar {
+      border-right: 1px solid var(--divider) !important;
+    }
+
+    body.noctalia .game-card {
+      border-radius: ${builtins.toString (builtins.floor lilyaGlass.radius.windows)}px !important;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    body.noctalia .game-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 12px var(--divider);
+    }
+  '';
 in
 {
+  xdg.configFile."heroic/themes/noctalia/noctalia.json".text = builtins.toJSON {
+    name = "Noctalia";
+    filename = "noctalia.css";
+    screenshots = [];
+    author = "Antigravity";
+  };
+
   xdg.desktopEntries."dev.noctalia.Noctalia" = {
     name = "Noctalia";
     exec = "noctalia --daemon";
@@ -148,6 +246,15 @@ in
         ];
         post_hook = "${darklyKdeHook}";
         index = 1000;
+      };
+
+      theme.templates.user.heroic-noctalia = {
+        enabled = true;
+        input_path = "${heroicNoctaliaTemplate}";
+        output_path = [
+          "$XDG_CONFIG_HOME/heroic/themes/noctalia/noctalia.css"
+        ];
+        index = 1001;
       };
     };
   };
