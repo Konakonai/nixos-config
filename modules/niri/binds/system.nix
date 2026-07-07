@@ -1,5 +1,20 @@
-{ config, ... }:
+{ config, pkgs, ... }:
 
+let
+  killFocusedWindow = pkgs.writeShellScript "niri-kill-focused-window" ''
+    pid="$(${pkgs.niri}/bin/niri msg -j focused-window | ${pkgs.jq}/bin/jq -r '.pid // empty')"
+
+    case "$pid" in
+      ""|*[!0-9]*) exit 0 ;;
+    esac
+
+    ${pkgs.coreutils}/bin/kill -TERM "$pid" 2>/dev/null || exit 0
+    ${pkgs.coreutils}/bin/sleep 2
+    ${pkgs.coreutils}/bin/kill -0 "$pid" 2>/dev/null \
+      && ${pkgs.coreutils}/bin/kill -KILL "$pid" 2>/dev/null \
+      || true
+  '';
+in
 {
   programs.niri.settings.binds = with config.lib.niri.actions; {
     "Mod+R".action.switch-preset-column-width = [];
@@ -15,6 +30,9 @@
     "Print".action.screenshot = [];
     "Ctrl+Print".action.screenshot-screen = [];
     "Alt+Print".action.screenshot-window = [];
+
+    "Ctrl+Alt+Delete".action.spawn = [ "resources" ];
+    "Mod+Ctrl+Q".action.spawn = [ "${killFocusedWindow}" ];
 
     "Mod+Escape".action.spawn = [ "noctalia" "msg" "session" "lock" ];
     "Mod+M".action.spawn = [ "noctalia" "msg" "panel-toggle" "session" ];
