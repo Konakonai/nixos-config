@@ -40,6 +40,11 @@ in
     };
   };
 
+  programs.direnv = {
+    enable = true;
+    nix-direnv.enable = true;
+  };
+
   # Git 配置
   programs.git = {
     enable = true;
