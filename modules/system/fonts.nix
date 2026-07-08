@@ -2,12 +2,14 @@
 
 let
   lilyaGlass = import ../glass-settings.nix;
+  jetbrainsMapleMono = pkgs.callPackage ../../pkgs/jetbrains-maple-mono.nix { };
 in
 {
   fonts = {
     fontDir.enable = true;
 
     packages = with pkgs; [
+      jetbrainsMapleMono
       maple-mono."Normal-NF"
 
       noto-fonts
@@ -23,6 +25,7 @@ in
     fontconfig.defaultFonts = {
       monospace = [
         lilyaGlass.fonts.mono
+        "Maple Mono Normal NF"
         "Noto Sans Mono CJK SC"
       ];
 

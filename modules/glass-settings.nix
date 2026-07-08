@@ -43,7 +43,7 @@
   fonts = {
     sans = "Noto Sans CJK SC";
     serif = "Noto Serif CJK SC";
-    mono = "Maple Mono Normal NF";
+    mono = "JetBrains Maple Mono";
     size = 11;
     terminalSize = 12;
   };

@@ -1,6 +1,7 @@
 { config, hostProfile, lib, pkgs, ... }:
 
 let
+  lilyaGlass = import ../glass-settings.nix;
   zenProfilePath = hostProfile.zen.profilePath;
   zen = lib.getExe config.programs.zen-browser.package;
   zenLaunch = pkgs.writeShellScript "launch-zen-beta" ''
@@ -37,6 +38,14 @@ in
         "browser.tabs.allow_transparent_browser" = false;
         "widget.wayland.opaque-region.enabled" = true;
         "zen.widget.linux.transparency" = false;
+
+        "font.default.zh-CN" = "sans-serif";
+        "font.name.sans-serif.zh-CN" = lilyaGlass.fonts.sans;
+        "font.name.serif.zh-CN" = lilyaGlass.fonts.serif;
+        "font.name.monospace.zh-CN" = lilyaGlass.fonts.mono;
+        "font.name.sans-serif.x-western" = "Noto Sans";
+        "font.name.serif.x-western" = "Noto Serif";
+        "font.name.monospace.x-western" = lilyaGlass.fonts.mono;
 
         # Keep Zen from restoring duplicate windows after session/crash handoff.
         "browser.startup.page" = 1;

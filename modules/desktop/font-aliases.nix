@@ -55,6 +55,7 @@ let
     <alias>
       <family>monospace</family>
       <prefer>
+        <family>JetBrains Maple Mono</family>
         <family>Maple Mono Normal NF</family>
         <family>Noto Sans Mono CJK SC</family>
       </prefer>
