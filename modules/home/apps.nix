@@ -2,6 +2,8 @@
 
 let
   lilyaGlass = import ../glass-settings.nix;
+  braveOrigin = import ../../pkgs/brave-origin.nix { inherit pkgs lib; };
+  braveNetflixOpera = import ../../pkgs/brave-netflix-opera.nix { inherit pkgs lib braveOrigin; };
   appThemeEnv = {
     GTK_THEME = "adw-gtk3";
     GTK_USE_PORTAL = "1";
@@ -16,7 +18,8 @@ in
 {
   home.packages = with pkgs; [
     cabextract
-    (import ../../pkgs/brave-origin.nix { inherit pkgs lib; })
+    braveOrigin
+    braveNetflixOpera
     chromium
     file-roller
     foliate
