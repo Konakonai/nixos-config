@@ -117,6 +117,9 @@ pkgs.stdenv.mkDerivation {
     substituteInPlace "$out/opt/brave.com/brave-origin/default-app-block" \
       --replace-fail /opt/brave.com "$out/opt/brave.com"
 
+    ln -s ${pkgs.widevine-cdm}/share/google/chrome/WidevineCdm \
+      "$out/opt/brave.com/brave-origin/WidevineCdm"
+
     for icon in 16 24 32 48 64 128 256; do
       mkdir -p "$out/share/icons/hicolor/''${icon}x''${icon}/apps"
       ln -s "$out/opt/brave.com/brave-origin/product_logo_''${icon}.png" \
@@ -143,6 +146,8 @@ pkgs.stdenv.mkDerivation {
 
   installCheckPhase = ''
     "$out/opt/brave.com/brave-origin/brave" --version
+    test -e "$out/opt/brave.com/brave-origin/WidevineCdm/manifest.json"
+    test -e "$out/opt/brave.com/brave-origin/WidevineCdm/_platform_specific/linux_x64/libwidevinecdm.so"
   '';
 
   meta = {
@@ -150,7 +155,10 @@ pkgs.stdenv.mkDerivation {
     homepage = "https://brave.com/origin/";
     changelog = "https://github.com/brave/brave-browser/releases/tag/v${version}";
     sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
-    license = lib.licenses.mpl20;
+    license = [
+      lib.licenses.mpl20
+      lib.licenses.unfree
+    ];
     mainProgram = "brave-origin";
     platforms = [ "x86_64-linux" ];
   };
