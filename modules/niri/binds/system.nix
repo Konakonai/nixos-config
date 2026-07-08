@@ -43,6 +43,7 @@ in
     "Mod+N".action.spawn = [ "noctalia" "msg" "panel-toggle" "control-center" "notifications" ];
     "Mod+X".action.spawn = [ "noctalia" "msg" "panel-toggle" "control-center" ];
     "Mod+Shift+C".action.spawn = [ "noctalia" "msg" "panel-toggle" "clipboard" ];
+    "Mod+Shift+Q".action.spawn = [ "thermal-profile" "toggle" ];
 
     "XF86AudioRaiseVolume".action.spawn = [ "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%+" ];
     "XF86AudioLowerVolume".action.spawn = [ "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "5%-" ];

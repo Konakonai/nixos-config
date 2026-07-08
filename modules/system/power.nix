@@ -56,6 +56,72 @@ let
         ;;
     esac
   '';
+  thermalProfile = pkgs.writeShellScriptBin "thermal-profile" ''
+    set -eu
+
+    powerprofilesctl="${pkgs.power-profiles-daemon}/bin/powerprofilesctl"
+
+    notify() {
+      ${pkgs.libnotify}/bin/notify-send \
+        --app-name=thermal-profile \
+        "Thermal profile" \
+        "$1" >/dev/null 2>&1 || true
+    }
+
+    current_profile() {
+      "$powerprofilesctl" get 2>/dev/null || echo balanced
+    }
+
+    set_profile() {
+      profile="$1"
+      case "$profile" in
+        balanced)
+          label="Balanced"
+          ;;
+        performance)
+          label="Performance"
+          ;;
+        power-saver)
+          label="Power saver"
+          ;;
+        *)
+          echo "unknown thermal profile: $profile" >&2
+          exit 2
+          ;;
+      esac
+
+      "$powerprofilesctl" set "$profile"
+      echo "$profile"
+      notify "$label"
+    }
+
+    case "''${1:-toggle}" in
+      toggle)
+        case "$(current_profile)" in
+          performance)
+            set_profile balanced
+            ;;
+          *)
+            set_profile performance
+            ;;
+        esac
+        ;;
+      balanced|performance|power-saver)
+        set_profile "$1"
+        ;;
+      status)
+        current_profile
+        if [ -r /sys/firmware/acpi/platform_profile ]; then
+          printf 'platform_profile='
+          cat /sys/firmware/acpi/platform_profile
+        fi
+        ;;
+      *)
+        echo "usage: thermal-profile [toggle|balanced|performance|power-saver|status]" >&2
+        exit 2
+        ;;
+    esac
+  '';
   batterySaver = pkgs.writeShellScriptBin "battery-saver" ''
     set -eu
 
@@ -321,7 +387,8 @@ in
   powerManagement.powertop.enable = false;
 
   environment.systemPackages =
-    lib.optional (batteryConservationPath != null) chargeLimit;
+    [ thermalProfile ]
+    ++ lib.optional (batteryConservationPath != null) chargeLimit;
 
   services.udev.extraRules = lib.concatStringsSep "\n" (
     # Keep latency-sensitive HID devices awake. PowerTOP auto-tuning was putting
