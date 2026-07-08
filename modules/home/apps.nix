@@ -16,6 +16,7 @@ in
 {
   home.packages = with pkgs; [
     cabextract
+    (import ../../pkgs/brave-origin.nix { inherit pkgs lib; })
     chromium
     file-roller
     foliate
