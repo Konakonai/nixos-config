@@ -2,12 +2,27 @@
 
 let
   operaUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/120.0.0.0";
+  widevinePath = "${pkgs.widevine-cdm}/share/google/chrome/WidevineCdm";
 
   launcher = pkgs.writeShellApplication {
     name = "brave-netflix-opera";
+    runtimeInputs = [ pkgs.jq ];
     text = ''
       profile_dir="''${XDG_DATA_HOME:-$HOME/.local/share}/brave-netflix-opera"
-      mkdir -p "$profile_dir"
+      if [ ! -e "$profile_dir/SingletonLock" ]; then
+        mkdir -p "$profile_dir/WidevineCdm"
+        printf '{"Path":%s}' "$(jq -Rn --arg path ${lib.escapeShellArg widevinePath} '$path')" \
+          > "$profile_dir/WidevineCdm/latest-component-updated-widevine-cdm"
+
+        local_state="$profile_dir/Local State"
+        if [ -s "$local_state" ]; then
+          tmp_state="$(mktemp "$profile_dir/local-state.XXXXXX")"
+          jq '.brave.widevine_opted_in = true' "$local_state" > "$tmp_state"
+          mv "$tmp_state" "$local_state"
+        else
+          printf '{"brave":{"widevine_opted_in":true}}\n' > "$local_state"
+        fi
+      fi
 
       if [ "$#" -eq 0 ]; then
         set -- "https://www.netflix.com/browse"
