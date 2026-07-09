@@ -152,6 +152,19 @@ let
       box-shadow: 0 4px 12px var(--divider);
     }
   '';
+
+  ccSwitchTuiThemeTemplate = pkgs.writeText "noctalia-cc-switch-tui.json" ''
+    {
+      "accent": "{{colors.primary.default.hex}}",
+      "ok": "{{colors.terminal_normal_green.default.hex}}",
+      "warn": "{{colors.terminal_normal_yellow.default.hex}}",
+      "err": "{{colors.error.default.hex}}",
+      "dim": "{{colors.terminal_bright_black.default.hex}}",
+      "comment": "{{colors.on_surface_variant.default.hex}}",
+      "cyan": "{{colors.terminal_normal_cyan.default.hex}}",
+      "surface": "{{colors.terminal_selection_bg.default.hex}}"
+    }
+  '';
 in
 {
   xdg.configFile."heroic/themes/noctalia/noctalia.json".text = builtins.toJSON {
@@ -255,6 +268,15 @@ in
           "$XDG_CONFIG_HOME/heroic/themes/noctalia/noctalia.css"
         ];
         index = 1001;
+      };
+
+      theme.templates.user.cc-switch-tui = {
+        enabled = true;
+        input_path = "${ccSwitchTuiThemeTemplate}";
+        output_path = [
+          "$XDG_CONFIG_HOME/cc-switch/theme/noctalia.json"
+        ];
+        index = 1002;
       };
     };
   };

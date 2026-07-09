@@ -1,0 +1,200 @@
+diff --git a/src-tauri/src/cli/tui/theme.rs b/src-tauri/src/cli/tui/theme.rs
+index e6e318a..0482979 100644
+--- a/src-tauri/src/cli/tui/theme.rs
++++ b/src-tauri/src/cli/tui/theme.rs
+@@ -1,8 +1,11 @@
+ use ratatui::style::Color;
++use serde::Deserialize;
++use std::path::Path;
+ 
+ use crate::app_config::AppType;
+ 
+ const COLOR_MODE_ENV: &str = "CC_SWITCH_COLOR_MODE";
++const THEME_FILE_ENV: &str = "CC_SWITCH_TUI_THEME";
+ 
+ const DRACULA_GREEN: (u8, u8, u8) = (80, 250, 123);
+ const DRACULA_CYAN: (u8, u8, u8) = (139, 233, 253);
+@@ -14,6 +17,30 @@ const OPENCLAW_CORAL: (u8, u8, u8) = (255, 79, 64);
+ const DRACULA_COMMENT: (u8, u8, u8) = (98, 114, 164);
+ const DRACULA_SURFACE: (u8, u8, u8) = (68, 71, 90);
+ 
++#[derive(Debug, Clone, Copy)]
++struct ThemeRgb {
++    accent: (u8, u8, u8),
++    ok: (u8, u8, u8),
++    warn: (u8, u8, u8),
++    err: (u8, u8, u8),
++    dim: (u8, u8, u8),
++    comment: (u8, u8, u8),
++    cyan: (u8, u8, u8),
++    surface: (u8, u8, u8),
++}
++
++#[derive(Debug, Deserialize)]
++struct RuntimeThemeConfig {
++    accent: Option<String>,
++    ok: Option<String>,
++    warn: Option<String>,
++    err: Option<String>,
++    dim: Option<String>,
++    comment: Option<String>,
++    cyan: Option<String>,
++    surface: Option<String>,
++}
++
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+ pub enum ColorMode {
+     NoColor,
+@@ -188,19 +215,73 @@ fn accent_rgb(app: &AppType) -> (u8, u8, u8) {
+     }
+ }
+ 
++fn parse_hex_color(value: &str) -> Option<(u8, u8, u8)> {
++    let hex = value.trim().strip_prefix('#').unwrap_or(value.trim());
++    if hex.len() != 6 || !hex.chars().all(|ch| ch.is_ascii_hexdigit()) {
++        return None;
++    }
++
++    let red = u8::from_str_radix(&hex[0..2], 16).ok()?;
++    let green = u8::from_str_radix(&hex[2..4], 16).ok()?;
++    let blue = u8::from_str_radix(&hex[4..6], 16).ok()?;
++    Some((red, green, blue))
++}
++
++fn color_or_default(value: Option<&str>, fallback: (u8, u8, u8)) -> (u8, u8, u8) {
++    value.and_then(parse_hex_color).unwrap_or(fallback)
++}
++
++fn default_theme_rgb(app: &AppType) -> ThemeRgb {
++    ThemeRgb {
++        accent: accent_rgb(app),
++        ok: DRACULA_GREEN,
++        warn: DRACULA_YELLOW,
++        err: DRACULA_RED,
++        dim: DRACULA_COMMENT,
++        comment: DRACULA_COMMENT,
++        cyan: DRACULA_CYAN,
++        surface: DRACULA_SURFACE,
++    }
++}
++
++fn load_runtime_theme(path: &Path, fallback: ThemeRgb) -> Option<ThemeRgb> {
++    let raw = std::fs::read_to_string(path).ok()?;
++    let config = serde_json::from_str::<RuntimeThemeConfig>(&raw).ok()?;
++
++    Some(ThemeRgb {
++        accent: color_or_default(config.accent.as_deref(), fallback.accent),
++        ok: color_or_default(config.ok.as_deref(), fallback.ok),
++        warn: color_or_default(config.warn.as_deref(), fallback.warn),
++        err: color_or_default(config.err.as_deref(), fallback.err),
++        dim: color_or_default(config.dim.as_deref(), fallback.dim),
++        comment: color_or_default(config.comment.as_deref(), fallback.comment),
++        cyan: color_or_default(config.cyan.as_deref(), fallback.cyan),
++        surface: color_or_default(config.surface.as_deref(), fallback.surface),
++    })
++}
++
++fn theme_rgb(app: &AppType) -> ThemeRgb {
++    let fallback = default_theme_rgb(app);
++
++    std::env::var_os(THEME_FILE_ENV)
++        .and_then(|path| load_runtime_theme(Path::new(&path), fallback))
++        .unwrap_or(fallback)
++}
++
+ pub fn theme_for(app: &AppType) -> Theme {
+     let color_mode = detected_color_mode();
+     let no_color = matches!(color_mode, ColorMode::NoColor);
++    let colors = theme_rgb(app);
+ 
+     Theme {
+-        accent: terminal_color(color_mode, accent_rgb(app)),
+-        ok: terminal_color(color_mode, DRACULA_GREEN),
+-        warn: terminal_color(color_mode, DRACULA_YELLOW),
+-        err: terminal_color(color_mode, DRACULA_RED),
+-        dim: terminal_color(color_mode, DRACULA_COMMENT),
+-        comment: terminal_color(color_mode, DRACULA_COMMENT),
+-        cyan: terminal_color(color_mode, DRACULA_CYAN),
+-        surface: terminal_color(color_mode, DRACULA_SURFACE),
++        accent: terminal_color(color_mode, colors.accent),
++        ok: terminal_color(color_mode, colors.ok),
++        warn: terminal_color(color_mode, colors.warn),
++        err: terminal_color(color_mode, colors.err),
++        dim: terminal_color(color_mode, colors.dim),
++        comment: terminal_color(color_mode, colors.comment),
++        cyan: terminal_color(color_mode, colors.cyan),
++        surface: terminal_color(color_mode, colors.surface),
+         no_color,
+     }
+ }
+@@ -250,6 +331,7 @@ mod tests {
+         let _lock = env_lock().lock().expect("env lock poisoned");
+         let _no_color = EnvGuard::remove("NO_COLOR");
+         let _color_mode = EnvGuard::remove(COLOR_MODE_ENV);
++        let _theme_file = EnvGuard::remove(THEME_FILE_ENV);
+         let _colorterm = EnvGuard::remove("COLORTERM");
+         let _term = EnvGuard::remove("TERM");
+ 
+@@ -264,6 +346,7 @@ mod tests {
+         let _lock = env_lock().lock().expect("env lock poisoned");
+         let _no_color = EnvGuard::remove("NO_COLOR");
+         let _color_mode = EnvGuard::remove(COLOR_MODE_ENV);
++        let _theme_file = EnvGuard::remove(THEME_FILE_ENV);
+         let _colorterm = EnvGuard::set("COLORTERM", "truecolor");
+         let _term = EnvGuard::set("TERM", "xterm-256color");
+ 
+@@ -281,6 +364,7 @@ mod tests {
+         let _lock = env_lock().lock().expect("env lock poisoned");
+         let _no_color = EnvGuard::remove("NO_COLOR");
+         let _color_mode = EnvGuard::remove("CC_SWITCH_COLOR_MODE");
++        let _theme_file = EnvGuard::remove(THEME_FILE_ENV);
+         let _colorterm = EnvGuard::set("COLORTERM", "truecolor");
+         let _term = EnvGuard::set("TERM", "xterm-256color");
+ 
+@@ -292,6 +376,46 @@ mod tests {
+         assert!(!theme.no_color);
+     }
+ 
++    #[test]
++    fn theme_uses_runtime_theme_file_when_present() {
++        let _lock = env_lock().lock().expect("env lock poisoned");
++        let _no_color = EnvGuard::remove("NO_COLOR");
++        let _color_mode = EnvGuard::remove(COLOR_MODE_ENV);
++        let _colorterm = EnvGuard::set("COLORTERM", "truecolor");
++        let _term = EnvGuard::set("TERM", "xterm-256color");
++        let dir = tempfile::tempdir().expect("create temp dir");
++        let path = dir.path().join("theme.json");
++        std::fs::write(
++            &path,
++            r##"{
++              "accent": "#112233",
++              "ok": "#445566",
++              "warn": "#778899",
++              "err": "#aabbcc",
++              "dim": "#ddeeff",
++              "comment": "#010203",
++              "cyan": "#040506",
++              "surface": "#070809"
++            }"##,
++        )
++        .expect("write theme file");
++        let _theme_file = EnvGuard::set(
++            THEME_FILE_ENV,
++            path.to_str().expect("theme path should be utf-8"),
++        );
++
++        let theme = theme_for(&AppType::Claude);
++
++        assert_eq!(theme.accent, Color::Rgb(17, 34, 51));
++        assert_eq!(theme.ok, Color::Rgb(68, 85, 102));
++        assert_eq!(theme.warn, Color::Rgb(119, 136, 153));
++        assert_eq!(theme.err, Color::Rgb(170, 187, 204));
++        assert_eq!(theme.dim, Color::Rgb(221, 238, 255));
++        assert_eq!(theme.comment, Color::Rgb(1, 2, 3));
++        assert_eq!(theme.cyan, Color::Rgb(4, 5, 6));
++        assert_eq!(theme.surface, Color::Rgb(7, 8, 9));
++    }
++
+     #[test]
+     fn theme_defaults_to_rgb_when_terminal_capability_is_unknown() {
+         let _lock = env_lock().lock().expect("env lock poisoned");
