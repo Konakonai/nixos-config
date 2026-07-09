@@ -159,10 +159,10 @@ let
       "ok": "{{colors.terminal_normal_green.default.hex}}",
       "warn": "{{colors.terminal_normal_yellow.default.hex}}",
       "err": "{{colors.error.default.hex}}",
-      "dim": "{{colors.terminal_bright_black.default.hex}}",
+      "dim": "{{colors.on_surface_variant.default.hex}}",
       "comment": "{{colors.on_surface_variant.default.hex}}",
       "cyan": "{{colors.terminal_normal_cyan.default.hex}}",
-      "surface": "{{colors.terminal_selection_bg.default.hex}}"
+      "surface": "{{colors.terminal_bright_black.default.hex}}"
     }
   '';
 in
