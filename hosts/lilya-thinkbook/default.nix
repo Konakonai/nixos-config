@@ -21,8 +21,7 @@ in
       model = "0x1626";
       serial = "0x00006002";
       scale = 1.75;
-      # Keep the external display at the global origin for XWayland/Steam games
-      # while matching the physical layout: the laptop panel sits on the left.
+      # Match the physical layout: the laptop panel sits on the left.
       position = { x = -1829; y = 149; };
       loginPosition = { x = 0; y = 0; };
     };

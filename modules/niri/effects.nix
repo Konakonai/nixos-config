@@ -26,8 +26,6 @@ let
 
     include "noctalia.kdl"
 
-    workspace "games"
-
     window-rule {
         exclude app-id="^kitty$"
         opacity ${lilyaGlass.opacity.windows}

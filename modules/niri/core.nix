@@ -2,40 +2,6 @@
 
 let
   lilyaGlass = import ../glass-settings.nix;
-  steamGameBarGuard = pkgs.writeShellScript "steam-game-bar-guard" ''
-    set -euo pipefail
-
-    niri="${config.programs.niri.package}/bin/niri"
-    noctalia="${config.programs.noctalia.package}/bin/noctalia"
-    jq="${pkgs.jq}/bin/jq"
-    state="shown"
-
-    update_bar() {
-      app_id="$("$niri" msg --json focused-window 2>/dev/null | "$jq" -r '.app_id // ""' 2>/dev/null || true)"
-
-      case "$app_id" in
-        steam_app_*|gamescope|Disco\ Elysium.exe)
-          if [ "$state" != "hidden" ]; then
-            "$noctalia" msg bar-hide main >/dev/null 2>&1 || true
-            state="hidden"
-          fi
-          ;;
-        *)
-          if [ "$state" != "shown" ]; then
-            "$noctalia" msg bar-show main >/dev/null 2>&1 || true
-            state="shown"
-          fi
-          ;;
-      esac
-    }
-
-    trap '"$noctalia" msg bar-show main >/dev/null 2>&1 || true' EXIT
-
-    update_bar
-    while IFS= read -r _; do
-      update_bar
-    done < <("$niri" msg --json event-stream)
-  '';
   xwaylandCoreFonts = pkgs.writeShellScript "xwayland-core-fonts" ''
     set -euo pipefail
 
@@ -55,22 +21,6 @@ let
   '';
 in
 {
-  systemd.user.services.steam-game-bar-guard = {
-    Unit = {
-      Description = "Hide Noctalia bar while focused Steam games run";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
-    };
-
-    Service = {
-      ExecStart = "${steamGameBarGuard}";
-      Restart = "on-failure";
-      RestartSec = "2s";
-    };
-
-    Install.WantedBy = [ "graphical-session.target" ];
-  };
-
   programs.niri.settings = {
     prefer-no-csd = true;
 
@@ -162,24 +112,6 @@ in
         };
         draw-border-with-background = false;
         clip-to-geometry = true;
-      }
-      {
-        matches = [
-          { app-id = "^steam_app_.*$"; }
-          { app-id = "^gamescope$"; }
-          { app-id = "^Disco Elysium\\.exe$"; }
-          { title = "^Disco Elysium.*"; }
-        ];
-        open-on-workspace = "games";
-        open-fullscreen = true;
-        geometry-corner-radius = {
-          top-left = 0.0;
-          top-right = 0.0;
-          bottom-left = 0.0;
-          bottom-right = 0.0;
-        };
-        clip-to-geometry = false;
-        draw-border-with-background = false;
       }
     ];
 
