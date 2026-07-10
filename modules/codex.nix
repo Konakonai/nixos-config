@@ -20,8 +20,51 @@ let
   codexDesktop = pkgs.symlinkJoin {
     name = "${codexDesktopBase.name}-codex-cli-path";
     paths = [ codexDesktopBase ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
+    nativeBuildInputs = [
+      pkgs.asar
+      pkgs.makeWrapper
+      pkgs.nodejs
+    ];
     postBuild = ''
+      # codex-desktop-linux normally paints the Linux window-controls overlay
+      # with a fixed opaque color. Keep only its adaptive symbol color and let
+      # Codex's own title bar show through behind the controls.
+      asarPath="$out/opt/codex-desktop/resources/app.asar"
+      asarWorkDir="$(mktemp -d)"
+      asar extract "$asarPath" "$asarWorkDir/app"
+      cp -aL "$asarPath.unpacked/." "$asarWorkDir/app/"
+
+      mainBundle="$(find "$asarWorkDir/app/.vite/build" -maxdepth 1 -type f -name 'main-*.js' -print -quit)"
+      if [ -z "$mainBundle" ]; then
+        echo "Codex main-process bundle was not found" >&2
+        exit 1
+      fi
+
+      node - "$mainBundle" <<'NODE'
+      const fs = require("fs");
+      const path = process.argv[2];
+      const source = fs.readFileSync(path, "utf8");
+      const pattern = /function codexLinuxTitleBarOverlay\(e=1\)\{return\{color:[^,]+,symbolColor:/;
+      const matches = source.match(new RegExp(pattern.source, "g")) ?? [];
+
+      if (matches.length !== 1) {
+        throw new Error(`Expected one Codex Linux title-bar helper, found ''${matches.length}`);
+      }
+
+      fs.writeFileSync(
+        path,
+        source.replace(
+          pattern,
+          "function codexLinuxTitleBarOverlay(e=1){return{color:`#00000000`,symbolColor:",
+        ),
+      );
+      NODE
+
+      rm -f "$asarPath"
+      rm -rf "$asarPath.unpacked"
+      asar pack "$asarWorkDir/app" "$asarPath" --unpack "*.node"
+      rm -rf "$asarWorkDir"
+
       if [ -e "$out/bin/codex-desktop" ]; then
         rm -f "$out/bin/codex-desktop"
         makeWrapper "${codexDesktopBase}/bin/codex-desktop" "$out/bin/codex-desktop" \

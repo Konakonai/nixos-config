@@ -27,6 +27,14 @@ let
       --replace-fail "        win.off('resize', updateBounds);" "        win.off('resize', updateBounds);
         win.off('resized', updateBounds);
         win.off('show', updateBounds);"
+
+    # The renderer already sends its active theme colors through this IPC
+    # handler, but upstream only applies them on Windows. Electron supports
+    # updating the window-controls overlay on Linux too, so keep its background
+    # and symbols in sync with Antigravity's title bar.
+    substituteInPlace app/dist/ipcHandlers.js \
+      --replace-fail "if (win && process.platform === 'win32')" "if (win && process.platform !== 'darwin')"
+
     asar pack app "$out/resources/app.asar"
   '';
 

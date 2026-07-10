@@ -42,19 +42,7 @@ in
     obsidian
 
     (import ../../pkgs/antigravity.nix { inherit pkgs lib; })
-    (import ../../pkgs/qoder-cn.nix { inherit pkgs lib; })
     (import ../../pkgs/splayer.nix { inherit pkgs lib; })
     (import ../../pkgs/wechat.nix { inherit pkgs lib fcitxCompatEnv appThemeEnv; })
   ];
-
-  home.activation.removeQoderUserappDesktop = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    for desktop in \
-      "$HOME/.local/share/applications/qoder-cn.desktop" \
-      "$HOME/.local/share/applications/qoder-cn-url-handler.desktop"
-    do
-      if [ -f "$desktop" ] && ${pkgs.gnugrep}/bin/grep -q '/nix/store/.*qoder-cn-[0-9]' "$desktop"; then
-        rm -f "$desktop"
-      fi
-    done
-  '';
 }
