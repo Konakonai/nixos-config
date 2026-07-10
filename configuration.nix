@@ -5,6 +5,7 @@
     hostProfile.hardwareConfiguration
     ./modules/system/audio.nix
     ./modules/system/boot.nix
+    ./modules/system/containers.nix
     ./modules/system/display.nix
     ./modules/system/fonts.nix
     ./modules/system/graphics.nix
