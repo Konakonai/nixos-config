@@ -77,7 +77,8 @@ pkgs.stdenvNoCC.mkDerivation {
 
     install -d "$out/bin"
     makeWrapper "$out/lib/mindustry/Mindustry" "$out/bin/mindustry" \
-      --chdir "$out/lib/mindustry"
+      --chdir "$out/lib/mindustry" \
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath runtimeLibs}"
 
     install -Dm644 /dev/null "$out/share/icons/hicolor/64x64/apps/mindustry.png"
     unzip -p "$out/lib/mindustry/jre/desktop.jar" icons/icon_64.png \
