@@ -5,6 +5,7 @@ let
   hermesIcon = "${hermesDesktop}/share/hermes-desktop/dist/hermes.png";
   ccSwitch = pkgs.callPackage ../../pkgs/cc-switch-cli/default.nix {};
   antigravity = import ../../pkgs/antigravity.nix { inherit pkgs lib; };
+  mindustry = import ../../pkgs/mindustry.nix { inherit pkgs lib; };
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
@@ -63,6 +64,17 @@ in
     categories = [ "Utility" ];
     terminal = false;
     mimeType = [ "x-scheme-handler/antigravity" ];
+  };
+
+  xdg.desktopEntries."mindustry" = {
+    name = "Mindustry";
+    genericName = "Tower Defense Game";
+    exec = "${lib.getExe mindustry} %U";
+    icon = "mindustry";
+    type = "Application";
+    terminal = false;
+    categories = [ "Game" "StrategyGame" ];
+    startupNotify = true;
   };
 
   xdg.desktopEntries."yazi" = {

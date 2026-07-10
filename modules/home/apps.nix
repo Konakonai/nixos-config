@@ -4,6 +4,7 @@ let
   lilyaGlass = import ../glass-settings.nix;
   braveOrigin = import ../../pkgs/brave-origin.nix { inherit pkgs lib; };
   braveNetflixOpera = import ../../pkgs/brave-netflix-opera.nix { inherit pkgs lib braveOrigin; };
+  mindustry = import ../../pkgs/mindustry.nix { inherit pkgs lib; };
   appThemeEnv = {
     GTK_THEME = "adw-gtk3";
     GTK_USE_PORTAL = "1";
@@ -28,6 +29,7 @@ in
     hyprpicker
     localsend
     loupe
+    mindustry
     gamescope
     mangohud
     mission-center
