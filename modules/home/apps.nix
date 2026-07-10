@@ -35,6 +35,8 @@ in
     mission-center
     nemo-with-extensions
     pavucontrol
+    pwvucontrol
+    crosspipe
     protonup-qt
     resources
     wineWow64Packages.stableFull
