@@ -17,18 +17,13 @@ let
   codexDesktopBase =
     codexDesktopFlake.packages.${system}.codex-desktop-computer-use-ui;
 
-  codexDesktop = pkgs.symlinkJoin {
-    name = "${codexDesktopBase.name}-codex-cli-path";
-    paths = [ codexDesktopBase ];
-    nativeBuildInputs = [
-      pkgs.asar
-      pkgs.makeWrapper
-      pkgs.nodejs
-    ];
-    postBuild = ''
-      # codex-desktop-linux normally paints the Linux window-controls overlay
-      # with a fixed opaque color. Keep only its adaptive symbol color and let
-      # Codex's own title bar show through behind the controls.
+  codexDesktopPatched = codexDesktopBase.overrideAttrs (old: {
+    nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.nodejs ];
+    postInstall = (old.postInstall or "") + ''
+      # codex-desktop-linux enables Electron's window-controls overlay on
+      # Linux. Disable it both at window creation and in later zoom/theme
+      # updates so Codex keeps its draggable app title bar without the native
+      # minimize/maximize/close block.
       asarPath="$out/opt/codex-desktop/resources/app.asar"
       asarWorkDir="$(mktemp -d)"
       asar extract "$asarPath" "$asarWorkDir/app"
@@ -44,19 +39,34 @@ let
       const fs = require("fs");
       const path = process.argv[2];
       const source = fs.readFileSync(path, "utf8");
-      const pattern = /function codexLinuxTitleBarOverlay\(e=1\)\{return\{color:[^,]+,symbolColor:/;
-      const matches = source.match(new RegExp(pattern.source, "g")) ?? [];
+      const windowOptionPattern = /titleBarOverlay:([A-Za-z_$][\w$]*)===`linux`\?codexLinuxTitleBarOverlay\(([^)]+)\):([^,]+),/g;
+      const overlayUpdatePattern = /([A-Za-z_$][\w$]*)\.setTitleBarOverlay\(process\.platform===`linux`\?codexLinuxTitleBarOverlay\((.*?)\):([A-Za-z_$][\w$]*)\((.*?)\)\)/g;
+      const windowOptionMatches = source.match(windowOptionPattern) ?? [];
+      const overlayUpdateMatches = source.match(overlayUpdatePattern) ?? [];
 
-      if (matches.length !== 1) {
-        throw new Error(`Expected one Codex Linux title-bar helper, found ''${matches.length}`);
+      if (windowOptionMatches.length !== 1 || overlayUpdateMatches.length !== 2) {
+        throw new Error(
+          `Expected one Codex Linux window option and two overlay updates, found ` +
+            `''${windowOptionMatches.length} and ''${overlayUpdateMatches.length}`,
+        );
       }
+
+      const patched = source
+        .replace(
+          windowOptionPattern,
+          (_match, platform, _zoom, windowsOverlay) =>
+            `titleBarOverlay:''${platform}===\`linux\`?!1:''${windowsOverlay},`,
+        )
+        .replace(
+          overlayUpdatePattern,
+          (_match, window, _linuxOptions, windowsHelper, windowsOptions) =>
+            `process.platform!==\`linux\`&&''${window}.setTitleBarOverlay(` +
+            `''${windowsHelper}(''${windowsOptions}))`,
+        );
 
       fs.writeFileSync(
         path,
-        source.replace(
-          pattern,
-          "function codexLinuxTitleBarOverlay(e=1){return{color:`#00000000`,symbolColor:",
-        ),
+        patched,
       );
       NODE
 
@@ -64,10 +74,17 @@ let
       rm -rf "$asarPath.unpacked"
       asar pack "$asarWorkDir/app" "$asarPath" --unpack "*.node"
       rm -rf "$asarWorkDir"
+    '';
+  });
 
+  codexDesktop = pkgs.symlinkJoin {
+    name = "${codexDesktopPatched.name}-codex-cli-path";
+    paths = [ codexDesktopPatched ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
       if [ -e "$out/bin/codex-desktop" ]; then
         rm -f "$out/bin/codex-desktop"
-        makeWrapper "${codexDesktopBase}/bin/codex-desktop" "$out/bin/codex-desktop" \
+        makeWrapper "${codexDesktopPatched}/bin/codex-desktop" "$out/bin/codex-desktop" \
           --set-default CODEX_CLI_PATH "${codexCli}/bin/codex"
       fi
 
@@ -76,7 +93,7 @@ let
         target="$(readlink -f "$desktopFile")"
         rm -f "$desktopFile"
         substitute "$target" "$desktopFile" \
-          --replace-fail "${codexDesktopBase}/bin/codex-desktop" "$out/bin/codex-desktop"
+          --replace-fail "${codexDesktopPatched}/bin/codex-desktop" "$out/bin/codex-desktop"
         substituteInPlace "$desktopFile" \
           --replace-fail "Actions=new-window;CheckForUpdates;InstallReadyUpdate;" "Actions=new-window;"
         awk '
