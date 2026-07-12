@@ -1,7 +1,7 @@
 { lilyaGlass, pkgs, ... }:
 
 let
-  logoSvg = ../../theme/assets/nixos-logomark-default-gradient-none.svg;
+  logoSvg = ../../../assets/fastfetch-nixos-logo.svg;
 
   logoPng = pkgs.runCommand "fastfetch-nixos-logomark.png" {
     nativeBuildInputs = [ pkgs.resvg ];

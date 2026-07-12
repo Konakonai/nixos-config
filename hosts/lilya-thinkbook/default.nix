@@ -14,7 +14,7 @@ in
   };
 
   display = {
-    loginWallpaper = ../../assets/sddm-wallpaper.jpg;
+    loginWallpaper = ../../assets/login-wallpaper.jpg;
 
     internal = {
       make = "California Institute of Technology";
