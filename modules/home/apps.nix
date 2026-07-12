@@ -5,6 +5,19 @@ let
   braveOrigin = import ../../pkgs/brave-origin.nix { inherit pkgs lib; };
   braveNetflixOpera = import ../../pkgs/brave-netflix-opera.nix { inherit pkgs lib braveOrigin; };
   mindustry = import ../../pkgs/mindustry.nix { inherit pkgs lib; };
+  localsendNoCsd = pkgs.symlinkJoin {
+    name = "${pkgs.localsend.name}-no-csd";
+    paths = [ pkgs.localsend ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    # niri does not provide server-side decorations, and LocalSend's Flutter
+    # runner otherwise adds a redundant GTK header bar on every Wayland session.
+    postBuild = ''
+      rm "$out/bin/localsend_app"
+      makeWrapper ${lib.getExe pkgs.localsend} "$out/bin/localsend_app" \
+        --set GTK_CSD 0
+    '';
+    meta = pkgs.localsend.meta;
+  };
   appThemeEnv = {
     GTK_THEME = "adw-gtk3";
     GTK_USE_PORTAL = "1";
@@ -27,7 +40,7 @@ in
     gnome-font-viewer
     heroic
     hyprpicker
-    localsend
+    localsendNoCsd
     loupe
     mindustry
     gamescope
