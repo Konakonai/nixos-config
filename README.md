@@ -10,8 +10,10 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 
 ## Layout
 
-- `configuration.nix`: NixOS system entry point.
-- `home.nix`: Home Manager user entry point.
+- `configuration.nix`: thin NixOS entry point for the host hardware module and system state version.
+- `home.nix`: thin Home Manager entry point for the user identity and home state version.
+- `modules/system/default.nix`: explicit system-module aggregator.
+- `modules/home/default.nix`: explicit Home Manager module aggregator.
 - `modules/system/`: NixOS system modules.
 - `modules/home/`: Home Manager modules for applications, desktop tools, shells, and user services.
 - `modules/home/desktop/`: desktop entries, MIME defaults, Zed, media playback defaults, and font aliases.
