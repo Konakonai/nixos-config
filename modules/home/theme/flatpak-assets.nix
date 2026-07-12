@@ -8,11 +8,11 @@ let
   iconThemePackage = pkgs.colloid-icon-theme;
   iconThemeName = lilyaGlass.iconThemeName;
   papirusIconSource = pkgs.papirus-icon-theme.src;
-  papirusChineseInputIcons = pkgs.runCommand "papirus-fcitx-chinese-input-icons" { } ''
+  papirusRimeIcons = pkgs.runCommand "papirus-fcitx-rime-icons" { } ''
     for size in 16 22 24; do
       mkdir -p "$out/$size"
       cp \
-        ${papirusIconSource}/Papirus/"$size"x"$size"/actions/fcitx-chn.svg \
+        ${papirusIconSource}/Papirus/"$size"x"$size"/actions/fcitx-rime.svg \
         "$out/$size/fcitx-rime.svg"
     done
   '';
@@ -39,7 +39,7 @@ in
 
     for size in 16 22 24; do
       install -m 0644 \
-        "${papirusChineseInputIcons}/$size/fcitx-rime.svg" \
+        "${papirusRimeIcons}/$size/fcitx-rime.svg" \
         "$HOME/.local/share/icons/${iconThemeName}/status/$size/fcitx-rime.svg"
     done
 
