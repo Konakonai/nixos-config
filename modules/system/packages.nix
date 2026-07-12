@@ -33,8 +33,8 @@ in
     brightnessctl
     imagemagick
 
-    (callPackage ../../pkgs/cc-switch-cli/default.nix {})
-    (callPackage ../../pkgs/codex.nix {})
+    lilya.cc-switch-cli
+    lilya.codex
 
     unstable.officecli
 

@@ -66,6 +66,12 @@
         {
           nixpkgs.overlays = [
             millennium.overlays.default
+            (final: _prev: {
+              lilya = import ./pkgs {
+                pkgs = final;
+                lib = final.lib;
+              };
+            })
           ];
         }
 

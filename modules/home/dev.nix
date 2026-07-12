@@ -1,8 +1,7 @@
 { pkgs, lib, hostProfile, ... }:
 
 let
-  braveSearchMcp = import ../../pkgs/mcp-server-brave-search.nix {
-    inherit pkgs lib;
+  braveSearchMcp = pkgs.lilya.mcp-server-brave-search {
     braveApiEnvFile = hostProfile.mcp.braveSearch.envFile;
   };
   antigravityMcpConfig = {

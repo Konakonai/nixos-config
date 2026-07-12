@@ -1,7 +1,7 @@
 { lilyaGlass, pkgs, ... }:
 
 let
-  jetbrainsMapleMono = pkgs.callPackage ../../pkgs/jetbrains-maple-mono.nix { };
+  jetbrainsMapleMono = pkgs.lilya.jetbrains-maple-mono;
 in
 {
   fonts = {

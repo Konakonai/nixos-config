@@ -1,11 +1,7 @@
 { config, pkgs, lib, fcitxCompatEnv, lilyaGlass, ... }:
 
 let
-  antigravity = import ../../pkgs/antigravity.nix { inherit pkgs lib; };
-  braveOrigin = import ../../pkgs/brave-origin.nix { inherit pkgs lib; };
-  braveNetflixOpera = import ../../pkgs/brave-netflix-opera.nix { inherit pkgs lib braveOrigin; };
-  ccSwitch = pkgs.callPackage ../../pkgs/cc-switch-cli/default.nix {};
-  mindustry = import ../../pkgs/mindustry.nix { inherit pkgs lib; };
+  inherit (pkgs.lilya) antigravity brave-origin brave-netflix-opera cc-switch-cli mindustry splayer;
   localsendNoCsd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";
     paths = [ pkgs.localsend ];
@@ -33,8 +29,8 @@ in
 {
   home.packages = with pkgs; [
     cabextract
-    braveOrigin
-    braveNetflixOpera
+    brave-origin
+    brave-netflix-opera
     chromium
     file-roller
     foliate
@@ -58,14 +54,14 @@ in
     obsidian
 
     antigravity
-    (import ../../pkgs/splayer.nix { inherit pkgs lib; })
-    (import ../../pkgs/wechat.nix { inherit pkgs lib fcitxCompatEnv appThemeEnv; })
+    splayer
+    (pkgs.lilya.wechat { inherit fcitxCompatEnv appThemeEnv; })
   ];
 
   xdg.desktopEntries = {
     "cc-switch-handler" = {
       name = "CC Switch";
-      exec = "${lib.getExe ccSwitch} %u";
+      exec = "${lib.getExe cc-switch-cli} %u";
       type = "Application";
       terminal = false;
       noDisplay = true;
