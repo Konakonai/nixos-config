@@ -1,7 +1,6 @@
-{ config, pkgs, ... }:
+{ config, lilyaGlass, pkgs, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
   xwaylandCoreFonts = pkgs.writeShellScript "xwayland-core-fonts" ''
     set -euo pipefail
 

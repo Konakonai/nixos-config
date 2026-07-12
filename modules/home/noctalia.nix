@@ -1,7 +1,6 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, lilyaGlass, pkgs, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
   darklyQtTemplate = pkgs.writeText "noctalia-darkly-qtct.conf" ''
     [ColorScheme]
     # windowText,button,light,midlight,dark,mid,text,brightText,buttonText,base,window,shadow,highlight,highlightedText,link,linkVisited,alternateBase,NO_IDEA,toolTipBase,toolTipText,placeholderText,accent

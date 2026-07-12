@@ -1,8 +1,5 @@
-{ pkgs, ... }:
+{ lilyaGlass, pkgs, ... }:
 
-let
-  lilyaGlass = import ../glass-settings.nix;
-in
 {
   gtk = {
     enable = true;

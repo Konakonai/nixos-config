@@ -47,13 +47,14 @@
   outputs = inputs@{ nixpkgs, home-manager, niri, noctalia, millennium, agenix, ... }:
   let
     hostProfile = import ./hosts/lilya-thinkbook;
+    lilyaGlass = import ./modules/shared/glass-settings.nix;
   in
   {
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
 
       specialArgs = {
-        inherit inputs hostProfile;
+        inherit inputs hostProfile lilyaGlass;
       };
 
       modules = [
@@ -75,7 +76,7 @@
           home-manager.backupFileExtension = "backup";
 
           home-manager.extraSpecialArgs = {
-            inherit inputs hostProfile;
+            inherit inputs hostProfile lilyaGlass;
           };
 
           home-manager.users.${hostProfile.user.userName} = import ./home.nix;

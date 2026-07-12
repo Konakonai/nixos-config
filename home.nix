@@ -6,7 +6,6 @@
     inputs.noctalia.homeModules.default
     inputs.nix-flatpak.homeManagerModules.nix-flatpak
 
-    ./modules/glass.nix
     ./modules/home/fcitx5.nix
 
     ./modules/home/apps.nix

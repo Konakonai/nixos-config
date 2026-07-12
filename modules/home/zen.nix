@@ -1,7 +1,6 @@
-{ config, hostProfile, lib, pkgs, ... }:
+{ config, hostProfile, lib, lilyaGlass, pkgs, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
   zenProfilePath = hostProfile.zen.profilePath;
   zen = lib.getExe config.programs.zen-browser.package;
   zenLaunch = pkgs.writeShellScript "launch-zen-beta" ''

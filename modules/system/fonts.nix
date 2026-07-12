@@ -1,7 +1,6 @@
-{ pkgs, ... }:
+{ lilyaGlass, pkgs, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
   jetbrainsMapleMono = pkgs.callPackage ../../pkgs/jetbrains-maple-mono.nix { };
 in
 {

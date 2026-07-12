@@ -1,7 +1,6 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, lilyaGlass, pkgs, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
   zed = lib.getExe config.programs.zed-editor.package;
   zedSeed = pkgs.writeText "zed-settings.json" (builtins.toJSON {
     agent_servers.codex-acp.type = "registry";

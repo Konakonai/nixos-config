@@ -1,7 +1,6 @@
-{ config, pkgs, lib, fcitxCompatEnv, ... }:
+{ config, pkgs, lib, fcitxCompatEnv, lilyaGlass, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
   braveOrigin = import ../../pkgs/brave-origin.nix { inherit pkgs lib; };
   braveNetflixOpera = import ../../pkgs/brave-netflix-opera.nix { inherit pkgs lib braveOrigin; };
   mindustry = import ../../pkgs/mindustry.nix { inherit pkgs lib; };

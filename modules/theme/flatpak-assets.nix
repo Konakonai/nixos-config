@@ -1,7 +1,6 @@
-{ lib, pkgs, ... }:
+{ lib, lilyaGlass, pkgs, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
   gtkThemeName = "adw-gtk3";
   gtkThemePackage = pkgs.adw-gtk3;
   cursorThemePackage = pkgs.rose-pine-cursor;

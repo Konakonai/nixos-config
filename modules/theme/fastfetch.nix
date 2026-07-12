@@ -1,7 +1,6 @@
-{ pkgs, ... }:
+{ lilyaGlass, pkgs, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
   logoSvg = ./assets/nixos-logomark-default-gradient-none.svg;
 
   logoPng = pkgs.runCommand "fastfetch-nixos-logomark.png" {

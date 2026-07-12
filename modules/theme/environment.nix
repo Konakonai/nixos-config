@@ -1,8 +1,5 @@
-{ config, pkgs, ... }:
+{ config, lilyaGlass, pkgs, ... }:
 
-let
-  lilyaGlass = import ../glass-settings.nix;
-in
 {
   home.sessionVariables = {
     GSK_RENDERER = "ngl";

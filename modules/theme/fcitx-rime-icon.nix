@@ -1,7 +1,6 @@
-{ ... }:
+{ lilyaGlass, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
   iconThemeName = lilyaGlass.iconThemeName;
 in
 {

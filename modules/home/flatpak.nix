@@ -1,8 +1,6 @@
-{ config, fcitxCompatEnv, lib, ... }:
+{ config, fcitxCompatEnv, lib, lilyaGlass, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
-
   themeEnv = {
     GSK_RENDERER = "ngl";
     GTK_THEME = "adw-gtk3";

@@ -1,7 +1,6 @@
-{ config, hostProfile, pkgs, lib, ... }:
+{ config, hostProfile, lilyaGlass, pkgs, lib, ... }:
 
 let
-  lilyaGlass = import ../glass-settings.nix;
   internalDisplay = hostProfile.display.internal;
   externalDisplay = hostProfile.display.external or null;
   kdlString = builtins.toJSON;

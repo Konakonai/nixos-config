@@ -1,7 +1,6 @@
-{ pkgs, inputs, hostProfile, lib, ... }:
+{ pkgs, inputs, hostProfile, lib, lilyaGlass, ... }:
 
 let
-  lilyaGlass = import ../../glass-settings.nix;
   internalDisplay = hostProfile.display.internal;
   externalDisplay = hostProfile.display.external or null;
   loginWallpaper = hostProfile.display.loginWallpaper or null;
