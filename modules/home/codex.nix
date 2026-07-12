@@ -17,6 +17,16 @@ let
   codexDesktopBase =
     codexDesktopFlake.packages.${system}.codex-desktop-computer-use-ui;
 
+  # Codex's bundled document runtime is an unpatched Linux binary. Keep its
+  # non-Electron libraries visible when it launches LibreOffice on NixOS.
+  documentRuntimeLibs = with pkgs; [
+    curl
+    fontconfig
+    freetype
+    lcms2
+    pixman
+  ];
+
   codexDesktopPatched = codexDesktopBase.overrideAttrs (old: {
     nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ pkgs.nodejs ];
     postInstall = (old.postInstall or "") + ''
@@ -85,7 +95,8 @@ let
       if [ -e "$out/bin/codex-desktop" ]; then
         rm -f "$out/bin/codex-desktop"
         makeWrapper "${codexDesktopPatched}/bin/codex-desktop" "$out/bin/codex-desktop" \
-          --set-default CODEX_CLI_PATH "${codexCli}/bin/codex"
+          --set-default CODEX_CLI_PATH "${codexCli}/bin/codex" \
+          --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath documentRuntimeLibs}"
       fi
 
       desktopFile="$out/share/applications/codex-desktop.desktop"
