@@ -1,8 +1,10 @@
 { config, pkgs, lib, fcitxCompatEnv, lilyaGlass, ... }:
 
 let
+  antigravity = import ../../pkgs/antigravity.nix { inherit pkgs lib; };
   braveOrigin = import ../../pkgs/brave-origin.nix { inherit pkgs lib; };
   braveNetflixOpera = import ../../pkgs/brave-netflix-opera.nix { inherit pkgs lib braveOrigin; };
+  ccSwitch = pkgs.callPackage ../../pkgs/cc-switch-cli/default.nix {};
   mindustry = import ../../pkgs/mindustry.nix { inherit pkgs lib; };
   localsendNoCsd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";
@@ -55,8 +57,40 @@ in
     winetricks
     obsidian
 
-    (import ../../pkgs/antigravity.nix { inherit pkgs lib; })
+    antigravity
     (import ../../pkgs/splayer.nix { inherit pkgs lib; })
     (import ../../pkgs/wechat.nix { inherit pkgs lib fcitxCompatEnv appThemeEnv; })
   ];
+
+  xdg.desktopEntries = {
+    "cc-switch-handler" = {
+      name = "CC Switch";
+      exec = "${lib.getExe ccSwitch} %u";
+      type = "Application";
+      terminal = false;
+      noDisplay = true;
+      mimeType = [ "x-scheme-handler/ccswitch" ];
+    };
+
+    antigravity = {
+      name = "Antigravity";
+      exec = "${lib.getExe antigravity} %F";
+      icon = "antigravity";
+      type = "Application";
+      categories = [ "Utility" ];
+      terminal = false;
+      mimeType = [ "x-scheme-handler/antigravity" ];
+    };
+
+    mindustry = {
+      name = "Mindustry";
+      genericName = "Tower Defense Game";
+      exec = "${lib.getExe mindustry} %U";
+      icon = "mindustry";
+      type = "Application";
+      terminal = false;
+      categories = [ "Game" "StrategyGame" ];
+      startupNotify = true;
+    };
+  };
 }
