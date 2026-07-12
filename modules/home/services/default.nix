@@ -1,0 +1,7 @@
+{ ... }:
+
+{
+  imports = [
+    ./openlist-webdav.nix
+  ];
+}

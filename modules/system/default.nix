@@ -16,7 +16,7 @@
     ./power.nix
     ./programs.nix
     ./secrets.nix
-    ./services.nix
+    ./services
     ./user.nix
   ];
 }

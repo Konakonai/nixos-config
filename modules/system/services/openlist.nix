@@ -1,10 +1,6 @@
 { hostProfile, pkgs, ... }:
 
 {
-  imports = [
-    ./mihomo.nix
-  ];
-
   systemd.services.openlist = {
     description = "OpenList Service";
     after = [
@@ -20,24 +16,5 @@
       User = hostProfile.user.userName;
       Group = hostProfile.user.group;
     };
-  };
-
-  services.printing.enable = true;
-
-  services.kmscon = {
-    enable = true;
-    hwRender = true;
-    fonts = [
-      {
-        name = "Noto Sans CJK SC";
-        package = pkgs.noto-fonts-cjk-sans;
-      }
-    ];
-    term = "xterm-256color";
-    useXkbConfig = true;
-    extraConfig = ''
-      font-size=16
-      multi-monitor=largest
-    '';
   };
 }

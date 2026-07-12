@@ -16,6 +16,8 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 - `modules/home/default.nix`: explicit Home Manager module aggregator.
 - `modules/system/`: NixOS system modules.
 - `modules/home/`: Home Manager modules for applications, desktop tools, shells, and user services.
+- `modules/system/services/`: system daemons, including the OpenList server.
+- `modules/home/services/`: user-session services and mounts, including OpenList WebDAV.
 - `modules/home/desktop/`: desktop entries, MIME defaults, Zed, media playback defaults, and font aliases.
 - `modules/system/display/`: niri login session, greetd/gtkgreet, console, portals, and desktop service glue.
 - `modules/system/power/`: base power services, CPU limits, NVIDIA dGPU switching, AC udev events, and permission helpers.

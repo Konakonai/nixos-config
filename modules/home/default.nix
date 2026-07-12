@@ -19,6 +19,7 @@
     ./niri
     ./noctalia.nix
     ./shell.nix
+    ./services
     ./theme
     ./yazi.nix
     ./zen.nix
