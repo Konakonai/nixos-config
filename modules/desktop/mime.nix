@@ -123,6 +123,8 @@ in
       "application/vnd.openxmlformats-officedocument.wordprocessingml.template" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.ms-word.document.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.ms-word.template.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
+      "application/wps-office.doc" = "org.onlyoffice.desktopeditors.desktop";
+      "application/wps-office.docx" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.ms-excel" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.openxmlformats-officedocument.spreadsheetml.template" = "org.onlyoffice.desktopeditors.desktop";
@@ -130,6 +132,8 @@ in
       "application/vnd.ms-excel.template.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.ms-excel.addin.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.ms-excel.sheet.binary.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
+      "application/wps-office.xls" = "org.onlyoffice.desktopeditors.desktop";
+      "application/wps-office.xlsx" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.ms-powerpoint" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.openxmlformats-officedocument.presentationml.presentation" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.openxmlformats-officedocument.presentationml.template" = "org.onlyoffice.desktopeditors.desktop";
@@ -138,6 +142,8 @@ in
       "application/vnd.ms-powerpoint.presentation.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.ms-powerpoint.template.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.ms-powerpoint.slideshow.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
+      "application/wps-office.ppt" = "org.onlyoffice.desktopeditors.desktop";
+      "application/wps-office.pptx" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.oasis.opendocument.text" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.oasis.opendocument.spreadsheet" = "org.onlyoffice.desktopeditors.desktop";
       "application/vnd.oasis.opendocument.presentation" = "org.onlyoffice.desktopeditors.desktop";
