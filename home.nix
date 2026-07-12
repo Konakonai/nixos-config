@@ -18,11 +18,11 @@
     ./modules/home/gaming.nix
     ./modules/home/kitty.nix
     ./modules/home/noctalia.nix
+    ./modules/home/niri
     ./modules/home/shell.nix
     ./modules/home/yazi.nix
     ./modules/home/zen.nix
 
-    ./modules/niri.nix
     ./modules/theme.nix
   ];
 
