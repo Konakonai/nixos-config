@@ -39,6 +39,8 @@ in
     unstable.officecli
 
     qadwaitadecorations-qt6
+    kdePackages.dolphin
+    kdePackages.kio-fuse
     qt6Packages.qt6ct
     opencode
   ];
