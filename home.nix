@@ -20,10 +20,10 @@
     ./modules/home/noctalia.nix
     ./modules/home/niri
     ./modules/home/shell.nix
+    ./modules/home/theme
     ./modules/home/yazi.nix
     ./modules/home/zen.nix
 
-    ./modules/theme.nix
   ];
 
   home = {

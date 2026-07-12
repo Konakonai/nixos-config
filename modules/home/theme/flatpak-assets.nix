@@ -28,7 +28,7 @@ in
     copy_theme_dir "${cursorThemePackage}/share/icons/${cursorThemeName}" "$HOME/.local/share/flatpak-icons/${cursorThemeName}"
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
 
-    RIME_ICON="${../../assets/fcitx-rime.svg}"
+    RIME_ICON="${../../../assets/fcitx-rime.svg}"
     for d in "$HOME/.local/share/icons/${iconThemeName}"; do
       for s in 16 22 24; do
         if [ -d "$d/status/$s" ]; then
