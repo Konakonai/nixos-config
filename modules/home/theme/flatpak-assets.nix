@@ -28,12 +28,15 @@ in
     copy_theme_dir "${cursorThemePackage}/share/icons/${cursorThemeName}" "$HOME/.local/share/flatpak-icons/${cursorThemeName}"
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
 
-    for size in 16 22 24; do
-      status_dir="$HOME/.local/share/icons/${iconThemeName}/status/$size"
-      install -m 0644 \
-        "$status_dir/input-keyboard.svg" \
-        "$status_dir/fcitx-rime.svg"
-    done
+    ${pkgs.findutils}/bin/find \
+      "$HOME/.local/share/icons/${iconThemeName}" \
+      -type f -name fcitx-rime.svg -print0 \
+      | while IFS= read -r -d "" rime_icon; do
+          status_dir="$(${pkgs.coreutils}/bin/dirname "$rime_icon")"
+          if [ -f "$status_dir/input-keyboard.svg" ]; then
+            install -m 0644 "$status_dir/input-keyboard.svg" "$rime_icon"
+          fi
+        done
 
     # Flatpak filesystem and environment overrides are declared in modules/flatpak.nix.
   '';
