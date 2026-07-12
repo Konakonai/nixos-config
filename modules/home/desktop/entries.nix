@@ -1,10 +1,10 @@
 { pkgs, lib, ... }:
 
 let
-  ccSwitch = pkgs.callPackage ../../pkgs/cc-switch-cli/default.nix {};
-  antigravity = import ../../pkgs/antigravity.nix { inherit pkgs lib; };
+  ccSwitch = pkgs.callPackage ../../../pkgs/cc-switch-cli/default.nix {};
+  antigravity = import ../../../pkgs/antigravity.nix { inherit pkgs lib; };
   dolphin = lib.getExe pkgs.kdePackages.dolphin;
-  mindustry = import ../../pkgs/mindustry.nix { inherit pkgs lib; };
+  mindustry = import ../../../pkgs/mindustry.nix { inherit pkgs lib; };
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"

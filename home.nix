@@ -13,6 +13,7 @@
     ./modules/home/config-tools.nix
     ./modules/home/codex.nix
     ./modules/home/dev.nix
+    ./modules/home/desktop
     ./modules/home/flatpak.nix
     ./modules/home/gaming.nix
     ./modules/home/kitty.nix
@@ -23,7 +24,6 @@
 
     ./modules/niri.nix
     ./modules/theme.nix
-    ./modules/desktop.nix
   ];
 
   home = {
