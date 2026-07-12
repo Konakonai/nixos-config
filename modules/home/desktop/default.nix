@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ./entries.nix
     ./dolphin.nix
     ./font-aliases.nix
     ./kdeconnect.nix

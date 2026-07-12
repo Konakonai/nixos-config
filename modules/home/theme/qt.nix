@@ -42,6 +42,16 @@ in
 
   xdg.configFile."qt6ct/qt6ct.conf".text = qtctConfig "qt6ct";
 
+  xdg.desktopEntries.qt6ct = {
+    name = "Qt6 Settings";
+    exec = lib.getExe pkgs.qt6Packages.qt6ct;
+    icon = "preferences-desktop-theme";
+    type = "Application";
+    categories = [ "Settings" "DesktopSettings" "Qt" ];
+    terminal = false;
+    noDisplay = true;
+  };
+
   home.activation.syncKdeIconTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     kdeglobals=${lib.escapeShellArg "${config.xdg.configHome}/kdeglobals"}
     ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg config.xdg.configHome}

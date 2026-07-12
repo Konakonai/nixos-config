@@ -121,4 +121,14 @@ in
   };
 
   xdg.configFile."yazi/theme.toml".force = true;
+
+  xdg.desktopEntries.yazi = {
+    name = "Yazi";
+    genericName = "File Manager";
+    exec = "${pkgs.lib.getExe pkgs.kitty} -e ${pkgs.lib.getExe pkgs.yazi} %u";
+    icon = "yazi";
+    terminal = false;
+    categories = [ "Utility" "FileTools" "System" "FileManager" ];
+    mimeType = [ "inode/directory" ];
+  };
 }
