@@ -4,7 +4,7 @@
 
 ## 实施状态
 
-截至 2026-07-12，路线图阶段 1–4 已完成：
+截至 2026-07-12，路线图阶段 1–5 已完成：
 
 - Hermes 及其本机数据已移除；
 - Noctalia 与 Zed 已改为应用拥有的可写配置，并通过二次部署验证；
@@ -13,9 +13,13 @@
 - NixOS 与 Home Manager 使用显式薄聚合器；
 - `lilyaGlass` 只在 flake 入口构造一次，并统一通过模块参数传递；
 - OpenList daemon 与 WebDAV mount 已分别归入 system/home services；
-- 应用专属 Desktop Entry 已开始跟随应用模块。
+- 应用专属 Desktop Entry 已跟随对应应用模块；
+- 本地包统一由 `pkgs/default.nix` 构造，并通过 `pkgs.lilya` 提供给模块；
+- 普通 system services 与 Home 应用组已按职责拆分；
+- LocalSend wrapper、GRUB theme 与 Plymouth theme 的 packaging 已移入 `pkgs/`；
+- 旧的兜底 `apps.nix`、通用 Desktop Entry 模块、空目录与 Hermes 遗留 Electron 包已清理。
 
-阶段 4 的每个纯路径迁移均通过完整 toplevel 构建；最终包选择与闭包内容未发生变化。下一步进入阶段 5：统一本地 package set，继续拆分普通服务，并收紧 `apps.nix` 与通用 Desktop Entry 模块的职责。
+阶段 4 的每个纯路径迁移，以及阶段 5 的 package/service/application 收敛，均通过完整 toplevel 构建与闭包差异审查。下一步是阶段 6 的高影响模块设计；在获得明确确认前，不改变 boot、display、network 或 power 行为。
 
 ## 结论
 

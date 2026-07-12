@@ -11,7 +11,6 @@ in
   };
   cc-switch-cli = pkgs.callPackage ./cc-switch-cli/default.nix { };
   codex = pkgs.callPackage ./codex.nix { };
-  electron-43-bin = pkgs.callPackage ./electron-43-bin.nix { };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
   localsend-no-csd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";
@@ -28,6 +27,8 @@ in
   };
   mindustry = pkgs.callPackage ./mindustry.nix { };
   splayer = pkgs.callPackage ./splayer.nix { };
+  touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
+  touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
 
   mcp-server-brave-search = args:
     pkgs.callPackage ./mcp-server-brave-search.nix args;

@@ -27,7 +27,8 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 - `modules/shared/`: values shared by NixOS and Home Manager, currently the glass design tokens.
 - `modules/`: contains only the `system`, `home`, and `shared` layers.
 - `hosts/lilya-thinkbook/`: machine-specific display, GPU, power, user path, and service state locations.
-- `pkgs/`: small local package definitions; binary sources are fetched with pinned hashes.
+- `pkgs/default.nix`: the single local package-set entry point consumed through `pkgs.lilya`.
+- `pkgs/`: small local package definitions and wrappers; binary sources are fetched with pinned hashes.
 
 Local source archives under `sources/` are intentionally ignored and are not part of the repository.
 
