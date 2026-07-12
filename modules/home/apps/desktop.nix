@@ -1,7 +1,7 @@
 { lib, pkgs, ... }:
 
 let
-  inherit (pkgs.lilya) antigravity cc-switch-cli splayer;
+  inherit (pkgs.lilya) antigravity cc-switch-cli localsend-no-csd splayer;
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
@@ -41,19 +41,6 @@ let
     "image/x-xbitmap"
     "image/x-xpixmap"
   ];
-  localsendNoCsd = pkgs.symlinkJoin {
-    name = "${pkgs.localsend.name}-no-csd";
-    paths = [ pkgs.localsend ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-    # niri does not provide server-side decorations, and LocalSend's Flutter
-    # runner otherwise adds a redundant GTK header bar on every Wayland session.
-    postBuild = ''
-      rm "$out/bin/localsend_app"
-      makeWrapper ${lib.getExe pkgs.localsend} "$out/bin/localsend_app" \
-        --set GTK_CSD 0
-    '';
-    meta = pkgs.localsend.meta;
-  };
 in
 {
   home.packages = with pkgs; [
@@ -62,7 +49,7 @@ in
     foliate
     gnome-font-viewer
     hyprpicker
-    localsendNoCsd
+    localsend-no-csd
     loupe
     mission-center
     nemo-with-extensions

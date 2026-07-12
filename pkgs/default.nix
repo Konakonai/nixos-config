@@ -13,6 +13,19 @@ in
   codex = pkgs.callPackage ./codex.nix { };
   electron-43-bin = pkgs.callPackage ./electron-43-bin.nix { };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
+  localsend-no-csd = pkgs.symlinkJoin {
+    name = "${pkgs.localsend.name}-no-csd";
+    paths = [ pkgs.localsend ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    # niri does not provide server-side decorations, and LocalSend's Flutter
+    # runner otherwise adds a redundant GTK header bar on every Wayland session.
+    postBuild = ''
+      rm "$out/bin/localsend_app"
+      makeWrapper ${lib.getExe pkgs.localsend} "$out/bin/localsend_app" \
+        --set GTK_CSD 0
+    '';
+    meta = pkgs.localsend.meta;
+  };
   mindustry = pkgs.callPackage ./mindustry.nix { };
   splayer = pkgs.callPackage ./splayer.nix { };
 
