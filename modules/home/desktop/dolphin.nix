@@ -1,8 +1,11 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, lilyaGlass, pkgs, ... }:
 
 let
   dolphinConfig = "${config.xdg.configHome}/dolphinrc";
   kdeGlobals = "${config.xdg.configHome}/kdeglobals";
+  konsoleConfig = "${config.xdg.configHome}/konsolerc";
+  konsoleProfile = "${config.xdg.dataHome}/konsole/Lilya.profile";
+  konsoleFont = "${lilyaGlass.fonts.mono},${builtins.toString lilyaGlass.fonts.terminalSize},-1,5,50,0,0,0,0,0";
   writeKdeConfig = file: group: key: value: ''
     ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
       --file ${lib.escapeShellArg file} \
@@ -38,6 +41,11 @@ in
 
     ${writeKdeConfig kdeGlobals "General" "TerminalApplication" (lib.getExe pkgs.kitty)}
     ${writeKdeConfig kdeGlobals "General" "TerminalService" ""}
+
+    ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg (builtins.dirOf konsoleProfile)}
+    ${writeKdeConfig konsoleProfile "General" "Name" "Lilya"}
+    ${writeKdeConfig konsoleProfile "Appearance" "Font" konsoleFont}
+    ${writeKdeConfig konsoleConfig "Desktop Entry" "DefaultProfile" "Lilya.profile"}
 
     ${pkgs.kdePackages.kservice}/bin/kbuildsycoca6 --noincremental >/dev/null
   '';
