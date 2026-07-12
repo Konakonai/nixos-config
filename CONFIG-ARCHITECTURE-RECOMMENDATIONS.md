@@ -4,7 +4,7 @@
 
 ## 实施状态
 
-截至 2026-07-12，路线图阶段 1–5 已完成：
+截至 2026-07-12，路线图阶段 1–6 已完成：
 
 - Hermes 及其本机数据已移除；
 - Noctalia 与 Zed 已改为应用拥有的可写配置，并通过二次部署验证；
@@ -17,9 +17,10 @@
 - 本地包统一由 `pkgs/default.nix` 构造，并通过 `pkgs.lilya` 提供给模块；
 - 普通 system services 与 Home 应用组已按职责拆分；
 - LocalSend wrapper、GRUB theme 与 Plymouth theme 的 packaging 已移入 `pkgs/`；
-- 旧的兜底 `apps.nix`、通用 Desktop Entry 模块、空目录与 Hermes 遗留 Electron 包已清理。
+- 旧的兜底 `apps.nix`、通用 Desktop Entry 模块、空目录与 Hermes 遗留 Electron 包已清理；
+- `power.nix` 已按基础服务、电池保养、设备规则和 battery-saver specialisation 拆分。
 
-阶段 4 的每个纯路径迁移，以及阶段 5 的 package/service/application 收敛，均通过完整 toplevel 构建与闭包差异审查。下一步是阶段 6 的高影响模块设计；在获得明确确认前，不改变 boot、display、network 或 power 行为。
+阶段 4–6 的路径迁移与 package/service/application 收敛均通过完整 toplevel 构建、生成 unit 对比与闭包差异审查；boot、display、network 和 power 的实际行为未改变。
 
 ## 结论
 

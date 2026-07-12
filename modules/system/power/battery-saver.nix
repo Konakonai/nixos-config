@@ -1,9 +1,6 @@
-{ config, hostProfile, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
-  power = hostProfile.power or { };
-  batteryConservationPath = power.batteryConservationPath or null;
-  keepAwakeUsbDevices = power.keepAwakeUsbDevices or [ ];
   nvidiaKernelModules = [
     "nouveau"
     "nvidia"
@@ -12,116 +9,6 @@ let
     "nvidia_uvm"
     "nvidiafb"
   ];
-  chargeLimit = pkgs.writeShellScriptBin "charge-limit" ''
-    set -eu
-
-    LIMIT_PATH="${batteryConservationPath}"
-
-    if [ "$#" -ne 0 ]; then
-      echo "usage: charge-limit" >&2
-      exit 1
-    fi
-
-    if [ ! -e "$LIMIT_PATH" ]; then
-      echo "charge limit control not found: $LIMIT_PATH" >&2
-      exit 1
-    fi
-
-    if [ ! -w "$LIMIT_PATH" ]; then
-      echo "charge limit control is not writable: $LIMIT_PATH" >&2
-      exit 1
-    fi
-
-    notify() {
-      ${pkgs.libnotify}/bin/notify-send \
-        --app-name=charge-limit \
-        "Charge limit" \
-        "Now charging up to $1" >/dev/null 2>&1 || true
-    }
-
-    case "$(${pkgs.coreutils}/bin/cat "$LIMIT_PATH")" in
-      1)
-        echo 0 > "$LIMIT_PATH"
-        echo "100%"
-        notify "100%"
-        ;;
-      0)
-        echo 1 > "$LIMIT_PATH"
-        echo "80%"
-        notify "80%"
-        ;;
-      *)
-        echo "cannot toggle unknown charge limit state" >&2
-        exit 1
-        ;;
-    esac
-  '';
-  thermalProfile = pkgs.writeShellScriptBin "thermal-profile" ''
-    set -eu
-
-    powerprofilesctl="${pkgs.power-profiles-daemon}/bin/powerprofilesctl"
-
-    notify() {
-      ${pkgs.libnotify}/bin/notify-send \
-        --app-name=thermal-profile \
-        "Thermal profile" \
-        "$1" >/dev/null 2>&1 || true
-    }
-
-    current_profile() {
-      "$powerprofilesctl" get 2>/dev/null || echo balanced
-    }
-
-    set_profile() {
-      profile="$1"
-      case "$profile" in
-        balanced)
-          label="Balanced"
-          ;;
-        performance)
-          label="Performance"
-          ;;
-        power-saver)
-          label="Power saver"
-          ;;
-        *)
-          echo "unknown thermal profile: $profile" >&2
-          exit 2
-          ;;
-      esac
-
-      "$powerprofilesctl" set "$profile"
-      echo "$profile"
-      notify "$label"
-    }
-
-    case "''${1:-toggle}" in
-      toggle)
-        case "$(current_profile)" in
-          performance)
-            set_profile balanced
-            ;;
-          *)
-            set_profile performance
-            ;;
-        esac
-        ;;
-      balanced|performance|power-saver)
-        set_profile "$1"
-        ;;
-      status)
-        current_profile
-        if [ -r /sys/firmware/acpi/platform_profile ]; then
-          printf 'platform_profile='
-          cat /sys/firmware/acpi/platform_profile
-        fi
-        ;;
-      *)
-        echo "usage: thermal-profile [toggle|balanced|performance|power-saver|status]" >&2
-        exit 2
-        ;;
-    esac
-  '';
   batterySaver = pkgs.writeShellScriptBin "battery-saver" ''
     set -eu
 
@@ -367,61 +254,6 @@ let
   '';
 in
 {
-  hardware.bluetooth = {
-    enable = true;
-    powerOnBoot = true;
-  };
-
-  services.upower.enable = true;
-  services.power-profiles-daemon.enable = true;
-  services.thermald.enable = true;
-
-  services.logind.settings.Login = {
-    # The panel already powers off when the lid is physically closed; keep the
-    # system awake to avoid unreliable s2idle resume on this machine.
-    HandleLidSwitch = "ignore";
-    HandleLidSwitchDocked = "ignore";
-    HandleLidSwitchExternalPower = "ignore";
-  };
-
-  powerManagement.powertop.enable = false;
-
-  environment.systemPackages =
-    [ thermalProfile ]
-    ++ lib.optional (batteryConservationPath != null) chargeLimit;
-
-  services.udev.extraRules = lib.concatStringsSep "\n" (
-    # Keep latency-sensitive HID devices awake. PowerTOP auto-tuning was putting
-    # these behind USB autosuspend, which matched the observed mouse/keyboard stalls.
-    map (device:
-      ''ACTION=="add|change", SUBSYSTEM=="usb", ATTR{idVendor}=="${device.vendor}", ATTR{idProduct}=="${device.product}", TEST=="power/control", ATTR{power/control}="on"''
-    ) keepAwakeUsbDevices
-    ++ [
-      # The Bluetooth Xbox controller can appear as plain input on this machine,
-      # which makes Proton/Wine miss it even though /dev/input/js0 exists.
-      ''ACTION=="add|change", SUBSYSTEM=="input", ATTRS{name}=="Xbox Wireless Controller", ENV{ID_INPUT_JOYSTICK}="1", ENV{ID_INPUT_GAMEPAD}="1", TAG+="uaccess"''
-    ]
-  );
-
-  systemd.services = lib.optionalAttrs (batteryConservationPath != null) {
-    battery-conservation-permissions = {
-      description = "Set permissions for battery conservation mode";
-      after = [ "systemd-modules-load.service" ];
-      wantedBy = [ "multi-user.target" ];
-      script = ''
-        for i in $(seq 1 15); do
-          if [ -f ${batteryConservationPath} ]; then
-            chown ${hostProfile.user.userName}:${hostProfile.user.group} ${batteryConservationPath}
-            chmod 664 ${batteryConservationPath}
-            exit 0
-          fi
-          sleep 1
-        done
-      '';
-      serviceConfig.Type = "oneshot";
-    };
-  };
-
   specialisation.battery-saver.configuration = {
     system.nixos.tags = [ "battery-saver" ];
     system.nixos.label = "battery-saver";

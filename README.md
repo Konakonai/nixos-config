@@ -21,7 +21,7 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 - `modules/home/services/`: user-session services and mounts, including OpenList WebDAV.
 - `modules/home/desktop/`: desktop entries, MIME defaults, Zed, media playback defaults, and font aliases.
 - `modules/system/display/`: niri login session, greetd/gtkgreet, console, portals, and desktop service glue.
-- `modules/system/power/`: base power services, CPU limits, NVIDIA dGPU switching, AC udev events, and permission helpers.
+- `modules/system/power/`: base power services, battery conservation, device udev rules, and the battery-saver specialisation.
 - `modules/home/theme/`: GTK, Qt, cursor, Xresources, dconf, Flatpak theme integration, and custom Fcitx/Rime icon wiring.
 - `modules/home/niri/`: niri core settings, visual effects, and focused keybinding groups.
 - `modules/shared/`: values shared by NixOS and Home Manager, currently the glass design tokens.

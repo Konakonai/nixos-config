@@ -13,7 +13,7 @@
     ./networking.nix
     ./nix.nix
     ./packages.nix
-    ./power.nix
+    ./power
     ./programs.nix
     ./secrets.nix
     ./services
