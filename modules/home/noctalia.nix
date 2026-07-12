@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   lilyaGlass = import ../glass-settings.nix;
@@ -165,6 +165,101 @@ let
       "surface": "{{colors.terminal_bright_black.default.hex}}"
     }
   '';
+  tomlFormat = pkgs.formats.toml { };
+  noctaliaSettings = {
+    shell = {
+      corner_radius_scale = 1.65;
+      font_family = lilyaGlass.fonts.sans;
+
+      animation = {
+        enabled = true;
+        speed = 0.92;
+      };
+
+      shadow = {
+        direction = "down";
+        alpha = 0.18;
+      };
+
+      panel = {
+        transparency_mode = lilyaGlass.noctalia.panelTransparencyMode;
+        borders = false;
+        shadow = false;
+        launcher_placement = "floating";
+        launcher_position = "center";
+        clipboard_placement = "floating";
+        clipboard_position = "center";
+        control_center_placement = "floating";
+        wallpaper_placement = "floating";
+        session_placement = "floating";
+      };
+    };
+
+    bar.main = {
+      position = "top";
+      thickness = 38;
+      background_opacity = lilyaGlass.opacity.noctaliaPanels;
+      radius = lilyaGlass.radius.panels;
+      margin_ends = 180;
+      margin_edge = 10;
+      padding = 0;
+      widget_spacing = 10;
+      scale = 1.0;
+      shadow = false;
+      auto_hide = false;
+      reserve_space = true;
+      capsule = false;
+      capsule_fill = "surface_variant";
+      capsule_radius = lilyaGlass.radius.capsules;
+      capsule_opacity = lilyaGlass.opacity.noctaliaCapsules;
+      capsule_border = "outline";
+      start = [ "launcher" "network" "bluetooth" ];
+      center = [ "workspaces" ];
+      end = [ "tray" "notifications" "clipboard" "volume" "brightness" "battery" "clock" "control-center" "session" ];
+    };
+
+    notification = {
+      background_opacity = lilyaGlass.opacity.noctaliaPopups;
+      offset_x = 18;
+      offset_y = 12;
+    };
+
+    osd = {
+      background_opacity = lilyaGlass.opacity.noctaliaPopups;
+      offset_x = 18;
+      offset_y = 12;
+    };
+
+    theme.templates.user.darkly-qt = {
+      enabled = true;
+      input_path = "${config.xdg.configHome}/noctalia/templates/darkly-qt.conf";
+      output_path = [
+        "$XDG_CONFIG_HOME/qt5ct/colors/darkly-noctalia.conf"
+        "$XDG_CONFIG_HOME/qt6ct/colors/darkly-noctalia.conf"
+      ];
+      post_hook = "${config.xdg.configHome}/noctalia/templates/darkly-kde-colors";
+      index = 1000;
+    };
+
+    theme.templates.user.heroic-noctalia = {
+      enabled = true;
+      input_path = "${config.xdg.configHome}/noctalia/templates/heroic.css";
+      output_path = [
+        "$XDG_CONFIG_HOME/heroic/themes/noctalia/noctalia.css"
+      ];
+      index = 1001;
+    };
+
+    theme.templates.user.cc-switch-tui = {
+      enabled = true;
+      input_path = "${config.xdg.configHome}/noctalia/templates/cc-switch-tui.json";
+      output_path = [
+        "$XDG_CONFIG_HOME/cc-switch/theme/noctalia.json"
+      ];
+      index = 1002;
+    };
+  };
+  noctaliaSeed = tomlFormat.generate "noctalia-config.toml" noctaliaSettings;
 in
 {
   xdg.configFile."heroic/themes/noctalia/noctalia.json".text = builtins.toJSON {
@@ -183,101 +278,30 @@ in
     categories = [ "Settings" "DesktopSettings" ];
   };
 
-  programs.noctalia = {
-    enable = true;
-
-    settings = {
-      shell = {
-        corner_radius_scale = 1.65;
-        font_family = lilyaGlass.fonts.sans;
-
-        animation = {
-          enabled = true;
-          speed = 0.92;
-        };
-
-        shadow = {
-          direction = "down";
-          alpha = 0.18;
-        };
-
-        panel = {
-          transparency_mode = lilyaGlass.noctalia.panelTransparencyMode;
-          borders = false;
-          shadow = false;
-          launcher_placement = "floating";
-          launcher_position = "center";
-          clipboard_placement = "floating";
-          clipboard_position = "center";
-          control_center_placement = "floating";
-          wallpaper_placement = "floating";
-          session_placement = "floating";
-        };
-      };
-
-      bar.main = {
-        position = "top";
-        thickness = 38;
-        background_opacity = lilyaGlass.opacity.noctaliaPanels;
-        radius = lilyaGlass.radius.panels;
-        margin_ends = 180;
-        margin_edge = 10;
-        padding = 0;
-        widget_spacing = 10;
-        scale = 1.0;
-        shadow = false;
-        auto_hide = false;
-        reserve_space = true;
-        capsule = false;
-        capsule_fill = "surface_variant";
-        capsule_radius = lilyaGlass.radius.capsules;
-        capsule_opacity = lilyaGlass.opacity.noctaliaCapsules;
-        capsule_border = "outline";
-        start = [ "launcher" "network" "bluetooth" ];
-        center = [ "workspaces" ];
-        end = [ "tray" "notifications" "clipboard" "volume" "brightness" "battery" "clock" "control-center" "session" ];
-      };
-
-      notification = {
-        background_opacity = lilyaGlass.opacity.noctaliaPopups;
-        offset_x = 18;
-        offset_y = 12;
-      };
-
-      osd = {
-        background_opacity = lilyaGlass.opacity.noctaliaPopups;
-        offset_x = 18;
-        offset_y = 12;
-      };
-
-      theme.templates.user.darkly-qt = {
-        enabled = true;
-        input_path = "${darklyQtTemplate}";
-        output_path = [
-          "$XDG_CONFIG_HOME/qt5ct/colors/darkly-noctalia.conf"
-          "$XDG_CONFIG_HOME/qt6ct/colors/darkly-noctalia.conf"
-        ];
-        post_hook = "${darklyKdeHook}";
-        index = 1000;
-      };
-
-      theme.templates.user.heroic-noctalia = {
-        enabled = true;
-        input_path = "${heroicNoctaliaTemplate}";
-        output_path = [
-          "$XDG_CONFIG_HOME/heroic/themes/noctalia/noctalia.css"
-        ];
-        index = 1001;
-      };
-
-      theme.templates.user.cc-switch-tui = {
-        enabled = true;
-        input_path = "${ccSwitchTuiThemeTemplate}";
-        output_path = [
-          "$XDG_CONFIG_HOME/cc-switch/theme/noctalia.json"
-        ];
-        index = 1002;
-      };
+  xdg.configFile = {
+    "noctalia/templates/darkly-qt.conf".source = darklyQtTemplate;
+    "noctalia/templates/darkly-kde-colors" = {
+      source = darklyKdeHook;
+      executable = true;
     };
+    "noctalia/templates/heroic.css".source = heroicNoctaliaTemplate;
+    "noctalia/templates/cc-switch-tui.json".source = ccSwitchTuiThemeTemplate;
   };
+
+  home.activation.seedNoctaliaConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    config_file=${lib.escapeShellArg "${config.xdg.configHome}/noctalia/config.toml"}
+
+    if [ -L "$config_file" ]; then
+      target="$(${pkgs.coreutils}/bin/readlink -f "$config_file" || true)"
+      case "$target" in
+        /nix/store/*) ${pkgs.coreutils}/bin/rm -f "$config_file" ;;
+      esac
+    fi
+
+    if [ ! -e "$config_file" ]; then
+      ${pkgs.coreutils}/bin/install -Dm600 ${noctaliaSeed} "$config_file"
+    fi
+  '';
+
+  programs.noctalia.enable = true;
 }
