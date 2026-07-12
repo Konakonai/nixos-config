@@ -1,8 +1,7 @@
-{ pkgs, lib, inputs, ... }:
+{ pkgs, inputs, ... }:
 
 let
   system = pkgs.stdenv.hostPlatform.system;
-  hermesDesktop = import ../../pkgs/hermes-desktop.nix { inherit pkgs lib inputs; };
   unstable = import inputs.nixpkgs-unstable {
     inherit system;
     config.allowUnfree = true;
@@ -37,8 +36,6 @@ in
     (callPackage ../../pkgs/cc-switch-cli/default.nix {})
     (callPackage ../../pkgs/codex.nix {})
 
-    inputs.hermes-agent.packages.${system}.default
-    hermesDesktop
     unstable.officecli
 
     qadwaitadecorations-qt6

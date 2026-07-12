@@ -9,6 +9,5 @@
     ./theme/gtk.nix
     ./theme/qt.nix
     ./theme/xresources.nix
-    ./theme/hermes-skin.nix
   ];
 }

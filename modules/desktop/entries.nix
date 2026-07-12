@@ -1,8 +1,6 @@
-{ pkgs, lib, inputs, ... }:
+{ pkgs, lib, ... }:
 
 let
-  hermesDesktop = import ../../pkgs/hermes-desktop.nix { inherit pkgs lib inputs; };
-  hermesIcon = "${hermesDesktop}/share/hermes-desktop/dist/hermes.png";
   ccSwitch = pkgs.callPackage ../../pkgs/cc-switch-cli/default.nix {};
   antigravity = import ../../pkgs/antigravity.nix { inherit pkgs lib; };
   mindustry = import ../../pkgs/mindustry.nix { inherit pkgs lib; };
@@ -131,14 +129,4 @@ in
     settings.DBusActivatable = "false";
   };
 
-  xdg.desktopEntries."hermes-desktop" = {
-    name = "Hermes";
-    genericName = "AI Agent";
-    exec = "${hermesDesktop}/bin/hermes-desktop";
-    icon = hermesIcon;
-    type = "Application";
-    terminal = false;
-    categories = [ "Utility" "Development" ];
-    startupNotify = true;
-  };
 }
