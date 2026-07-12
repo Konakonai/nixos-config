@@ -29,14 +29,16 @@ in
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
 
     # Noctalia resolves the first scalable SVG before considering fixed-size
-    # status icons. Mirror every input-keyboard candidate so fcitx-rime follows
-    # exactly the same theme lookup path instead of falling back to status/24.
+    # status icons. Install Colloid's native Pinyin icon beside every
+    # input-keyboard candidate so both states follow the same lookup path.
     ${pkgs.findutils}/bin/find \
       "$HOME/.local/share/icons/${iconThemeName}" \
       -type f -name input-keyboard.svg -print0 \
       | while IFS= read -r -d "" keyboard_icon; do
           icon_dir="$(${pkgs.coreutils}/bin/dirname "$keyboard_icon")"
-          install -m 0644 "$keyboard_icon" "$icon_dir/fcitx-rime.svg"
+          install -m 0644 \
+            "${iconThemePackage}/share/icons/${iconThemeName}/status/22/fcitx-pinyin.svg" \
+            "$icon_dir/fcitx-rime.svg"
         done
 
     # Flatpak filesystem and environment overrides are declared in modules/flatpak.nix.
