@@ -30,8 +30,6 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 - `pkgs/default.nix`: the single local package-set entry point consumed through `pkgs.lilya`.
 - `pkgs/`: small local package definitions and wrappers; binary sources are fetched with pinned hashes.
 
-Local source archives under `sources/` are intentionally ignored and are not part of the repository.
-
 ## Reproducing this machine
 
 `main` is the exact ThinkBook profile. It expects the host facts declared in

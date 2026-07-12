@@ -1,9 +1,6 @@
 result
 result-*
 
-# Local source caches and upstream tarballs used while packaging.
-sources/
-
 # Local/editor noise.
 .direnv/
 .env
