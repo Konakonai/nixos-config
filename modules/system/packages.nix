@@ -41,6 +41,7 @@ in
     qadwaitadecorations-qt6
     kdePackages.dolphin
     kdePackages.kio-fuse
+    kdePackages.kservice
     qt6Packages.qt6ct
     opencode
   ];
