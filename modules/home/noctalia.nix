@@ -1,6 +1,10 @@
-{ config, lib, lilyaGlass, pkgs, ... }:
+{ config, inputs, lib, lilyaGlass, pkgs, ... }:
 
 let
+  noctaliaPackage = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (oldAttrs: {
+    # Remove once Noctalia supports per-item tray size or scale overrides.
+    patches = (oldAttrs.patches or [ ]) ++ [ ../../patches/noctalia-enlarge-fcitx-tray-icon.patch ];
+  });
   darklyQtTemplate = pkgs.writeText "noctalia-darkly-qtct.conf" ''
     [ColorScheme]
     # windowText,button,light,midlight,dark,mid,text,brightText,buttonText,base,window,shadow,highlight,highlightedText,link,linkVisited,alternateBase,NO_IDEA,toolTipBase,toolTipText,placeholderText,accent
@@ -310,5 +314,8 @@ in
     fi
   '';
 
-  programs.noctalia.enable = true;
+  programs.noctalia = {
+    enable = true;
+    package = noctaliaPackage;
+  };
 }
