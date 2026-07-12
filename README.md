@@ -24,7 +24,7 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 - `modules/home/theme/`: GTK, Qt, cursor, Xresources, dconf, Flatpak theme integration, and custom Fcitx/Rime icon wiring.
 - `modules/home/niri/`: niri core settings, visual effects, and focused keybinding groups.
 - `modules/shared/`: values shared by NixOS and Home Manager, currently the glass design tokens.
-- `modules/`: thin desktop, niri, and theme aggregators awaiting later consolidation.
+- `modules/`: contains only the `system`, `home`, and `shared` layers.
 - `hosts/lilya-thinkbook/`: machine-specific display, GPU, power, user path, and service state locations.
 - `pkgs/`: small local package definitions; binary sources are fetched with pinned hashes.
 

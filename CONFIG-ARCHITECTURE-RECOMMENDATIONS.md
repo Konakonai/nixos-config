@@ -2,6 +2,21 @@
 
 调研日期：2026-07-12
 
+## 实施状态
+
+截至 2026-07-12，路线图阶段 1–4 已完成：
+
+- Hermes 及其本机数据已移除；
+- Noctalia 与 Zed 已改为应用拥有的可写配置，并通过二次部署验证；
+- `config-drift`、`config-dump` 与 `config-repair` 已部署并完成运行态验收；
+- 模块已收敛为 `modules/system/`、`modules/home/`、`modules/shared/`；
+- NixOS 与 Home Manager 使用显式薄聚合器；
+- `lilyaGlass` 只在 flake 入口构造一次，并统一通过模块参数传递；
+- OpenList daemon 与 WebDAV mount 已分别归入 system/home services；
+- 应用专属 Desktop Entry 已开始跟随应用模块。
+
+阶段 4 的每个纯路径迁移均通过完整 toplevel 构建；最终包选择与闭包内容未发生变化。下一步进入阶段 5：统一本地 package set，继续拆分普通服务，并收紧 `apps.nix` 与通用 Desktop Entry 模块的职责。
+
 ## 结论
 
 当前仓库不需要迁移到 dendritic、flake-parts 或“所有模块全局导入”的大型框架。最适合这台单主机配置的方向是：
