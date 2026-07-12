@@ -12,6 +12,7 @@ in
     defaultApplications = {
       "x-scheme-handler/antigravity" = "antigravity.desktop";
       "x-scheme-handler/ccswitch" = "cc-switch-handler.desktop";
+      "x-scheme-handler/kdeconnect" = "kdeconnect-browser.desktop";
       "x-scheme-handler/http" = "zen-beta.desktop";
       "x-scheme-handler/https" = "zen-beta.desktop";
       "x-scheme-handler/chrome" = "zen-beta.desktop";

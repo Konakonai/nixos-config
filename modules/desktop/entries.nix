@@ -3,6 +3,7 @@
 let
   ccSwitch = pkgs.callPackage ../../pkgs/cc-switch-cli/default.nix {};
   antigravity = import ../../pkgs/antigravity.nix { inherit pkgs lib; };
+  dolphin = lib.getExe pkgs.kdePackages.dolphin;
   mindustry = import ../../pkgs/mindustry.nix { inherit pkgs lib; };
   fontMimeTypes = [
     "application/vnd.ms-opentype"
@@ -93,6 +94,16 @@ in
     terminal = false;
     categories = [ "Utility" "FileTools" "System" "FileManager" ];
     mimeType = [ "inode/directory" ];
+  };
+
+  xdg.desktopEntries."kdeconnect-browser" = {
+    name = "Browse KDE Connect Device";
+    exec = "${dolphin} %U";
+    icon = "kdeconnect";
+    type = "Application";
+    terminal = false;
+    noDisplay = true;
+    mimeType = [ "x-scheme-handler/kdeconnect" ];
   };
 
   xdg.desktopEntries."qt6ct" = {

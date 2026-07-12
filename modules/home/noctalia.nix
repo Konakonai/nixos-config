@@ -16,6 +16,12 @@ let
     data_home="''${XDG_DATA_HOME:-$HOME/.local/share}"
     qt_scheme="$config_home/qt6ct/colors/darkly-noctalia.conf"
 
+    ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
+      --file "$config_home/kdeglobals" \
+      --group Icons \
+      --key Theme \
+      ${lib.escapeShellArg lilyaGlass.iconThemeName}
+
     role_color() {
       local role="$1"
       ${pkgs.gawk}/bin/awk -F= -v role="$role" '
