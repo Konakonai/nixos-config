@@ -11,6 +11,7 @@
 
     ./modules/home/apps.nix
     ./modules/home/cli-tools.nix
+    ./modules/home/config-tools.nix
     ./modules/home/dev.nix
     ./modules/home/gaming.nix
     ./modules/home/noctalia.nix

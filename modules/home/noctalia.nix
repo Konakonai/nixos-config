@@ -288,6 +288,8 @@ in
     "noctalia/templates/cc-switch-tui.json".source = ccSwitchTuiThemeTemplate;
   };
 
+  xdg.dataFile."nixos-config/defaults/noctalia-config.toml".source = noctaliaSeed;
+
   home.activation.seedNoctaliaConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     config_file=${lib.escapeShellArg "${config.xdg.configHome}/noctalia/config.toml"}
 

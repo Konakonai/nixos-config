@@ -58,6 +58,8 @@ in
 
   programs.zed-editor.enable = true;
 
+  xdg.dataFile."nixos-config/defaults/zed-settings.json".source = zedSeed;
+
   home.activation.seedZedSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     settings_file=${lib.escapeShellArg "${config.xdg.configHome}/zed/settings.json"}
 
