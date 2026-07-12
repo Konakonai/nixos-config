@@ -6,7 +6,7 @@
     inputs.noctalia.homeModules.default
     inputs.nix-flatpak.homeManagerModules.nix-flatpak
 
-    ./apps.nix
+    ./apps
     ./cli-tools.nix
     ./codex.nix
     ./config-tools.nix

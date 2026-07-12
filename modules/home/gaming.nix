@@ -55,12 +55,32 @@ let
 in
 {
   home.packages = with pkgs; [
+    cabextract
+    crosspipe
     evtest
+    gamescope
     gameStatus
+    heroic
     linuxConsoleTools
+    mangohud
+    lilya.mindustry
+    protonup-qt
     protontricks
     vulkan-tools
+    wineWow64Packages.stableFull
+    winetricks
   ];
+
+  xdg.desktopEntries.mindustry = {
+    name = "Mindustry";
+    genericName = "Tower Defense Game";
+    exec = "${pkgs.lib.getExe pkgs.lilya.mindustry} %U";
+    icon = "mindustry";
+    type = "Application";
+    terminal = false;
+    categories = [ "Game" "StrategyGame" ];
+    startupNotify = true;
+  };
 
   xdg.configFile."MangoHud/MangoHud.conf".text = ''
     legacy_layout=false
