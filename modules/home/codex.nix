@@ -2,7 +2,7 @@
 
 let
   system = pkgs.stdenv.hostPlatform.system;
-  codexCli = pkgs.callPackage ../pkgs/codex.nix { };
+  codexCli = pkgs.callPackage ../../pkgs/codex.nix { };
   configPath = "${config.home.homeDirectory}/nixos-config";
 
   codexDesktopFlake = (import "${inputs.codex-desktop-linux}/flake.nix").outputs {

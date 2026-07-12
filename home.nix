@@ -7,24 +7,24 @@
     inputs.nix-flatpak.homeManagerModules.nix-flatpak
 
     ./modules/glass.nix
-    ./modules/fcitx5.nix
+    ./modules/home/fcitx5.nix
 
     ./modules/home/apps.nix
     ./modules/home/cli-tools.nix
     ./modules/home/config-tools.nix
+    ./modules/home/codex.nix
     ./modules/home/dev.nix
+    ./modules/home/flatpak.nix
     ./modules/home/gaming.nix
+    ./modules/home/kitty.nix
     ./modules/home/noctalia.nix
+    ./modules/home/shell.nix
     ./modules/home/yazi.nix
     ./modules/home/zen.nix
 
     ./modules/niri.nix
-    ./modules/kitty.nix
-    ./modules/shell.nix
     ./modules/theme.nix
     ./modules/desktop.nix
-    ./modules/codex.nix
-    ./modules/flatpak.nix
   ];
 
   home = {

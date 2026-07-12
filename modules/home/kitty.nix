@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 
 let
-  lilyaGlass = import ./glass-settings.nix;
+  lilyaGlass = import ../glass-settings.nix;
 in
 {
   # Kitty 终端配置
