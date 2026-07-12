@@ -40,6 +40,9 @@ in
 
     qadwaitadecorations-qt6
     kdePackages.dolphin
+    # Dolphin's embedded terminal panel is a KonsolePart plugin. External
+    # "Open Terminal" actions still use Kitty via kdeglobals.
+    kdePackages.konsole
     kdePackages.kio-fuse
     kdePackages.kservice
     qt6Packages.qt6ct
