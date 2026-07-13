@@ -2,20 +2,20 @@
 
 let
   libreofficeWayland = pkgs.symlinkJoin {
-    name = "libreoffice-wayland-${pkgs.libreoffice.version}";
-    paths = [ pkgs.libreoffice ];
+    name = "libreoffice-qt-wayland-${pkgs.libreoffice-qt.version}";
+    paths = [ pkgs.libreoffice-qt ];
     nativeBuildInputs = [ pkgs.makeWrapper ];
 
     postBuild = ''
       for program in libreoffice sbase scalc sdraw simpress smath soffice swriter; do
         rm "$out/bin/$program"
-        makeWrapper "${pkgs.libreoffice}/bin/$program" "$out/bin/$program" \
-          --set GDK_BACKEND wayland \
-          --set SAL_USE_VCLPLUGIN gtk3
+        makeWrapper "${pkgs.libreoffice-qt}/bin/$program" "$out/bin/$program" \
+          --set QT_QPA_PLATFORM wayland \
+          --set SAL_USE_VCLPLUGIN qt6
       done
     '';
 
-    meta = pkgs.libreoffice.meta;
+    meta = pkgs.libreoffice-qt.meta;
   };
 
   seedTabbedMode = app: ''
