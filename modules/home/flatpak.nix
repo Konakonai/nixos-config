@@ -64,7 +64,12 @@ in
       };
 
       "org.onlyoffice.desktopeditors" = {
-        Context.filesystems = themeFilesystems;
+        Context.filesystems = themeFilesystems ++ [
+          # Flatpak otherwise sees the host font files but not the aliases in
+          # ~/.config/fontconfig, which makes Chinese Office fonts fall back
+          # to DejaVu instead of the intended Noto CJK families.
+          "xdg-config/fontconfig:ro"
+        ];
         Environment = themeEnv // fcitxCompatEnv;
       };
     };

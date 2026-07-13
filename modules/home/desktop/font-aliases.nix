@@ -2,14 +2,12 @@
 
 let
   fontMappings = [
-    { from = "微软雅黑"; to = "Noto Sans CJK SC"; }
-    { from = "Microsoft YaHei"; to = "Noto Sans CJK SC"; }
     { from = "黑体"; to = "Noto Sans CJK SC"; }
     { from = "SimHei"; to = "Noto Sans CJK SC"; }
     { from = "华文细黑"; to = "Noto Sans CJK SC"; }
     { from = "STXihei"; to = "Noto Sans CJK SC"; }
-    { from = "Arial"; to = "Noto Sans CJK SC"; }
-    { from = "Calibri"; to = "Noto Sans CJK SC"; }
+    { from = "华文中宋"; to = "Noto Serif CJK SC"; }
+    { from = "STZhongsong"; to = "Noto Serif CJK SC"; }
     { from = "Helvetica"; to = "Noto Sans CJK SC"; }
     { from = "Motiva"; to = "Noto Sans CJK SC"; }
     { from = "Motiva Sans"; to = "Noto Sans CJK SC"; }
@@ -17,15 +15,10 @@ let
     { from = "Motiva Sans Medium"; to = "Noto Sans CJK SC"; }
     { from = "Motiva Sans Bold"; to = "Noto Sans CJK SC"; }
 
-    { from = "宋体"; to = "Noto Serif CJK SC"; }
-    { from = "SimSun"; to = "Noto Serif CJK SC"; }
-    { from = "新宋体"; to = "Noto Serif CJK SC"; }
-    { from = "NSimSun"; to = "Noto Serif CJK SC"; }
     { from = "仿宋"; to = "Noto Serif CJK SC"; }
     { from = "FangSong"; to = "Noto Serif CJK SC"; }
     { from = "楷体"; to = "Noto Serif CJK SC"; }
     { from = "KaiTi"; to = "Noto Serif CJK SC"; }
-    { from = "Times New Roman"; to = "Noto Serif CJK SC"; }
   ];
 
   fontConfigXml = lib.concatStringsSep "\n" (map (m: ''

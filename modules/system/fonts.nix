@@ -16,6 +16,11 @@ in
       noto-fonts-cjk-serif
       noto-fonts-color-emoji
 
+      # Keep Office documents close to their original Word pagination.
+      corefonts
+      vista-fonts
+      vista-fonts-chs
+
       source-han-sans
       source-han-serif
       sarasa-gothic
