@@ -19,6 +19,7 @@
     pigz
     ffmpeg-full
     typst
+    tinymist
 
     wl-clipboard
     cliphist
