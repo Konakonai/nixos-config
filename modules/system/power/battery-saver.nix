@@ -68,16 +68,46 @@ let
       done
     }
 
-    apply_cpu_core_limits() {
-      max_freq=0
-      for cpu_path in $(printf '%s\n' /sys/devices/system/cpu/cpu[0-9]* | sort -V); do
-        [ -d "$cpu_path" ] || continue
-        freq="$(cat "$cpu_path/cpufreq/cpuinfo_max_freq" 2>/dev/null || echo 0)"
+    cpu_is_online() {
+      cpu_path="$1"
+      [ ! -e "$cpu_path/online" ] || [ "$(cat "$cpu_path/online" 2>/dev/null || echo 0)" = 1 ]
+    }
+
+    cpu_classification_freq() {
+      cpu_path="$1"
+
+      # base_frequency remains stable after intel_pstate limits are applied,
+      # unlike cpuinfo_max_freq. The latter is only a compatibility fallback.
+      for name in base_frequency cpuinfo_max_freq; do
+        freq="$(cat "$cpu_path/cpufreq/$name" 2>/dev/null || echo 0)"
         case "$freq" in
-          ""|*[!0-9]*)
+          ""|*[!0-9]*|0)
             continue
             ;;
         esac
+
+        printf '%s\n' "$freq"
+        return 0
+      done
+
+      return 1
+    }
+
+    apply_cpu_core_limits() {
+      # Make this operation idempotent: restore every CPU allowed by the
+      # kernel first, then select the desired P/E-core subset. With nosmt,
+      # writes for disabled sibling threads fail and those CPUs stay excluded.
+      for cpu_path in $(printf '%s\n' /sys/devices/system/cpu/cpu[0-9]* | sort -V); do
+        [ -d "$cpu_path" ] || continue
+        [ -e "$cpu_path/online" ] || continue
+        printf '1\n' > "$cpu_path/online" 2>/dev/null || true
+      done
+
+      max_freq=0
+      for cpu_path in $(printf '%s\n' /sys/devices/system/cpu/cpu[0-9]* | sort -V); do
+        [ -d "$cpu_path" ] || continue
+        cpu_is_online "$cpu_path" || continue
+        freq="$(cpu_classification_freq "$cpu_path" || echo 0)"
 
         if [ "$freq" -gt "$max_freq" ]; then
           max_freq="$freq"
@@ -95,8 +125,9 @@ let
 
       for cpu_path in $(printf '%s\n' /sys/devices/system/cpu/cpu[0-9]* | sort -V); do
         [ -d "$cpu_path" ] || continue
+        cpu_is_online "$cpu_path" || continue
         cpu="''${cpu_path##*/cpu}"
-        freq="$(cat "$cpu_path/cpufreq/cpuinfo_max_freq" 2>/dev/null || echo 0)"
+        freq="$(cpu_classification_freq "$cpu_path" || echo 0)"
 
         case "$cpu:$freq" in
           *[!0-9:]*|:*|*:)
@@ -191,8 +222,8 @@ let
     case "''${1:-apply}" in
       apply)
         apply_platform_profile
-        apply_cpu_limits
         apply_cpu_core_limits
+        apply_cpu_limits
         apply_rapl_limits
         apply_device_savings
         ;;
