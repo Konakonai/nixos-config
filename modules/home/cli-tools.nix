@@ -18,6 +18,7 @@
     _7zz
     pigz
     ffmpeg-full
+    typst
 
     wl-clipboard
     cliphist
