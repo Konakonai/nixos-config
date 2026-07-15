@@ -49,7 +49,6 @@ in
     foliate
     gnome-font-viewer
     hyprpicker
-    keepassxc
     kdePackages.okular
     localsend-no-csd
     loupe
@@ -57,7 +56,6 @@ in
     nemo-with-extensions
     obsidian
     pavucontrol
-    pika-backup
     pwvucontrol
     resources
     splayer
