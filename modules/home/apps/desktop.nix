@@ -49,15 +49,19 @@ in
     foliate
     gnome-font-viewer
     hyprpicker
+    keepassxc
+    kdePackages.okular
     localsend-no-csd
     loupe
     mission-center
     nemo-with-extensions
     obsidian
     pavucontrol
+    pika-backup
     pwvucontrol
     resources
     splayer
+    thunderbird
   ];
 
   xdg.desktopEntries = {

@@ -70,9 +70,6 @@ in
         zed = [
           { run = ''${zed} "$@"''; orphan = true; desc = "Zed Editor"; }
         ];
-        onlyoffice = [
-          { run = ''flatpak run org.onlyoffice.desktopeditors "$@"''; orphan = true; desc = "OnlyOffice"; }
-        ];
         zen = [
           { run = ''zen-beta "$@"''; orphan = true; desc = "Zen Browser"; }
         ];
@@ -85,7 +82,7 @@ in
       };
 
       open.rules = [
-        { url = "*.md"; use = [ "zed" "edit" "system" "onlyoffice" ]; }
+        { url = "*.md"; use = [ "zed" "edit" "system" ]; }
         { url = "*.txt"; use = [ "zed" "edit" "system" ]; }
         { url = "*.json"; use = [ "zed" "edit" "system" ]; }
         { url = "*.toml"; use = [ "zed" "edit" "system" ]; }

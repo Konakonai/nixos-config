@@ -36,7 +36,6 @@ in
 
     packages = [
       "com.qq.QQ"
-      "org.onlyoffice.desktopeditors"
     ];
 
     # Strict declarative Flatpak management: apps not listed here are removed.
@@ -61,16 +60,6 @@ in
           ELECTRON_OZONE_PLATFORM_HINT = "wayland";
           NIXOS_OZONE_WL = "1";
         };
-      };
-
-      "org.onlyoffice.desktopeditors" = {
-        Context.filesystems = themeFilesystems ++ [
-          # Flatpak otherwise sees the host font files but not the aliases in
-          # ~/.config/fontconfig, which makes Chinese Office fonts fall back
-          # to DejaVu instead of the intended Noto CJK families.
-          "xdg-config/fontconfig:ro"
-        ];
-        Environment = themeEnv // fcitxCompatEnv;
       };
     };
   };

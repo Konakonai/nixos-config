@@ -15,5 +15,6 @@ in
 {
   home.packages = [
     (pkgs.lilya.wechat { inherit fcitxCompatEnv appThemeEnv; })
+    pkgs.ayugram-desktop
   ];
 }

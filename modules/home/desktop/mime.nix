@@ -5,6 +5,10 @@ let
   fontViewer = "org.gnome.font-viewer.desktop";
   imageViewer = "org.gnome.Loupe.desktop";
   mediaPlayer = "io.github.celluloid_player.Celluloid.desktop";
+  pdfViewer = "okularApplication_pdf.desktop";
+  presentationEditor = "impress.desktop";
+  spreadsheetEditor = "calc.desktop";
+  wordProcessor = "writer.desktop";
 in
 {
   xdg.mimeApps = {
@@ -23,7 +27,7 @@ in
       "application/xhtml+xml" = "zen-beta.desktop";
       "application/x-extension-xhtml" = "zen-beta.desktop";
       "application/x-extension-xht" = "zen-beta.desktop";
-      "application/pdf" = "zen-beta.desktop";
+      "application/pdf" = pdfViewer;
       "inode/directory" = "nemo.desktop";
       "x-scheme-handler/opds" = ebookReader;
 
@@ -118,37 +122,37 @@ in
       "font/woff" = fontViewer;
       "font/woff2" = fontViewer;
 
-      "application/msword" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.template" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-word.document.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-word.template.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
-      "application/wps-office.doc" = "org.onlyoffice.desktopeditors.desktop";
-      "application/wps-office.docx" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-excel" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.template" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-excel.sheet.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-excel.template.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-excel.addin.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-excel.sheet.binary.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
-      "application/wps-office.xls" = "org.onlyoffice.desktopeditors.desktop";
-      "application/wps-office.xlsx" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-powerpoint" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.openxmlformats-officedocument.presentationml.template" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.openxmlformats-officedocument.presentationml.slideshow" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-powerpoint.addin.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-powerpoint.presentation.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-powerpoint.template.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.ms-powerpoint.slideshow.macroEnabled.12" = "org.onlyoffice.desktopeditors.desktop";
-      "application/wps-office.ppt" = "org.onlyoffice.desktopeditors.desktop";
-      "application/wps-office.pptx" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.oasis.opendocument.text" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.oasis.opendocument.spreadsheet" = "org.onlyoffice.desktopeditors.desktop";
-      "application/vnd.oasis.opendocument.presentation" = "org.onlyoffice.desktopeditors.desktop";
-      "application/rtf" = "org.onlyoffice.desktopeditors.desktop";
-      "text/csv" = "org.onlyoffice.desktopeditors.desktop";
+      "application/msword" = wordProcessor;
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = wordProcessor;
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.template" = wordProcessor;
+      "application/vnd.ms-word.document.macroEnabled.12" = wordProcessor;
+      "application/vnd.ms-word.template.macroEnabled.12" = wordProcessor;
+      "application/wps-office.doc" = wordProcessor;
+      "application/wps-office.docx" = wordProcessor;
+      "application/vnd.ms-excel" = spreadsheetEditor;
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" = spreadsheetEditor;
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.template" = spreadsheetEditor;
+      "application/vnd.ms-excel.sheet.macroEnabled.12" = spreadsheetEditor;
+      "application/vnd.ms-excel.template.macroEnabled.12" = spreadsheetEditor;
+      "application/vnd.ms-excel.addin.macroEnabled.12" = spreadsheetEditor;
+      "application/vnd.ms-excel.sheet.binary.macroEnabled.12" = spreadsheetEditor;
+      "application/wps-office.xls" = spreadsheetEditor;
+      "application/wps-office.xlsx" = spreadsheetEditor;
+      "application/vnd.ms-powerpoint" = presentationEditor;
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation" = presentationEditor;
+      "application/vnd.openxmlformats-officedocument.presentationml.template" = presentationEditor;
+      "application/vnd.openxmlformats-officedocument.presentationml.slideshow" = presentationEditor;
+      "application/vnd.ms-powerpoint.addin.macroEnabled.12" = presentationEditor;
+      "application/vnd.ms-powerpoint.presentation.macroEnabled.12" = presentationEditor;
+      "application/vnd.ms-powerpoint.template.macroEnabled.12" = presentationEditor;
+      "application/vnd.ms-powerpoint.slideshow.macroEnabled.12" = presentationEditor;
+      "application/wps-office.ppt" = presentationEditor;
+      "application/wps-office.pptx" = presentationEditor;
+      "application/vnd.oasis.opendocument.text" = wordProcessor;
+      "application/vnd.oasis.opendocument.spreadsheet" = spreadsheetEditor;
+      "application/vnd.oasis.opendocument.presentation" = presentationEditor;
+      "application/rtf" = wordProcessor;
+      "text/csv" = spreadsheetEditor;
     };
   };
 }
