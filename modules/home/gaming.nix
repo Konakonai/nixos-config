@@ -56,6 +56,7 @@ in
 {
   home.packages = with pkgs; [
     cabextract
+    cemu
     crosspipe
     evtest
     gamescope
