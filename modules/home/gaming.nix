@@ -64,6 +64,7 @@ in
     heroic
     linuxConsoleTools
     mangohud
+    lilya.eden
     lilya.mindustry
     protonup-qt
     protontricks
