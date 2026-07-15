@@ -340,6 +340,7 @@ clash-for-android:
   append-system-dns: false
   ui-subtitle-pattern: ''
 rules:
+- DOMAIN,ccs.cdn.c.shop.nintendowifi.net,DIRECT
 - DOMAIN-SUFFIX,quark.cn,DIRECT
 - DOMAIN-SUFFIX,uc.cn,DIRECT
 - DOMAIN-SUFFIX,ucweb.com,DIRECT
