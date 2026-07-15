@@ -7,20 +7,26 @@ let
     url = "https://stable.eden-emu.dev/v${version}/Eden-Linux-v${version}-amd64-clang-pgo.AppImage";
     hash = "sha256-eii/mIsGSIMZiXIr26qQqzE3G0A4CBmYE+DqfIslum0=";
   };
-  appimageContents = pkgs.appimageTools.extractType2 { inherit pname version src; };
+  appimageContents = pkgs.runCommand "${pname}-${version}-extracted"
+    {
+      nativeBuildInputs = [ pkgs.dwarfs ];
+    }
+    ''
+      mkdir -p $out
+      dwarfsextract -i ${src} -o $out
+    '';
 in
-pkgs.appimageTools.wrapType2 {
-  inherit pname version src;
+pkgs.appimageTools.wrapAppImage {
+  inherit pname version;
+  src = appimageContents;
 
   extraInstallCommands = ''
-    if [ -d ${appimageContents}/usr/share/applications ]; then
-      mkdir -p $out/share/applications
-      cp -r ${appimageContents}/usr/share/applications/. $out/share/applications/
-    fi
-    if [ -d ${appimageContents}/usr/share/icons ]; then
-      mkdir -p $out/share/icons
-      cp -r ${appimageContents}/usr/share/icons/. $out/share/icons/
-    fi
+    install -Dm444 \
+      ${appimageContents}/dev.eden_emu.eden.desktop \
+      $out/share/applications/dev.eden_emu.eden.desktop
+    install -Dm444 \
+      ${appimageContents}/dev.eden_emu.eden.svg \
+      $out/share/icons/hicolor/scalable/apps/dev.eden_emu.eden.svg
   '';
 
   meta = {
