@@ -12,6 +12,7 @@ in
   cc-switch-cli = pkgs.callPackage ./cc-switch-cli/default.nix { };
   codex = pkgs.callPackage ./codex.nix { };
   eden = pkgs.callPackage ./eden.nix { };
+  file-roller-wayland = pkgs.callPackage ./file-roller-wayland.nix { };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
   localsend-no-csd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";
