@@ -29,6 +29,7 @@ in
   splayer = pkgs.callPackage ./splayer.nix { };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
+  wiiu-downloader = pkgs.callPackage ./wiiu-downloader.nix { };
 
   mcp-server-brave-search = args:
     pkgs.callPackage ./mcp-server-brave-search.nix args;

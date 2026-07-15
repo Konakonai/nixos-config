@@ -70,6 +70,7 @@ in
     vulkan-tools
     wineWow64Packages.stableFull
     winetricks
+    lilya.wiiu-downloader
   ];
 
   xdg.desktopEntries.mindustry = {
