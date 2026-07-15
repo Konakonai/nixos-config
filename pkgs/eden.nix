@@ -20,6 +20,12 @@ pkgs.appimageTools.wrapAppImage {
   inherit pname version;
   src = appimageContents;
 
+  # Eden ships a wayland-is-broken hook that otherwise forces Qt onto XWayland.
+  # The AppImage includes its Qt Wayland platform and EGL integration plugins.
+  profile = ''
+    export I_WANT_A_BROKEN_WAYLAND_UI=1
+  '';
+
   extraInstallCommands = ''
     install -Dm444 \
       ${appimageContents}/dev.eden_emu.eden.desktop \
