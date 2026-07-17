@@ -63,6 +63,7 @@ in
     cabextract
     cemu
     crosspipe
+    dolphin-emu
     evtest
     gamescope
     gameStatus
