@@ -1,4 +1,4 @@
-{ config, fcitxCompatEnv, lib, lilyaGlass, pkgs, ... }:
+{ config, fcitxCompatEnv, lilyaGlass, pkgs, ... }:
 
 let
   appThemeEnv = {
@@ -11,28 +11,9 @@ let
     XCURSOR_SIZE = "48";
     XCURSOR_PATH = "${pkgs.rose-pine-cursor}/share/icons";
   };
-
-  wemeetFcitx = pkgs.symlinkJoin {
-    name = "${pkgs.wemeet.name}-fcitx";
-    paths = [ pkgs.wemeet ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-
-    postBuild = ''
-      for program in wemeet wemeet-xwayland; do
-        rm "$out/bin/$program"
-        makeWrapper "${pkgs.wemeet}/bin/$program" "$out/bin/$program" \
-          ${lib.concatStringsSep " " (
-            lib.mapAttrsToList (name: value: "--set ${name} ${lib.escapeShellArg value}") fcitxCompatEnv
-          )}
-      done
-    '';
-
-    meta = pkgs.wemeet.meta;
-  };
 in
 {
   home.packages = [
     (pkgs.lilya.wechat { inherit fcitxCompatEnv appThemeEnv; })
-    wemeetFcitx
   ];
 }
