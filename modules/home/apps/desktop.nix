@@ -52,6 +52,7 @@ in
     kdePackages.okular
     localsend-no-csd
     loupe
+    mcomix
     mission-center
     nemo-with-extensions
     obsidian
