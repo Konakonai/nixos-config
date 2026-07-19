@@ -48,7 +48,10 @@
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [
+      pkgs.xdg-desktop-portal-gtk
+      pkgs.kdePackages.xdg-desktop-portal-kde
+    ];
     config = {
       common = {
         default = [ "gtk" ];
@@ -57,6 +60,10 @@
       niri = {
         default = [ "gtk" ];
         "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
+      };
+      kde = {
+        default = [ "kde" ];
+        "org.freedesktop.impl.portal.FileChooser" = [ "kde" ];
       };
     };
   };

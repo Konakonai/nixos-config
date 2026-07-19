@@ -14,6 +14,12 @@ let
     exec ${niriSession} "$@"
   '';
   niriLoginPath = lib.getExe niriLogin;
+  plasmaLogin = pkgs.writeShellScriptBin "Plasma-HDR" ''
+    unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
+
+    exec ${lib.getExe' pkgs.kdePackages.plasma-workspace "startplasma-wayland"} "$@"
+  '';
+  plasmaLoginPath = lib.getExe plasmaLogin;
   gtkgreetGtkThemeName = "adw-gtk3";
   gtkgreetGtkThemePackage = pkgs.adw-gtk3;
   gtkgreetFontSize = 18;
@@ -226,6 +232,8 @@ in
     package = niriPackage;
   };
 
+  services.desktopManager.plasma6.enable = true;
+
   systemd.user.units."niri.service" = {
     overrideStrategy = "asDropin";
     text = ''
@@ -243,5 +251,8 @@ in
     };
   };
 
-  environment.etc."greetd/environments".text = "${niriLoginPath}\n";
+  environment.etc."greetd/environments".text = ''
+    ${niriLoginPath}
+    ${plasmaLoginPath}
+  '';
 }

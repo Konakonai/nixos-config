@@ -10,7 +10,7 @@ let
       rev = inputs.codex-desktop-linux.rev or "";
       lastModified = inputs.codex-desktop-linux.lastModified or 1;
     };
-    nixpkgs = inputs.nixpkgs-unstable;
+    nixpkgs = inputs.nixpkgs;
     flake-utils = inputs.flake-utils;
   };
 

@@ -1,12 +1,5 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 
-let
-  system = pkgs.stdenv.hostPlatform.system;
-  unstable = import inputs.nixpkgs-unstable {
-    inherit system;
-    config.allowUnfree = true;
-  };
-in
 {
   environment.systemPackages = with pkgs; [
     vim
@@ -36,7 +29,7 @@ in
     lilya.cc-switch-cli
     lilya.codex
 
-    unstable.officecli
+    officecli
 
     qadwaitadecorations-qt6
     kdePackages.dolphin
