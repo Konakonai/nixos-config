@@ -50,19 +50,4 @@ in
     terminal = false;
     noDisplay = true;
   };
-
-  home.activation.syncKdeIconTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    kdeglobals=${lib.escapeShellArg "${config.xdg.configHome}/kdeglobals"}
-    ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg config.xdg.configHome}
-    ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
-      --file "$kdeglobals" \
-      --group Icons \
-      --key Theme \
-      ${lib.escapeShellArg lilyaGlass.iconThemeName}
-
-    ${pkgs.dbus}/bin/dbus-send \
-      /KGlobalSettings \
-      org.kde.KGlobalSettings.notifyChange \
-      int32:0 int32:0 >/dev/null 2>&1 || true
-  '';
 }

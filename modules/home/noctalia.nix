@@ -8,18 +8,15 @@ let
     disabled_colors={{colors.on_surface_variant.default.hex}}, {{colors.surface.default.hex}}, #ffffff, #cacaca, #9f9f9f, #b8b8b8, {{colors.on_surface_variant.default.hex}}, #ffffff, {{colors.on_surface_variant.default.hex}}, {{colors.background.default.hex}}, {{colors.background.default.hex}}, {{colors.shadow.default.hex}}, {{colors.primary_container.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.secondary.default.hex}}, {{colors.primary.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.surface.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.primary.default.hex}}
     inactive_colors={{colors.on_background.default.hex}}, {{colors.surface.default.hex}}, #ffffff, #cacaca, #9f9f9f, #b8b8b8, {{colors.on_background.default.hex}}, #ffffff, {{colors.on_surface.default.hex}}, {{colors.background.default.hex}}, {{colors.background.default.hex}}, {{colors.shadow.default.hex}}, {{colors.primary_container.default.hex}}, {{colors.on_background.default.hex}}, {{colors.secondary.default.hex}}, {{colors.primary.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.surface.default.hex}}, {{colors.surface_variant.default.hex}}, {{colors.on_surface.default.hex}}, {{colors.on_surface_variant.default.hex}}, {{colors.primary.default.hex}}
   '';
-  darklyKdeHook = pkgs.writeShellScript "noctalia-darkly-kde-colors" ''
+  # Keep this path stable because Noctalia's seed-once config refers to it.
+  # The hook only updates Noctalia's standalone color scheme; Plasma owns
+  # kdeglobals so changes made in System Settings survive future activations.
+  darklyColorSchemeHook = pkgs.writeShellScript "noctalia-darkly-kde-colors" ''
     set -eu
 
     config_home="''${XDG_CONFIG_HOME:-$HOME/.config}"
     data_home="''${XDG_DATA_HOME:-$HOME/.local/share}"
     qt_scheme="$config_home/qt6ct/colors/darkly-noctalia.conf"
-
-    ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
-      --file "$config_home/kdeglobals" \
-      --group Icons \
-      --key Theme \
-      ${lib.escapeShellArg lilyaGlass.iconThemeName}
 
     role_color() {
       local role="$1"
@@ -62,9 +59,6 @@ let
     }
 
     patch_colors "$data_home/color-schemes/noctalia.colors"
-    patch_colors "$config_home/kdeglobals"
-
-    ${pkgs.dbus}/bin/dbus-send /KGlobalSettings org.kde.KGlobalSettings.notifyChange int32:0 int32:0 >/dev/null 2>&1 || true
   '';
 
   heroicNoctaliaTemplate = pkgs.writeText "noctalia-heroic.css" ''
@@ -286,7 +280,7 @@ in
   xdg.configFile = {
     "noctalia/templates/darkly-qt.conf".source = darklyQtTemplate;
     "noctalia/templates/darkly-kde-colors" = {
-      source = darklyKdeHook;
+      source = darklyColorSchemeHook;
       executable = true;
     };
     "noctalia/templates/heroic.css".source = heroicNoctaliaTemplate;
