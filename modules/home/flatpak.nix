@@ -48,12 +48,12 @@ in
 
     overrides = {
       "com.qq.QQ" = {
-        # Keep QQ on Wayland, but expose the real X11 socket so the Flathub
-        # launcher does not start its Xvfb fallback on Wayland sessions.
+        # Keep QQ on Wayland while retaining the real X11 socket for compatibility.
+        # Flatpak 1.18 crashes on the leading empty permission entry generated
+        # when nix-flatpak serializes a negated socket such as !fallback-x11.
         Context.sockets = [
           "wayland"
           "x11"
-          "!fallback-x11"
         ];
         Context.filesystems = themeFilesystems;
         Environment = themeEnv // fcitxCompatEnv // {

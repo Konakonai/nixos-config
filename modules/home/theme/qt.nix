@@ -35,7 +35,6 @@ in
     enable = true;
     platformTheme.name = "qt6ct";
     style = {
-      name = "Darkly";
       package = pkgs.darkly;
     };
   };

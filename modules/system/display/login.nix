@@ -16,6 +16,9 @@ let
   niriLoginPath = lib.getExe niriLogin;
   plasmaLogin = pkgs.writeShellScriptBin "Plasma-HDR" ''
     unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
+    unset QT_STYLE_OVERRIDE QT_WAYLAND_DECORATION
+
+    export QT_QPA_PLATFORMTHEME=kde
 
     exec ${lib.getExe' pkgs.kdePackages.plasma-workspace "startplasma-wayland"} "$@"
   '';
