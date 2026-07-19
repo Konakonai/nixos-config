@@ -166,6 +166,14 @@ let
   '';
   tomlFormat = pkgs.formats.toml { };
   noctaliaSettings = {
+    theme.mode = "light";
+    theme.source = "custom";
+    theme.custom_palette = "Plasma Overdose";
+    theme.templates.enable_builtin_templates = true;
+    theme.templates.builtin_ids = [ "btop" "gtk3" "gtk4" "kitty" "niri" ];
+    theme.templates.enable_community_templates = true;
+    theme.templates.community_ids = [ "zen-browser" "zed" "discord" "steam" "telegram" "yazi" ];
+
     shell = {
       corner_radius_scale = 1.65;
       font_family = lilyaGlass.fonts.sans;
@@ -304,5 +312,8 @@ in
     fi
   '';
 
-  programs.noctalia.enable = true;
+  programs.noctalia = {
+    enable = true;
+    customPalettes."Plasma Overdose" = ../../assets/noctalia/palettes/plasma-overdose.json;
+  };
 }

@@ -128,45 +128,45 @@ in
         disabled = false;
       };
 
-      # Noctalia Starship Palette (Nord 色系)
+      # Plasma Overdose palette, matching Noctalia's custom palette.
       palettes.noctalia = {
         # Standard colors
-        blue      = "#81a1c1";
-        red       = "#bf616a";
-        green     = "#96b17f";
-        yellow    = "#c5a565";
-        cyan      = "#7bb3c3";
-        magenta   = "#b48ead";
-        white     = "#a5abb6";
-        black     = "#3b4252";
+        blue      = "#1d99f3";
+        red       = "#da4453";
+        green     = "#27ae60";
+        yellow    = "#f67400";
+        cyan      = "#1abc9c";
+        magenta   = "#9b59b6";
+        white     = "#fcf0fd";
+        black     = "#4d21cb";
 
         # Extended palette (Catppuccin-compatible names)
-        rosewater = "#c5a565";
-        flamingo  = "#bf616a";
-        pink      = "#b48ead";
-        mauve     = "#b48ead";
-        maroon    = "#bf616a";
-        peach     = "#c5a565";
-        teal      = "#7bb3c3";
-        sky       = "#82afae";
-        sapphire  = "#81a1c1";
-        lavender  = "#b48ead";
+        rosewater = "#efcfef";
+        flamingo  = "#da4453";
+        pink      = "#ff557f";
+        mauve     = "#9b59b6";
+        maroon    = "#da4453";
+        peach     = "#f67400";
+        teal      = "#1abc9c";
+        sky       = "#55aaff";
+        sapphire  = "#1d99f3";
+        lavender  = "#712aff";
 
         # Text shades
-        text      = "#414858";
-        subtext1  = "#a5abb6";
-        subtext0  = "#4c566a";
+        text      = "#4d21cb";
+        subtext1  = "#4f22d4";
+        subtext0  = "#7b7b7a";
 
         # Surface shades
-        overlay2  = "#4c566a";
-        overlay1  = "#4c566a";
-        overlay0  = "#3b4252";
-        surface2  = "#3b4252";
-        surface1  = "#3b4252";
-        surface0  = "#eceff4";
-        base      = "#eceff4";
-        mantle    = "#eceff4";
-        crust     = "#eceff4";
+        overlay2  = "#a3c6ee";
+        overlay1  = "#bed7fc";
+        overlay0  = "#efcfef";
+        surface2  = "#f6e0f8";
+        surface1  = "#f6e0f8";
+        surface0  = "#fcf0fd";
+        base      = "#fcf0fd";
+        mantle    = "#f6e0f8";
+        crust     = "#efcfef";
       };
     };
   };
