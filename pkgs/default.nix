@@ -13,6 +13,20 @@ in
   codex = pkgs.callPackage ./codex.nix { };
   eden = pkgs.callPackage ./eden.nix { };
   file-roller-wayland = pkgs.callPackage ./file-roller-wayland.nix { };
+  foliate-no-portals = pkgs.symlinkJoin {
+    name = "${pkgs.foliate.name}-no-portals";
+    paths = [ pkgs.foliate ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    # GTK 4.22 receives a zero text scale from KDE's Settings portal, which
+    # makes WebKitGTK report an invalid viewport and leaves Foliate's iframe
+    # reader blank. Bypass only the settings portal for Foliate on Wayland.
+    postBuild = ''
+      rm "$out/bin/foliate"
+      makeWrapper ${lib.getExe pkgs.foliate} "$out/bin/foliate" \
+        --set GDK_DEBUG no-portals
+    '';
+    meta = pkgs.foliate.meta;
+  };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
   localsend-no-csd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";
