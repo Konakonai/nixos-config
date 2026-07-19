@@ -172,5 +172,5 @@ in
   };
 
   # Starship is fully declarative; do not let a stale global HM backup block activation.
-  home.file.".config/starship.toml".force = true;
+  home.file.${config.programs.starship.configPath}.force = true;
 }
