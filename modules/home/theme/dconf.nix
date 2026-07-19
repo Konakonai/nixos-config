@@ -3,7 +3,7 @@
 {
   dconf.settings."org/gnome/desktop/interface" = {
     color-scheme = "prefer-light";
-    cursor-size = 48;
+    cursor-size = lilyaGlass.cursorSize;
     cursor-theme = lilyaGlass.cursorThemeName;
     font-name = "${lilyaGlass.fonts.sans} ${builtins.toString lilyaGlass.fonts.size}";
     gtk-theme = "adw-gtk3";

@@ -5,8 +5,8 @@
     enable = true;
     gtk.enable = true;
     x11.enable = true;
-    package = pkgs.rose-pine-cursor;
+    package = pkgs.lilya.plasma-overdose-cursors;
     name = lilyaGlass.cursorThemeName;
-    size = 48;
+    size = lilyaGlass.cursorSize;
   };
 }

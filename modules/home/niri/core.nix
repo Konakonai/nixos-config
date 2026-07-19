@@ -35,7 +35,7 @@ in
 
     cursor = {
       theme = lilyaGlass.cursorThemeName;
-      size = 48;
+      size = lilyaGlass.cursorSize;
     };
 
     environment = {
@@ -46,8 +46,8 @@ in
       QT_WAYLAND_DECORATION = "adwaita";
       ELECTRON_OZONE_PLATFORM_HINT = "wayland";
       XCURSOR_THEME = lilyaGlass.cursorThemeName;
-      XCURSOR_SIZE = "48";
-      XCURSOR_PATH = "${pkgs.rose-pine-cursor}/share/icons";
+      XCURSOR_SIZE = builtins.toString lilyaGlass.cursorSize;
+      XCURSOR_PATH = "${pkgs.lilya.plasma-overdose-cursors}/share/icons";
     };
 
     input = {

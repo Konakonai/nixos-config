@@ -9,7 +9,7 @@ let
     QT_QPA_PLATFORMTHEME = "qt6ct";
     QT_STYLE_OVERRIDE = "";
     XCURSOR_THEME = lilyaGlass.cursorThemeName;
-    XCURSOR_SIZE = "48";
+    XCURSOR_SIZE = builtins.toString lilyaGlass.cursorSize;
     XCURSOR_PATH = "${config.home.homeDirectory}/.local/share/flatpak-icons:${config.home.homeDirectory}/.local/share/icons";
   };
 

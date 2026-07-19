@@ -3,7 +3,7 @@
 let
   gtkThemeName = "adw-gtk3";
   gtkThemePackage = pkgs.adw-gtk3;
-  cursorThemePackage = pkgs.rose-pine-cursor;
+  cursorThemePackage = pkgs.lilya.plasma-overdose-cursors;
   cursorThemeName = lilyaGlass.cursorThemeName;
   iconThemePackage = pkgs.colloid-icon-theme;
   iconThemeName = lilyaGlass.iconThemeName;

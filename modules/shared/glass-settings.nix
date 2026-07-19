@@ -38,7 +38,8 @@
   };
 
   iconThemeName = "Colloid-Light";
-  cursorThemeName = "BreezeX-RosePineDawn-Linux";
+  cursorThemeName = "Plasma-Overdose";
+  cursorSize = 32;
 
   fonts = {
     sans = "Noto Sans CJK SC";

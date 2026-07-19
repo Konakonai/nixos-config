@@ -192,7 +192,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
 
     cursor {
         xcursor-theme ${kdlString lilyaGlass.cursorThemeName}
-        xcursor-size 48
+        xcursor-size ${builtins.toString lilyaGlass.cursorSize}
     }
 
     hotkey-overlay { skip-at-startup; }
@@ -200,9 +200,9 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     environment {
         "GDK_DEBUG" "no-portals"
         "GTK_USE_PORTAL" "0"
-        "XCURSOR_SIZE" "48"
+        "XCURSOR_SIZE" ${kdlString (builtins.toString lilyaGlass.cursorSize)}
         "XCURSOR_THEME" ${kdlString lilyaGlass.cursorThemeName}
-        "XCURSOR_PATH" ${kdlString "${pkgs.rose-pine-cursor}/share/icons"}
+        "XCURSOR_PATH" ${kdlString "${pkgs.lilya.plasma-overdose-cursors}/share/icons"}
     }
 
     layout {
@@ -222,9 +222,9 @@ int config_update_command_selector(GtkWidget *combobox) {' \
   gtkgreetSession = pkgs.writeShellScript "gtkgreet-session" ''
     export GTK_THEME=${gtkgreetGtkThemeName}
     export XCURSOR_THEME=${lib.escapeShellArg lilyaGlass.cursorThemeName}
-    export XCURSOR_SIZE=48
-    export XCURSOR_PATH=${pkgs.rose-pine-cursor}/share/icons
-    export XDG_DATA_DIRS=${gtkgreetGtkThemePackage}/share:${pkgs.colloid-icon-theme}/share:${pkgs.rose-pine-cursor}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
+    export XCURSOR_SIZE=${builtins.toString lilyaGlass.cursorSize}
+    export XCURSOR_PATH=${pkgs.lilya.plasma-overdose-cursors}/share/icons
+    export XDG_DATA_DIRS=${gtkgreetGtkThemePackage}/share:${pkgs.colloid-icon-theme}/share:${pkgs.lilya.plasma-overdose-cursors}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
 
     exec ${pkgs.dbus}/bin/dbus-run-session ${niriPackage}/bin/niri -c ${gtkgreetNiriConfig}
   '';

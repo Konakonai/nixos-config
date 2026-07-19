@@ -28,6 +28,7 @@ in
     meta = pkgs.localsend.meta;
   };
   mindustry = pkgs.callPackage ./mindustry.nix { };
+  plasma-overdose-cursors = pkgs.callPackage ./plasma-overdose-cursors.nix { };
   splayer = pkgs.callPackage ./splayer.nix { };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };

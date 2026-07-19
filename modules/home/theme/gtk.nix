@@ -13,8 +13,8 @@
     };
     cursorTheme = {
       name = lilyaGlass.cursorThemeName;
-      package = pkgs.rose-pine-cursor;
-      size = 48;
+      package = pkgs.lilya.plasma-overdose-cursors;
+      size = lilyaGlass.cursorSize;
     };
 
     gtk2.extraConfig = ''

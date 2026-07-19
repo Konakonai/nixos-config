@@ -10,7 +10,7 @@
     ELECTRON_OZONE_PLATFORM_HINT = "wayland";
     CC_SWITCH_TUI_THEME = "${config.home.homeDirectory}/.config/cc-switch/theme/noctalia.json";
     XCURSOR_THEME = lilyaGlass.cursorThemeName;
-    XCURSOR_SIZE = "48";
-    XCURSOR_PATH = "${pkgs.rose-pine-cursor}/share/icons";
+    XCURSOR_SIZE = builtins.toString lilyaGlass.cursorSize;
+    XCURSOR_PATH = "${pkgs.lilya.plasma-overdose-cursors}/share/icons";
   };
 }
