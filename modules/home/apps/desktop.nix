@@ -1,7 +1,7 @@
 { lib, pkgs, ... }:
 
 let
-  inherit (pkgs.lilya) antigravity cc-switch-cli file-roller-wayland foliate-no-portals localsend-no-csd splayer;
+  inherit (pkgs.lilya) antigravity cc-switch-cli file-roller-wayland localsend-no-csd splayer;
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
@@ -46,7 +46,7 @@ in
   home.packages = with pkgs; [
     antigravity
     file-roller-wayland
-    foliate-no-portals
+    foliate
     gnome-font-viewer
     hyprpicker
     kdePackages.okular
