@@ -64,6 +64,10 @@
       kde = {
         default = [ "kde" ];
         "org.freedesktop.impl.portal.FileChooser" = [ "kde" ];
+        # KDE's portal does not expose org.gnome.desktop.interface settings.
+        # GTK 4.22 interprets the missing text scaling factor as zero, which
+        # gives WebKitGTK an invalid viewport and blanks Foliate's reader.
+        "org.freedesktop.impl.portal.Settings" = [ "gtk" ];
       };
     };
   };
