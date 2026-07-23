@@ -152,18 +152,6 @@ let
     }
   '';
 
-  ccSwitchTuiThemeTemplate = pkgs.writeText "noctalia-cc-switch-tui.json" ''
-    {
-      "accent": "{{colors.primary.default.hex}}",
-      "ok": "{{colors.terminal_normal_green.default.hex}}",
-      "warn": "{{colors.terminal_normal_yellow.default.hex}}",
-      "err": "{{colors.error.default.hex}}",
-      "dim": "{{colors.on_surface_variant.default.hex}}",
-      "comment": "{{colors.on_surface_variant.default.hex}}",
-      "cyan": "{{colors.terminal_normal_cyan.default.hex}}",
-      "surface": "{{colors.terminal_bright_black.default.hex}}"
-    }
-  '';
   tomlFormat = pkgs.formats.toml { };
   noctaliaSettings = {
     theme.mode = "light";
@@ -257,14 +245,6 @@ let
       index = 1001;
     };
 
-    theme.templates.user.cc-switch-tui = {
-      enabled = true;
-      input_path = "${config.xdg.configHome}/noctalia/templates/cc-switch-tui.json";
-      output_path = [
-        "$XDG_CONFIG_HOME/cc-switch/theme/noctalia.json"
-      ];
-      index = 1002;
-    };
   };
   noctaliaSeed = tomlFormat.generate "noctalia-config.toml" noctaliaSettings;
 in
@@ -292,7 +272,6 @@ in
       executable = true;
     };
     "noctalia/templates/heroic.css".source = heroicNoctaliaTemplate;
-    "noctalia/templates/cc-switch-tui.json".source = ccSwitchTuiThemeTemplate;
   };
 
   xdg.dataFile."nixos-config/defaults/noctalia-config.toml".source = noctaliaSeed;

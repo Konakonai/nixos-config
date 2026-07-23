@@ -53,7 +53,7 @@ let
         exit 2
       fi
 
-      for template in darkly-qt.conf darkly-kde-colors heroic.css cc-switch-tui.json; do
+      for template in darkly-qt.conf darkly-kde-colors heroic.css; do
         path="${config.xdg.configHome}/noctalia/templates/$template"
         if [ ! -e "$path" ]; then
           echo "missing template: $path; run rebuild first" >&2

@@ -1,13 +1,25 @@
+let
+  plasmaOverdose =
+    (builtins.fromJSON (
+      builtins.readFile ../../assets/noctalia/palettes/plasma-overdose.json
+    )).light;
+in
 {
   palette = {
-    accent = "#d7827e";
-    lavender = "#b4637a";
-    text = "#575279";
-    base = "#faf4ed";
-    mantle = "#f2e9e1";
-    crust = "#dfdad9";
-    overlay = "#797593";
-    shadow = "#57527933";
+    accent = plasmaOverdose.mPrimary;
+    lavender = plasmaOverdose.mSecondary;
+    tertiary = plasmaOverdose.mTertiary;
+    error = plasmaOverdose.mError;
+    text = plasmaOverdose.mOnSurface;
+    subtext = plasmaOverdose.mOnSurfaceVariant;
+    base = plasmaOverdose.mSurface;
+    mantle = plasmaOverdose.mSurfaceVariant;
+    crust = plasmaOverdose.mShadow;
+    overlay = plasmaOverdose.mOutline;
+    hover = plasmaOverdose.mHover;
+    onHover = plasmaOverdose.mOnHover;
+    shadow = "${plasmaOverdose.mPrimary}33";
+    inherit (plasmaOverdose) terminal;
   };
 
   opacity = {
@@ -37,7 +49,7 @@
     capsules = 16.0;
   };
 
-  iconThemeName = "Colloid-Light";
+  iconThemeName = "Tela";
   cursorThemeName = "Plasma-Overdose";
   cursorSize = 32;
 

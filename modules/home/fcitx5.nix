@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lilyaGlass, pkgs, ... }:
 
 let
   fcitxCompatEnv = {
@@ -17,11 +17,11 @@ let
     ScaleWithDPI=True
 
     [InputPanel]
-    Font="Noto Sans CJK SC 10"
-    NormalColor=#4d21cb
-    HighlightCandidateColor=#4f22d4
-    HighlightColor=#4d21cb
-    HighlightBackgroundColor=#bed7fc
+    Font="${lilyaGlass.fonts.sans} 10"
+    NormalColor=${lilyaGlass.palette.text}
+    HighlightCandidateColor=${lilyaGlass.palette.onHover}
+    HighlightColor=${lilyaGlass.palette.accent}
+    HighlightBackgroundColor=${lilyaGlass.palette.hover}
     Spacing=3
 
     [InputPanel/TextMargin]
@@ -31,7 +31,7 @@ let
     Bottom=6
 
     [InputPanel/Background]
-    Color=#fcf0fd
+    Color=${lilyaGlass.palette.base}
 
     [InputPanel/Background/Margin]
     Left=2
@@ -40,7 +40,7 @@ let
     Bottom=2
 
     [InputPanel/Highlight]
-    Color=#bed7fc
+    Color=${lilyaGlass.palette.hover}
 
     [InputPanel/Highlight/Margin]
     Left=10
@@ -49,12 +49,12 @@ let
     Bottom=7
 
     [Menu]
-    Font="Noto Sans CJK SC 10"
-    NormalColor=#4d21cb
+    Font="${lilyaGlass.fonts.sans} 10"
+    NormalColor=${lilyaGlass.palette.text}
     Spacing=3
 
     [Menu/Background]
-    Color=#f6e0f8
+    Color=${lilyaGlass.palette.mantle}
 
     [Menu/Background/Margin]
     Left=2
@@ -69,7 +69,7 @@ let
     Bottom=2
 
     [Menu/Highlight]
-    Color=#bed7fc
+    Color=${lilyaGlass.palette.hover}
 
     [Menu/Highlight/Margin]
     Left=10
@@ -78,7 +78,7 @@ let
     Bottom=5
 
     [Menu/Separator]
-    Color=#efcfef
+    Color=${lilyaGlass.palette.crust}
 
     [Menu/CheckBox]
     Image=radio.png
@@ -110,7 +110,7 @@ in
   };
 
   xdg.configFile."fcitx5/conf/classicui.conf".text = ''
-    Font="Noto Sans CJK SC 10"
+    Font="${lilyaGlass.fonts.sans} 10"
     Theme=plasma-overdose
   '';
 

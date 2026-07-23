@@ -1,4 +1,4 @@
-{ hostProfile, pkgs, ... }:
+{ hostProfile, lilyaGlass, pkgs, ... }:
 
 let
   nh = pkgs.lib.getExe pkgs.nh;
@@ -131,42 +131,42 @@ in
       # Plasma Overdose palette, matching Noctalia's custom palette.
       palettes.noctalia = {
         # Standard colors
-        blue      = "#1d99f3";
-        red       = "#da4453";
-        green     = "#27ae60";
-        yellow    = "#f67400";
-        cyan      = "#1abc9c";
-        magenta   = "#9b59b6";
-        white     = "#fcf0fd";
-        black     = "#4d21cb";
+        blue      = lilyaGlass.palette.terminal.normal.blue;
+        red       = lilyaGlass.palette.terminal.normal.red;
+        green     = lilyaGlass.palette.terminal.normal.green;
+        yellow    = lilyaGlass.palette.terminal.normal.yellow;
+        cyan      = lilyaGlass.palette.terminal.normal.cyan;
+        magenta   = lilyaGlass.palette.terminal.normal.magenta;
+        white     = lilyaGlass.palette.base;
+        black     = lilyaGlass.palette.accent;
 
         # Extended palette (Catppuccin-compatible names)
-        rosewater = "#efcfef";
-        flamingo  = "#da4453";
-        pink      = "#ff557f";
-        mauve     = "#9b59b6";
-        maroon    = "#da4453";
-        peach     = "#f67400";
-        teal      = "#1abc9c";
-        sky       = "#55aaff";
-        sapphire  = "#1d99f3";
-        lavender  = "#712aff";
+        rosewater = lilyaGlass.palette.crust;
+        flamingo  = lilyaGlass.palette.error;
+        pink      = lilyaGlass.palette.tertiary;
+        mauve     = lilyaGlass.palette.terminal.normal.magenta;
+        maroon    = lilyaGlass.palette.error;
+        peach     = lilyaGlass.palette.terminal.normal.yellow;
+        teal      = lilyaGlass.palette.terminal.normal.cyan;
+        sky       = lilyaGlass.palette.terminal.bright.blue;
+        sapphire  = lilyaGlass.palette.terminal.normal.blue;
+        lavender  = lilyaGlass.palette.lavender;
 
         # Text shades
-        text      = "#4d21cb";
-        subtext1  = "#4f22d4";
-        subtext0  = "#7b7b7a";
+        text      = lilyaGlass.palette.text;
+        subtext1  = lilyaGlass.palette.subtext;
+        subtext0  = lilyaGlass.palette.terminal.bright.black;
 
         # Surface shades
-        overlay2  = "#a3c6ee";
-        overlay1  = "#bed7fc";
-        overlay0  = "#efcfef";
-        surface2  = "#f6e0f8";
-        surface1  = "#f6e0f8";
-        surface0  = "#fcf0fd";
-        base      = "#fcf0fd";
-        mantle    = "#f6e0f8";
-        crust     = "#efcfef";
+        overlay2  = lilyaGlass.palette.overlay;
+        overlay1  = lilyaGlass.palette.hover;
+        overlay0  = lilyaGlass.palette.crust;
+        surface2  = lilyaGlass.palette.mantle;
+        surface1  = lilyaGlass.palette.mantle;
+        surface0  = lilyaGlass.palette.base;
+        base      = lilyaGlass.palette.base;
+        mantle    = lilyaGlass.palette.mantle;
+        crust     = lilyaGlass.palette.crust;
       };
     };
   };

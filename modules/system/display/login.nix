@@ -83,14 +83,14 @@ int config_update_command_selector(GtkWidget *combobox) {' \
   gtkgreetCss = pkgs.writeText "gtkgreet.css" ''
     @define-color accent_color ${lilyaGlass.palette.accent};
     @define-color accent_bg_color ${lilyaGlass.palette.accent};
-    @define-color accent_fg_color #faf4ed;
-    @define-color window_bg_color #faf4ed;
-    @define-color window_fg_color #575279;
-    @define-color card_bg_color #fffaf3;
-    @define-color card_fg_color #575279;
-    @define-color border_color #dfdad9;
-    @define-color muted_fg_color #797593;
-    @define-color shadow_color #575279;
+    @define-color accent_fg_color ${lilyaGlass.palette.base};
+    @define-color window_bg_color ${lilyaGlass.palette.base};
+    @define-color window_fg_color ${lilyaGlass.palette.text};
+    @define-color card_bg_color ${lilyaGlass.palette.base};
+    @define-color card_fg_color ${lilyaGlass.palette.text};
+    @define-color border_color ${lilyaGlass.palette.crust};
+    @define-color muted_fg_color ${lilyaGlass.palette.subtext};
+    @define-color shadow_color ${lilyaGlass.palette.accent};
 
     window,
     #window {
@@ -202,7 +202,7 @@ int config_update_command_selector(GtkWidget *combobox) {' \
         "GTK_USE_PORTAL" "0"
         "XCURSOR_SIZE" ${kdlString (builtins.toString lilyaGlass.cursorSize)}
         "XCURSOR_THEME" ${kdlString lilyaGlass.cursorThemeName}
-        "XCURSOR_PATH" ${kdlString "${pkgs.lilya.plasma-overdose-cursors}/share/icons"}
+        "XCURSOR_PATH" ${kdlString "${pkgs.lilya.plasma-overdose-theme}/share/icons"}
     }
 
     layout {
@@ -223,8 +223,8 @@ int config_update_command_selector(GtkWidget *combobox) {' \
     export GTK_THEME=${gtkgreetGtkThemeName}
     export XCURSOR_THEME=${lib.escapeShellArg lilyaGlass.cursorThemeName}
     export XCURSOR_SIZE=${builtins.toString lilyaGlass.cursorSize}
-    export XCURSOR_PATH=${pkgs.lilya.plasma-overdose-cursors}/share/icons
-    export XDG_DATA_DIRS=${gtkgreetGtkThemePackage}/share:${pkgs.colloid-icon-theme}/share:${pkgs.lilya.plasma-overdose-cursors}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
+    export XCURSOR_PATH=${pkgs.lilya.plasma-overdose-theme}/share/icons
+    export XDG_DATA_DIRS=${gtkgreetGtkThemePackage}/share:${pkgs.tela-icon-theme}/share:${pkgs.adwaita-icon-theme}/share:${pkgs.lilya.plasma-overdose-theme}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}
 
     exec ${pkgs.dbus}/bin/dbus-run-session ${niriPackage}/bin/niri -c ${gtkgreetNiriConfig}
   '';

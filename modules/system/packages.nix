@@ -26,11 +26,13 @@
     brightnessctl
     imagemagick
 
-    lilya.cc-switch-cli
     lilya.codex
+    lilya.plasma-overdose-theme
 
     officecli
 
+    adwaita-icon-theme
+    tela-icon-theme
     qadwaitadecorations-qt6
     kdePackages.dolphin
     # Dolphin's embedded terminal panel is a KonsolePart plugin. External

@@ -9,7 +9,17 @@ in
   brave-netflix-opera = pkgs.callPackage ./brave-netflix-opera.nix {
     inherit braveOrigin;
   };
-  cc-switch-cli = pkgs.callPackage ./cc-switch-cli/default.nix { };
+  cc-switch = pkgs.symlinkJoin {
+    name = "${pkgs.cc-switch.name}-session-backend";
+    paths = [ pkgs.cc-switch ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      rm "$out/bin/cc-switch"
+      makeWrapper ${lib.getExe pkgs.cc-switch} "$out/bin/cc-switch" \
+        --run 'case "''${XDG_CURRENT_DESKTOP:-}" in *KDE*) export CC_SWITCH_GDK_BACKEND=wayland ;; esac'
+    '';
+    meta = pkgs.cc-switch.meta;
+  };
   codex = pkgs.callPackage ./codex.nix { };
   eden = pkgs.callPackage ./eden.nix { };
   file-roller-wayland = pkgs.callPackage ./file-roller-wayland.nix { };
@@ -28,7 +38,7 @@ in
     meta = pkgs.localsend.meta;
   };
   mindustry = pkgs.callPackage ./mindustry.nix { };
-  plasma-overdose-cursors = pkgs.callPackage ./plasma-overdose-cursors.nix { };
+  plasma-overdose-theme = pkgs.callPackage ./plasma-overdose-theme.nix { };
   splayer = pkgs.callPackage ./splayer.nix { };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };

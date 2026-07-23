@@ -9,11 +9,11 @@
     };
     iconTheme = {
       name = lilyaGlass.iconThemeName;
-      package = pkgs.colloid-icon-theme;
+      package = pkgs.tela-icon-theme;
     };
     cursorTheme = {
       name = lilyaGlass.cursorThemeName;
-      package = pkgs.lilya.plasma-overdose-cursors;
+      package = pkgs.lilya.plasma-overdose-theme;
       size = lilyaGlass.cursorSize;
     };
 

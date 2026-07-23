@@ -1,8 +1,7 @@
-{ config, fcitxCompatEnv, lib, lilyaGlass, ... }:
+{ config, fcitxCompatEnv, lib, lilyaGlass, pkgs, ... }:
 
 let
   themeEnv = {
-    GSK_RENDERER = "ngl";
     GTK_THEME = "adw-gtk3";
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
@@ -21,9 +20,51 @@ let
     "xdg-data/icons:ro"
     "xdg-data/flatpak-icons:ro"
   ];
+  qqLauncher = pkgs.writeShellScriptBin "qq-session" ''
+    set -euo pipefail
+
+    qq_config="$HOME/.var/app/com.qq.QQ/config"
+    mkdir -p "$qq_config"
+    {
+      printf '%s\n' \
+        "--ozone-platform=wayland" \
+        "--enable-wayland-ime" \
+        "--wayland-text-input-version=3"
+      case "''${XDG_CURRENT_DESKTOP:-}" in
+        *niri*|*Niri*)
+          printf '%s\n' \
+            "--use-gl=swiftshader" \
+            "--enable-unsafe-swiftshader"
+          ;;
+      esac
+    } > "$qq_config/qq-flags.conf"
+
+    exec ${pkgs.flatpak}/bin/flatpak run \
+      --branch=stable \
+      --arch=x86_64 \
+      --command=qq \
+      com.qq.QQ "$@"
+  '';
 
 in
 {
+  home.packages = [ qqLauncher ];
+
+  # Shadow the Flatpak export so the Niri-only NVIDIA workaround is selected
+  # at launch time and cannot leak into Plasma.
+  xdg.dataFile."applications/com.qq.QQ.desktop".text = ''
+    [Desktop Entry]
+    Name=QQ
+    Exec=${lib.getExe qqLauncher} %U
+    Terminal=false
+    Type=Application
+    Icon=com.qq.QQ
+    StartupWMClass=QQ
+    Categories=Network;InstantMessaging;
+    Comment=QQ
+    X-Flatpak=com.qq.QQ
+  '';
+
   services.flatpak = {
     enable = true;
 
@@ -73,8 +114,6 @@ in
       "--ozone-platform=wayland" \
       "--enable-wayland-ime" \
       "--wayland-text-input-version=3" \
-      "--use-gl=swiftshader" \
-      "--enable-unsafe-swiftshader" \
       > "$qq_config/qq-flags.conf"
   '';
 }

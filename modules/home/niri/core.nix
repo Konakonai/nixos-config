@@ -39,7 +39,7 @@ in
     };
 
     environment = {
-      GSK_RENDERER = "ngl";
+      GSK_RENDERER = "gl";
       GTK_USE_PORTAL = "1";
       NIXOS_OZONE_WL = "1";
       QT_QPA_PLATFORMTHEME = "qt6ct";
@@ -47,7 +47,7 @@ in
       ELECTRON_OZONE_PLATFORM_HINT = "wayland";
       XCURSOR_THEME = lilyaGlass.cursorThemeName;
       XCURSOR_SIZE = builtins.toString lilyaGlass.cursorSize;
-      XCURSOR_PATH = "${pkgs.lilya.plasma-overdose-cursors}/share/icons";
+      XCURSOR_PATH = "${pkgs.lilya.plasma-overdose-theme}/share/icons";
     };
 
     input = {

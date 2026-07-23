@@ -1,7 +1,7 @@
 { lib, pkgs, ... }:
 
 let
-  inherit (pkgs.lilya) antigravity cc-switch-cli file-roller-wayland localsend-no-csd splayer;
+  inherit (pkgs.lilya) antigravity cc-switch file-roller-wayland localsend-no-csd splayer;
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
@@ -45,6 +45,7 @@ in
 {
   home.packages = with pkgs; [
     antigravity
+    cc-switch
     file-roller-wayland
     foliate
     gnome-font-viewer
@@ -64,15 +65,6 @@ in
   ];
 
   xdg.desktopEntries = {
-    "cc-switch-handler" = {
-      name = "CC Switch";
-      exec = "${lib.getExe cc-switch-cli} %u";
-      type = "Application";
-      terminal = false;
-      noDisplay = true;
-      mimeType = [ "x-scheme-handler/ccswitch" ];
-    };
-
     antigravity = {
       name = "Antigravity";
       exec = "${lib.getExe antigravity} %F";
