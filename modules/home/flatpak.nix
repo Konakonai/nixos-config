@@ -52,18 +52,24 @@ in
 
   # Shadow the Flatpak export so the Niri-only NVIDIA workaround is selected
   # at launch time and cannot leak into Plasma.
-  xdg.dataFile."applications/com.qq.QQ.desktop".text = ''
-    [Desktop Entry]
-    Name=QQ
-    Exec=${lib.getExe qqLauncher} %U
-    Terminal=false
-    Type=Application
-    Icon=com.qq.QQ
-    StartupWMClass=QQ
-    Categories=Network;InstantMessaging;
-    Comment=QQ
-    X-Flatpak=com.qq.QQ
-  '';
+  xdg.dataFile."applications/com.qq.QQ.desktop" = {
+    # Flatpak creates this path as an export symlink. Replacing that one
+    # generated link is intentional so the launcher can select per-session
+    # rendering flags.
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Name=QQ
+      Exec=${lib.getExe qqLauncher} %U
+      Terminal=false
+      Type=Application
+      Icon=com.qq.QQ
+      StartupWMClass=QQ
+      Categories=Network;InstantMessaging;
+      Comment=QQ
+      X-Flatpak=com.qq.QQ
+    '';
+  };
 
   services.flatpak = {
     enable = true;
