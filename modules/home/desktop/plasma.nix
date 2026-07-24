@@ -41,8 +41,8 @@ in
     ${writeKdeConfig kdeGlobals "Icons" "Theme" lilyaGlass.iconThemeName}
     ${writeKdeConfig kdeGlobals "KDE" "LookAndFeelPackage" "Plasma-Overdose"}
     ${writeKdeConfig plasmaConfig "Theme" "name" "Plasma-Overdose"}
-    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "library" "org.kde.kwin.aurorae.v2"}
-    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "theme" "__aurorae__svg__Plasma-Overdose"}
+    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "library" "org.kde.kwin.aurorae"}
+    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "theme" "Plasma-Overdose-KWinDeco"}
 
     ${pkgs.kdePackages.kservice}/bin/kbuildsycoca6 --noincremental >/dev/null
   '';
