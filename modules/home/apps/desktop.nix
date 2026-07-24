@@ -1,7 +1,7 @@
 { lib, pkgs, ... }:
 
 let
-  inherit (pkgs.lilya) antigravity cc-switch file-roller-wayland localsend-no-csd splayer;
+  inherit (pkgs.lilya) antigravity cc-switch file-roller-wayland localsend-no-csd qoder splayer;
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
@@ -59,6 +59,7 @@ in
     obsidian
     pavucontrol
     pwvucontrol
+    qoder
     resources
     splayer
     thunderbird
