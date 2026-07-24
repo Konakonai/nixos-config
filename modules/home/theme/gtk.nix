@@ -15,8 +15,8 @@
   gtk = {
     enable = true;
     theme = {
-      package = pkgs.adw-gtk3;
-      name = "adw-gtk3";
+      package = pkgs.lilya.plasma-overdose-gtk-theme;
+      name = "Plasma-Overdose-GTK";
     };
     iconTheme = {
       name = lilyaGlass.iconThemeName;
@@ -39,7 +39,7 @@
 
     gtk4.extraConfig = {
       gtk-font-name = "${lilyaGlass.fonts.sans} ${builtins.toString lilyaGlass.fonts.size}";
-      gtk-theme-name = "adw-gtk3";
+      gtk-theme-name = "Plasma-Overdose-GTK";
       gtk-application-prefer-dark-theme = 0;
     };
   };

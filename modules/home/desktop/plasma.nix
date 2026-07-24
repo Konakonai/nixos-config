@@ -40,6 +40,7 @@ in
     ${writeKdeConfig kdeGlobals "WM" "inactiveFont" uiFont}
     ${writeKdeConfig kdeGlobals "Icons" "Theme" lilyaGlass.iconThemeName}
     ${writeKdeConfig kdeGlobals "KDE" "LookAndFeelPackage" "Plasma-Overdose"}
+    ${writeKdeConfig kdeGlobals "KDE" "widgetStyle" "Windows"}
     ${writeKdeConfig plasmaConfig "Theme" "name" "Plasma-Overdose"}
     ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "library" "org.kde.kwin.aurorae"}
     ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "theme" "Plasma-Overdose-KWinDeco"}

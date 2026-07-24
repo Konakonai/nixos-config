@@ -24,7 +24,7 @@ in
 
   opacity = {
     windows = "1.0";
-    terminal = "0.84";
+    terminal = "1.0";
     noctaliaPanels = "0.70";
     noctaliaPopups = 0.82;
     noctaliaCapsules = 0.32;

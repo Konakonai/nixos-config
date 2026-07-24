@@ -2,7 +2,7 @@
 
 let
   themeEnv = {
-    GTK_THEME = "adw-gtk3";
+    GTK_THEME = "Plasma-Overdose-GTK";
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "qt6ct";

@@ -15,7 +15,7 @@
       enable_audio_bell = false;
       linux_display_server = "wayland";
 
-      # Layout & Aesthetics — transparent background without a milky tint.
+      # Keep the pixel-art surface opaque like the rest of Plasma Overdose.
       background_opacity = lilyaGlass.opacity.terminal;
       window_padding_width = 16;
       hide_window_decorations = "yes";

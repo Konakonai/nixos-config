@@ -1,8 +1,8 @@
 { lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "adw-gtk3";
-  gtkThemePackage = pkgs.adw-gtk3;
+  gtkThemeName = "Plasma-Overdose-GTK";
+  gtkThemePackage = pkgs.lilya.plasma-overdose-gtk-theme;
   cursorThemePackage = pkgs.lilya.plasma-overdose-theme;
   cursorThemeName = lilyaGlass.cursorThemeName;
   iconThemePackage = pkgs.tela-icon-theme;
