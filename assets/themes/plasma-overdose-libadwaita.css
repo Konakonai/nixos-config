@@ -6,6 +6,38 @@
  * geometry and adds a restrained Windows-style edge treatment.
  */
 
+window.background.csd,
+window.background.solid-csd,
+window.csd,
+window.solid-csd,
+window.csd > contents,
+window.solid-csd > contents,
+windowhandle,
+windowhandle > box {
+  border-radius: 0;
+  background-clip: border-box;
+}
+
+window.background.csd,
+window.background.solid-csd,
+window.csd,
+window.solid-csd {
+  border: 1px solid @accent_color;
+  box-shadow:
+    inset 1px 1px rgba(255, 255, 255, 0.55),
+    3px 3px 0 rgba(77, 33, 203, 0.22);
+}
+
+window.maximized,
+window.fullscreen,
+window.tiled,
+window.tiled-top,
+window.tiled-right,
+window.tiled-bottom,
+window.tiled-left {
+  box-shadow: none;
+}
+
 headerbar {
   min-height: 34px;
   padding: 2px 4px;
@@ -94,5 +126,5 @@ row.activatable {
 
 dialog,
 window.dialog {
-  border-radius: 2px;
+  border-radius: 0;
 }
