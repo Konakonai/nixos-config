@@ -26,6 +26,15 @@ in
     }
 
     copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}" "$HOME/.local/share/themes/${gtkThemeName}"
+
+    # This was copied by the previous declarative theme integration. Leaving
+    # it behind makes Noctalia detect adw-gtk3 and switch dconf back to it.
+    legacy_gtk_theme="$HOME/.local/share/themes/adw-gtk3"
+    if [ -e "$legacy_gtk_theme" ]; then
+      chmod -R u+w "$legacy_gtk_theme" 2>/dev/null || true
+      rm -rf "$legacy_gtk_theme"
+    fi
+
     copy_theme_dir "${cursorThemePackage}/share/icons/${cursorThemeName}" "$HOME/.local/share/flatpak-icons/${cursorThemeName}"
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
     copy_theme_dir "${fallbackIconThemePackage}/share/icons/Adwaita" "$HOME/.local/share/icons/Adwaita"
