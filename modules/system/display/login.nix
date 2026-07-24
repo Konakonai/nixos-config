@@ -63,21 +63,25 @@ let
     desktopNames = "KDE";
   };
 
+  sddmThemeConfig = pkgs.writeText "plasma-overdose-sddm-theme.conf" ''
+    [General]
+    background=${if loginWallpaper != null then toString loginWallpaper else ""}
+    backgroundColor=${lilyaGlass.palette.base}
+    accent=${lilyaGlass.palette.accent}
+    accentSoft=${lilyaGlass.palette.hover}
+    surface=${lilyaGlass.palette.base}
+    surfaceAlt=${lilyaGlass.palette.mantle}
+    textColor=${lilyaGlass.palette.text}
+    mutedText=${lilyaGlass.palette.subtext}
+    outline=${lilyaGlass.palette.overlay}
+    shadowColor=${lilyaGlass.palette.crust}
+    fontFamily=${lilyaGlass.fonts.sans}
+  '';
   sddmTheme = pkgs.runCommand "plasma-overdose-sddm-theme" { } ''
     themeDir="$out/share/sddm/themes/plasma-overdose"
     mkdir -p "$themeDir"
-    cp -R ${pkgs.kdePackages.plasma-desktop}/share/sddm/themes/breeze/. "$themeDir/"
-    chmod -R u+w "$themeDir"
-
-    substituteInPlace "$themeDir/theme.conf" \
-      --replace-fail "color=#1d99f3" "color=${lilyaGlass.palette.accent}" \
-      --replace-fail "fontSize=10" "fontSize=${builtins.toString lilyaGlass.fonts.size}"
-
-    ${lib.optionalString (loginWallpaper != null) ''
-      sed -i \
-        's|^background=.*|background=${loginWallpaper}|' \
-        "$themeDir/theme.conf"
-    ''}
+    cp -R ${../../../assets/themes/plasma-overdose-sddm}/. "$themeDir/"
+    ln -s ${sddmThemeConfig} "$themeDir/theme.conf"
   '';
 in
 {
