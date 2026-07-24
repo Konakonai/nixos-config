@@ -1,0 +1,53 @@
+/*
+ * Compatibility fixes layered after Noctalia's Zen community template.
+ * Zen/Firefox changed several panel variables and no longer consistently
+ * inherits --arrowpanel-color for application-menu descendants.
+ */
+
+#appMenu-popup,
+#appMenu-popup > panelmultiview,
+#appMenu-popup panelview,
+#appMenu-popup .panel-subview-body {
+  --panel-color: var(--text) !important;
+  --panel-description-color: var(--subtle) !important;
+  --panel-disabled-color: var(--muted) !important;
+  color: var(--text) !important;
+  background-color: var(--overlay) !important;
+}
+
+#appMenu-popup :is(
+  .subviewbutton,
+  .toolbarbutton-text,
+  .toolbarbutton-icon,
+  label,
+  description,
+  .menu-text,
+  .menu-accel
+) {
+  color: var(--text) !important;
+  fill: var(--text) !important;
+}
+
+#appMenu-popup .subviewbutton:hover,
+#appMenu-popup .subviewbutton[open="true"],
+#appMenu-popup .subviewbutton[checked="true"] {
+  color: var(--text) !important;
+  background-color: var(--hl_low) !important;
+}
+
+#appMenu-popup .subviewbutton[disabled="true"],
+#appMenu-popup .subviewbutton[disabled="true"] :is(
+  .toolbarbutton-text,
+  .toolbarbutton-icon,
+  label,
+  description
+) {
+  color: var(--muted) !important;
+  fill: var(--muted) !important;
+  opacity: 0.72 !important;
+}
+
+#appMenu-popup panelview,
+#appMenu-popup .panel-subview-body {
+  border-radius: 3px !important;
+}

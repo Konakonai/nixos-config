@@ -1,4 +1,4 @@
-{ config, lib, lilyaGlass, pkgs, ... }:
+{ config, hostProfile, lib, lilyaGlass, pkgs, ... }:
 
 let
   darklyQtTemplate = pkgs.writeText "noctalia-darkly-qtct.conf" ''
@@ -151,6 +151,27 @@ let
       box-shadow: 0 4px 12px var(--divider);
     }
   '';
+  zenOverridesTemplate = pkgs.writeText "zen-plasma-overdose-overrides.css" (
+    builtins.readFile ../../assets/themes/zen-plasma-overdose-overrides.css
+  );
+  zenOverridesHook = pkgs.writeShellScript "noctalia-zen-overrides" ''
+    set -eu
+
+    config_home="''${XDG_CONFIG_HOME:-$HOME/.config}"
+    cache_home="''${XDG_CACHE_HOME:-$HOME/.cache}"
+    chrome_dir="$config_home/zen/${hostProfile.zen.profilePath}/chrome"
+    user_chrome="$chrome_dir/userChrome.css"
+    override_css="$cache_home/noctalia/zen-browser/zen-plasma-overdose-overrides.css"
+    import_line="@import \"$override_css\";"
+    temp_file=
+
+    mkdir -p "$chrome_dir"
+    touch "$user_chrome"
+    temp_file="$(${pkgs.coreutils}/bin/mktemp "$chrome_dir/userChrome.css.XXXXXX")"
+    ${pkgs.gnugrep}/bin/grep -Fvx "$import_line" "$user_chrome" > "$temp_file" || true
+    printf '%s\n' "$import_line" >> "$temp_file"
+    mv "$temp_file" "$user_chrome"
+  '';
 
   tomlFormat = pkgs.formats.toml { };
   noctaliaSettings = {
@@ -245,6 +266,16 @@ let
       index = 1001;
     };
 
+    theme.templates.user.zen-plasma-overdose-overrides = {
+      enabled = true;
+      input_path = "${config.xdg.configHome}/noctalia/templates/zen-plasma-overdose-overrides.css";
+      output_path = [
+        "$XDG_CACHE_HOME/noctalia/zen-browser/zen-plasma-overdose-overrides.css"
+      ];
+      post_hook = "${config.xdg.configHome}/noctalia/templates/zen-plasma-overdose-overrides";
+      index = 2000;
+    };
+
   };
   noctaliaSeed = tomlFormat.generate "noctalia-config.toml" noctaliaSettings;
 in
@@ -272,6 +303,11 @@ in
       executable = true;
     };
     "noctalia/templates/heroic.css".source = heroicNoctaliaTemplate;
+    "noctalia/templates/zen-plasma-overdose-overrides.css".source = zenOverridesTemplate;
+    "noctalia/templates/zen-plasma-overdose-overrides" = {
+      source = zenOverridesHook;
+      executable = true;
+    };
   };
 
   xdg.dataFile."nixos-config/defaults/noctalia-config.toml".source = noctaliaSeed;
@@ -288,6 +324,36 @@ in
 
     if [ ! -e "$config_file" ]; then
       ${pkgs.coreutils}/bin/install -Dm600 ${noctaliaSeed} "$config_file"
+    fi
+  '';
+
+  # Plasma sessions do not run Noctalia continuously, but Zen still imports
+  # the last generated community theme. Install the compatibility layer during
+  # Home Manager activation as well; the template post-hook keeps it current
+  # whenever Noctalia is running.
+  home.activation.installZenThemeOverrides = lib.hm.dag.entryAfter [ "seedNoctaliaConfig" ] ''
+    cache_dir="''${XDG_CACHE_HOME:-$HOME/.cache}/noctalia/zen-browser"
+    config_file=${lib.escapeShellArg "${config.xdg.configHome}/noctalia/config.toml"}
+    template_section='[theme.templates.user.zen-plasma-overdose-overrides]'
+
+    mkdir -p "$cache_dir"
+    ${pkgs.coreutils}/bin/install -m644 ${zenOverridesTemplate} \
+      "$cache_dir/zen-plasma-overdose-overrides.css"
+    ${zenOverridesHook}
+
+    # The main Noctalia config is intentionally app-owned after its first
+    # seed. Register only this missing integration and preserve all GUI edits.
+    if ! ${pkgs.gnugrep}/bin/grep -Fqx "$template_section" "$config_file"; then
+      {
+        printf '\n%s\n' "$template_section"
+        printf 'enabled = true\n'
+        printf 'index = 2000\n'
+        printf 'input_path = "%s/noctalia/templates/zen-plasma-overdose-overrides.css"\n' \
+          ${lib.escapeShellArg config.xdg.configHome}
+        printf 'output_path = ["$XDG_CACHE_HOME/noctalia/zen-browser/zen-plasma-overdose-overrides.css"]\n'
+        printf 'post_hook = "%s/noctalia/templates/zen-plasma-overdose-overrides"\n' \
+          ${lib.escapeShellArg config.xdg.configHome}
+      } >> "$config_file"
     fi
   '';
 

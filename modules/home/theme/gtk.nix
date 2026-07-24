@@ -3,6 +3,9 @@
 let
   gtkThemeName = "Plasma-Overdose-GTK";
   gtkThemePackage = pkgs.lilya.plasma-overdose-gtk-theme;
+  libadwaitaOverlay = pkgs.writeText "plasma-overdose-libadwaita.css" (
+    builtins.readFile ../../../assets/themes/plasma-overdose-libadwaita.css
+  );
 in
 {
   # GTK4 can report the legacy "gnome" icon theme in Plasma even when the
@@ -49,39 +52,46 @@ in
   };
 
   # Libadwaita installs its own style provider after the selected GTK theme.
-  # Load the same GTK3/GTK4 theme as user CSS so Foliate, Mission Center, and
-  # other CSD applications retain the Windows 95 widget geometry. Noctalia's
-  # later color imports stay authoritative for the active palette.
+  # A full GTK theme at user-CSS priority also overrides application layout,
+  # so keep GTK3 on the selected theme and give GTK4 a small structural layer.
+  # Noctalia remains authoritative for the live palette.
   home.activation.installGtkOverdoseOverlay = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    install_overlay() {
+    update_user_css() {
       local version="$1"
       local config_dir=${lib.escapeShellArg config.xdg.configHome}/"gtk-$version"
-      local overlay_dir="$config_dir/plasma-overdose"
       local gtk_css="$config_dir/gtk.css"
-      local import_line='@import url("plasma-overdose/gtk.css");'
+      local legacy_import='@import url("plasma-overdose/gtk.css");'
+      local overlay_import='@import url("plasma-overdose-libadwaita.css");'
       local temp_file
 
       mkdir -p "$config_dir"
-      if [ -e "$overlay_dir" ]; then
-        chmod -R u+w "$overlay_dir" 2>/dev/null || true
-        rm -rf "$overlay_dir"
+      if [ -e "$config_dir/plasma-overdose" ]; then
+        chmod -R u+w "$config_dir/plasma-overdose" 2>/dev/null || true
+        rm -rf "$config_dir/plasma-overdose"
       fi
-      mkdir -p "$overlay_dir"
-      cp -aL ${gtkThemePackage}/share/themes/${gtkThemeName}/"gtk-$version"/. "$overlay_dir/"
-      chmod -R u+w "$overlay_dir"
 
       touch "$gtk_css"
-      if ! ${pkgs.gnugrep}/bin/grep -Fqx "$import_line" "$gtk_css"; then
-        temp_file="$(${pkgs.coreutils}/bin/mktemp "$config_dir/gtk.css.XXXXXX")"
+      temp_file="$(${pkgs.coreutils}/bin/mktemp "$config_dir/gtk.css.XXXXXX")"
+      ${pkgs.gnugrep}/bin/grep -Fvx \
+        -e "$legacy_import" \
+        -e "$overlay_import" \
+        "$gtk_css" > "$temp_file" || true
+
+      if [ "$version" = 4.0 ]; then
+        ${pkgs.coreutils}/bin/install -m644 ${libadwaitaOverlay} \
+          "$config_dir/plasma-overdose-libadwaita.css"
         {
-          printf '%s\n' "$import_line"
-          cat "$gtk_css"
-        } > "$temp_file"
+          printf '%s\n' "$overlay_import"
+          cat "$temp_file"
+        } > "$gtk_css"
+        rm -f "$temp_file"
+      else
+        rm -f "$config_dir/plasma-overdose-libadwaita.css"
         mv "$temp_file" "$gtk_css"
       fi
     }
 
-    install_overlay 3.0
-    install_overlay 4.0
+    update_user_css 3.0
+    update_user_css 4.0
   '';
 }
