@@ -1,7 +1,9 @@
-{ lib, pkgs, ... }:
+{ inputs, lib, pkgs, ... }:
 
 let
   inherit (pkgs.lilya) antigravity cc-switch file-roller-wayland localsend-no-csd qoder splayer;
+  claude-desktop =
+    inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs;
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
@@ -46,6 +48,7 @@ in
   home.packages = with pkgs; [
     antigravity
     cc-switch
+    claude-desktop
     file-roller-wayland
     foliate
     gnome-font-viewer

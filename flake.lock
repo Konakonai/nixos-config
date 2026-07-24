@@ -20,6 +20,28 @@
         "url": "https://github.com/ryantm/agenix/archive/b027ee29d959fda4b60b57566d64c98a202e0feb.tar.gz"
       }
     },
+    "claude-desktop": {
+      "inputs": {
+        "flake-parts": "flake-parts",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1784693764,
+        "narHash": "sha256-vbX7DsZ+lWl41SriM5x+gx13z87gUtmlcXujCfCFH30=",
+        "owner": "aaddrick",
+        "repo": "claude-desktop-debian",
+        "rev": "3755cc45bd6cb4afe0decc736a12ed87577ac324",
+        "type": "github"
+      },
+      "original": {
+        "owner": "aaddrick",
+        "ref": "v3.2.1+claude1.24012.0",
+        "repo": "claude-desktop-debian",
+        "type": "github"
+      }
+    },
     "codex-desktop-linux": {
       "flake": false,
       "locked": {
@@ -55,6 +77,24 @@
         "owner": "lnl7",
         "ref": "master",
         "repo": "nix-darwin",
+        "type": "github"
+      }
+    },
+    "flake-parts": {
+      "inputs": {
+        "nixpkgs-lib": "nixpkgs-lib"
+      },
+      "locked": {
+        "lastModified": 1782949081,
+        "narHash": "sha256-vp6Y/Grm98ESt6ceOkWiHWyZRDV3J1RID4w+6NWK9yA=",
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "rev": "17c9d6cdfc60c64f4ee8d306f9bc0b4ccb51481e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
         "type": "github"
       }
     },
@@ -248,6 +288,21 @@
         "type": "github"
       }
     },
+    "nixpkgs-lib": {
+      "locked": {
+        "lastModified": 1782614948,
+        "narHash": "sha256-ePjCwr1sNm9NYUqywL7QfK3JnlS015msC+eBu2zKlp8=",
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "rev": "db3f255737b94216eb71cce308e2912cf6bc2d7c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "type": "github"
+      }
+    },
     "nixpkgs-stable": {
       "locked": {
         "lastModified": 1782847189,
@@ -287,6 +342,7 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "claude-desktop": "claude-desktop",
         "codex-desktop-linux": "codex-desktop-linux",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager_2",

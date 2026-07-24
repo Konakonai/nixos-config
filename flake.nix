@@ -16,6 +16,11 @@
       flake = false;
     };
 
+    claude-desktop = {
+      url = "github:aaddrick/claude-desktop-debian/v3.2.1+claude1.24012.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     home-manager = {
       url = "github:nix-community/home-manager/master";
       inputs.nixpkgs.follows = "nixpkgs";
