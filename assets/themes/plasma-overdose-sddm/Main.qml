@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls as Controls
 import QtQuick.Layouts
 
 Item {
@@ -21,6 +20,11 @@ Item {
     property bool authenticating: false
     property string statusMessage: ""
     property date now: new Date()
+
+    QtObject {
+        id: sessionSelector
+        property int currentIndex: Number(config.defaultSessionIndex)
+    }
 
     function attemptLogin() {
         if (usernameField.text.length === 0 || authenticating) {
@@ -405,7 +409,7 @@ Item {
             ClassicField {
                 id: usernameField
                 Layout.fillWidth: true
-                text: userModel.lastUser
+                text: userModel.lastUser.length > 0 ? userModel.lastUser : config.defaultUser
                 placeholderText: "输入用户名"
                 enabled: !root.authenticating
                 onAccepted: passwordField.activate()
@@ -436,80 +440,25 @@ Item {
                 font.bold: true
             }
 
-            Controls.ComboBox {
-                id: sessionSelector
+            RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 42
-                model: sessionModel
-                textRole: "name"
-                currentIndex: sessionModel.lastIndex >= 0 ? sessionModel.lastIndex : 0
-                enabled: !root.authenticating
+                spacing: 8
 
-                contentItem: Text {
-                    leftPadding: 13
-                    rightPadding: 38
-                    text: sessionSelector.displayText
-                    color: root.textColor
-                    font.family: root.uiFont
-                    font.pixelSize: 15
-                    verticalAlignment: Text.AlignVCenter
-                    elide: Text.ElideRight
-                }
+                Repeater {
+                    model: sessionModel
 
-                indicator: Text {
-                    x: sessionSelector.width - width - 14
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "▼"
-                    color: root.accent
-                    font.pixelSize: 13
-                }
+                    delegate: ClassicButton {
+                        required property var model
+                        required property int index
 
-                background: Rectangle {
-                    color: "#ffffff"
-                    border.width: 2
-                    border.color: sessionSelector.activeFocus ? root.accent : root.outline
-                }
-
-                delegate: Controls.ItemDelegate {
-                    required property var model
-                    required property int index
-
-                    width: sessionSelector.width
-                    height: 38
-                    highlighted: sessionSelector.highlightedIndex === index
-
-                    contentItem: Text {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 42
                         text: model.name
-                        color: root.textColor
-                        font.family: root.uiFont
-                        font.pixelSize: 14
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                        primary: sessionSelector.currentIndex === index
+                        enabled: !root.authenticating
 
-                    background: Rectangle {
-                        color: highlighted ? root.accentSoft : root.surface
-                        border.width: 1
-                        border.color: root.outline
-                    }
-                }
-
-                popup: Controls.Popup {
-                    y: sessionSelector.height - 2
-                    width: sessionSelector.width
-                    implicitHeight: contentItem.implicitHeight + 4
-                    padding: 2
-
-                    contentItem: ListView {
-                        clip: true
-                        implicitHeight: contentHeight
-                        model: sessionSelector.popup.visible ? sessionSelector.delegateModel : null
-                        currentIndex: sessionSelector.highlightedIndex
-                    }
-
-                    background: Rectangle {
-                        color: root.surface
-                        border.width: 2
-                        border.color: root.accent
+                        onClicked: sessionSelector.currentIndex = index
                     }
                 }
             }

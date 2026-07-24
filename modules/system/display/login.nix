@@ -76,6 +76,8 @@ let
     outline=${lilyaGlass.palette.overlay}
     shadowColor=${lilyaGlass.palette.crust}
     fontFamily=${lilyaGlass.fonts.sans}
+    defaultUser=${hostProfile.user.userName}
+    defaultSessionIndex=1
   '';
   sddmTheme = pkgs.runCommand "plasma-overdose-sddm-theme" { } ''
     themeDir="$out/share/sddm/themes/plasma-overdose"
@@ -103,7 +105,7 @@ in
   services.greetd.enable = false;
 
   services.displayManager = {
-    defaultSession = "niri";
+    defaultSession = "plasma-hdr";
     sessionPackages = lib.mkForce [
       niriLoginSession
       plasmaLoginSession
@@ -122,6 +124,7 @@ in
         CursorSize = lilyaGlass.cursorSize;
         Font = lilyaGlass.fonts.sans;
       };
+      settings.Users.RememberLastSession = false;
     };
   };
 }
