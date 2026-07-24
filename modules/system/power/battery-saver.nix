@@ -327,7 +327,6 @@ in
       before = [
         "battery-saver.service"
         "display-manager.service"
-        "greetd.service"
         "graphical.target"
       ];
       wants = [ "systemd-udev-settle.service" ];
