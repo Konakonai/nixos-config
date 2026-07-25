@@ -163,6 +163,7 @@ let
     user_chrome="$chrome_dir/userChrome.css"
     override_css="$cache_home/noctalia/zen-browser/zen-plasma-overdose-overrides.css"
     import_line="@import \"$override_css\";"
+    usercontent_css="$cache_home/noctalia/zen-browser/zen-userContent.css"
     temp_file=
 
     mkdir -p "$chrome_dir"
@@ -171,6 +172,20 @@ let
     ${pkgs.gnugrep}/bin/grep -Fvx "$import_line" "$user_chrome" > "$temp_file" || true
     printf '%s\n' "$import_line" >> "$temp_file"
     mv "$temp_file" "$user_chrome"
+
+    if [ -f "$usercontent_css" ]; then
+      ${pkgs.python3}/bin/python3 -c '
+import sys
+path = sys.argv[1]
+with open(path, "r") as f:
+    content = f.read()
+if content.startswith("* {"):
+    content = content.replace("* {\n  --base:", "@-moz-document url-prefix(\"about:\"), url-prefix(\"chrome://\") {\n  :root {\n  --base:", 1)
+    content = content.replace("  --error:            #da4453;\n}", "  --error:            #da4453;\n  }\n}", 1)
+    with open(path, "w") as f:
+        f.write(content)
+' "$usercontent_css"
+    fi
   '';
 
   tomlFormat = pkgs.formats.toml { };
