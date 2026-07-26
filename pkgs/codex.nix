@@ -2,12 +2,12 @@
 
 pkgs.stdenv.mkDerivation rec {
   pname = "codex";
-  version = "0.144.1";
+  version = "0.145.0";
 
   src = pkgs.fetchurl {
     # The single-binary release asset lacks the code-mode host required by Codex Desktop.
     url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-x86_64-unknown-linux-musl-bundle.tar.zst";
-    sha256 = "sha256:1f4d3ab6152365d742e409ca93f51073e61f57aa408eebbdb7b90dcd40b920fd";
+    sha256 = "sha256:2ff38e8fa6fb7709292963ff133cd665ef8511d0954fbb3cdd03d804c334c36d";
   };
 
   sourceRoot = ".";

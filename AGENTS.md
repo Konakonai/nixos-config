@@ -56,6 +56,7 @@ nix build .#nixosConfigurations.nixos.config.system.build.toplevel --no-link --p
 ## Git 流程
 
 - 修改完成并验证后必须提交，除非用户明确说不要提交。
+- Codex 自动更新器生成的预期 `flake.lock`、`pkgs/codex.nix` 或对应固定源变更属于正常待提交更新，不要仅因它来自后台任务就当作无关 dirty state 留下；先核对版本、来源、哈希和构建结果，再将它与相关 Codex 更新提交并按本节规则推送。若变更范围超出 Codex 固定源或验证失败，再暂停并向用户确认。
 - 提交前检查 `git status --short` 和 staged diff，确保只包含本任务相关文件。
 - 提交信息用简短祈使句，描述行为变化，例如 `Fix display geometry`。
 - 提交成功后默认推送当前分支到对应 remote，除非用户明确说不要 push、当前分支没有 upstream、网络/权限失败，或仓库状态显示不适合推送。

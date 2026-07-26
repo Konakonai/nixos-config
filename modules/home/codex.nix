@@ -118,14 +118,15 @@ let
     meta = codexDesktopBase.meta or { };
   };
 
-  codexDesktopUpdate = pkgs.writeShellApplication {
-    name = "codex-desktop-update";
+  codexUpdate = pkgs.writeShellApplication {
+    name = "codex-update";
     runtimeInputs = [
       pkgs.coreutils
       pkgs.gawk
       pkgs.git
       pkgs.gh
       pkgs.gnugrep
+      pkgs.gnused
       pkgs.jq
       pkgs.libnotify
       pkgs.nix
@@ -137,7 +138,10 @@ let
       input_name=codex-desktop-linux
       upstream_ref=refs/heads/main
       upstream_url=https://github.com/ilysenko/codex-desktop-linux.git
-      log_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/codex-desktop-update"
+      cli_package=pkgs/codex.nix
+      cli_repo=openai/codex
+      cli_asset=codex-x86_64-unknown-linux-musl-bundle.tar.zst
+      log_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/codex-update"
       log_file="$log_dir/update.log"
 
       mkdir -p "$log_dir"
@@ -145,7 +149,7 @@ let
 
       notify() {
         if [ -n "''${DISPLAY:-}" ] || [ -n "''${WAYLAND_DISPLAY:-}" ]; then
-          notify-send "Codex Desktop update" "$1" >/dev/null 2>&1 || true
+          notify-send "Codex update" "$1" >/dev/null 2>&1 || true
         fi
       }
 
@@ -166,57 +170,167 @@ access-tokens = github.com=$github_token"
         exit 0
       fi
 
-      current_rev="$(jq -r --arg input "$input_name" '.nodes[$input].locked.rev // ""' flake.lock)"
-      latest_rev="$(git ls-remote "$upstream_url" "$upstream_ref" | awk '{ print $1 }')"
+      current_desktop_rev="$(jq -r --arg input "$input_name" '.nodes[$input].locked.rev // ""' flake.lock)"
+      latest_desktop_rev="$(git ls-remote "$upstream_url" "$upstream_ref" | awk '{ print $1 }')"
 
-      if [ -z "$latest_rev" ]; then
-        echo "could not resolve latest upstream revision"
-        notify "Failed: could not resolve upstream revision."
+      if ! [[ "$latest_desktop_rev" =~ ^[0-9a-f]{40}$ ]]; then
+        echo "could not resolve a valid desktop upstream revision"
+        notify "Failed: could not resolve the desktop revision."
         exit 1
       fi
 
-      echo "current: $current_rev"
-      echo "latest:  $latest_rev"
+      cli_release="$(gh api "repos/$cli_repo/releases/latest")"
+      latest_cli_tag="$(jq -r '.tag_name // ""' <<<"$cli_release")"
+      if ! [[ "$latest_cli_tag" =~ ^rust-v([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+        echo "unexpected Codex CLI release tag: $latest_cli_tag"
+        notify "Failed: the CLI release tag was unexpected."
+        exit 1
+      fi
+      latest_cli_version="''${BASH_REMATCH[1]}"
+      latest_cli_digest="$(
+        jq -r --arg asset "$cli_asset" \
+          '.assets[] | select(.name == $asset) | .digest // ""' \
+          <<<"$cli_release"
+      )"
+      if ! [[ "$latest_cli_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+        echo "missing or invalid digest for $cli_asset"
+        notify "Failed: the CLI bundle digest was unavailable."
+        exit 1
+      fi
 
-      if [ "$current_rev" = "$latest_rev" ]; then
+      current_cli_version="$(
+        sed -nE 's/^[[:space:]]*version = "([^"]+)";/\1/p' "$cli_package"
+      )"
+      current_cli_digest="$(
+        sed -nE 's/^[[:space:]]*sha256 = "(sha256:[0-9a-f]{64})";/\1/p' "$cli_package"
+      )"
+
+      if ! [[ "$current_cli_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] ||
+        ! [[ "$current_cli_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+        echo "could not parse the current Codex CLI pin"
+        notify "Failed: the current CLI pin was not recognized."
+        exit 1
+      fi
+      if [ "$current_cli_version" != "$latest_cli_version" ] &&
+        [ "$(
+          printf '%s\n' "$current_cli_version" "$latest_cli_version" |
+            sort -V |
+            tail -n 1
+        )" != "$latest_cli_version" ]; then
+        echo "refusing to downgrade CLI from $current_cli_version to $latest_cli_version"
+        notify "Failed: the latest release would downgrade the CLI."
+        exit 1
+      fi
+
+      desktop_changed=false
+      cli_changed=false
+      if [ "$current_desktop_rev" != "$latest_desktop_rev" ]; then
+        desktop_changed=true
+      fi
+      if [ "$current_cli_version" != "$latest_cli_version" ] ||
+        [ "$current_cli_digest" != "$latest_cli_digest" ]; then
+        cli_changed=true
+      fi
+
+      echo "desktop current: $current_desktop_rev"
+      echo "desktop latest:  $latest_desktop_rev"
+      echo "CLI current:     $current_cli_version"
+      echo "CLI latest:      $latest_cli_version"
+
+      if ! $desktop_changed && ! $cli_changed; then
         echo "already up to date"
         exit 0
       fi
 
-      lock_backup="$(mktemp)"
-      cp flake.lock "$lock_backup"
+      backup_dir="$(mktemp -d)"
+      cp flake.lock "$backup_dir/flake.lock"
+      cp "$cli_package" "$backup_dir/codex.nix"
 
-      restore_lock() {
-        cp "$lock_backup" flake.lock
-        rm -f "$lock_backup"
+      restore_sources() {
+        trap - EXIT INT TERM
+        cp "$backup_dir/flake.lock" flake.lock
+        cp "$backup_dir/codex.nix" "$cli_package"
+        rm -rf "$backup_dir"
       }
+      trap restore_sources EXIT INT TERM
 
-      if ! nix flake update "$input_name"; then
-        echo "flake update failed"
-        restore_lock
-        notify "Failed while updating flake.lock."
-        exit 1
+      if $desktop_changed; then
+        if ! nix flake update "$input_name"; then
+          echo "flake update failed"
+          restore_sources
+          notify "Failed while updating flake.lock."
+          exit 1
+        fi
+
+        updated_desktop_rev="$(
+          jq -r --arg input "$input_name" '.nodes[$input].locked.rev // ""' flake.lock
+        )"
+        if [ "$updated_desktop_rev" != "$latest_desktop_rev" ]; then
+          echo "updated lock resolved $updated_desktop_rev, expected $latest_desktop_rev"
+          restore_sources
+          notify "Failed: flake.lock resolved an unexpected revision."
+          exit 1
+        fi
       fi
 
-      updated_rev="$(jq -r --arg input "$input_name" '.nodes[$input].locked.rev // ""' flake.lock)"
-      if [ "$updated_rev" != "$latest_rev" ]; then
-        echo "updated lock resolved $updated_rev, expected $latest_rev"
-        restore_lock
-        notify "Failed: flake.lock resolved an unexpected revision."
-        exit 1
+      if $cli_changed; then
+        sed -i -E \
+          "s/^[[:space:]]*version = \"[^\"]+\";/  version = \"$latest_cli_version\";/" \
+          "$cli_package"
+        sed -i -E \
+          "s/^[[:space:]]*sha256 = \"sha256:[0-9a-f]{64}\";/    sha256 = \"$latest_cli_digest\";/" \
+          "$cli_package"
+
+        if [ "$(grep -cF "version = \"$latest_cli_version\";" "$cli_package")" -ne 1 ] ||
+          [ "$(grep -cF "sha256 = \"$latest_cli_digest\";" "$cli_package")" -ne 1 ]; then
+          echo "the updated CLI pin was not written exactly once"
+          restore_sources
+          notify "Failed while editing the CLI package pin."
+          exit 1
+        fi
+
+        if ! cli_out="$(
+          nix build \
+            .#nixosConfigurations.nixos.pkgs.lilya.codex \
+            --no-link \
+            --print-out-paths
+        )"; then
+          echo "CLI package build failed"
+          restore_sources
+          notify "Failed: the updated CLI package did not build."
+          exit 1
+        fi
+
+        if [ "$("$cli_out/bin/codex" --version)" != "codex-cli $latest_cli_version" ] ||
+          [ ! -x "$cli_out/bin/codex-code-mode-host" ] ||
+          [ ! -d "$cli_out/codex-resources" ]; then
+          echo "the built CLI bundle is incomplete or reports the wrong version"
+          restore_sources
+          notify "Failed: the built CLI bundle was incomplete."
+          exit 1
+        fi
       fi
 
       if ! nix build .#nixosConfigurations.nixos.config.system.build.toplevel --no-link; then
-        echo "build failed; restoring lock"
-        restore_lock
+        echo "toplevel build failed; restoring sources"
+        restore_sources
         notify "Failed: updated Codex package did not build."
         exit 1
       fi
 
-      rm -f "$lock_backup"
-      git add flake.lock
-      if git -c commit.gpgsign=false commit -m "Update Codex Desktop Linux" >/dev/null; then
-        echo "committed Codex update to $updated_rev"
+      rm -rf "$backup_dir"
+      trap - EXIT INT TERM
+      git add flake.lock "$cli_package"
+      if $desktop_changed && $cli_changed; then
+        commit_message="Update Codex Desktop and CLI"
+      elif $desktop_changed; then
+        commit_message="Update Codex Desktop Linux"
+      else
+        commit_message="Update Codex CLI to $latest_cli_version"
+      fi
+
+      if git -c commit.gpgsign=false commit -m "$commit_message" >/dev/null; then
+        echo "committed Codex update"
         notify "Updated and committed. Run rebuild to apply."
       else
         echo "git commit failed"
@@ -229,25 +343,25 @@ in
 {
   home.packages = [
     codexDesktop
-    codexDesktopUpdate
+    codexUpdate
   ];
 
   home.sessionVariables.CODEX_CLI_PATH = "${codexCli}/bin/codex";
 
-  systemd.user.services.codex-desktop-update = {
+  systemd.user.services.codex-update = {
     Unit = {
-      Description = "Update the Codex Desktop Linux flake input";
+      Description = "Update Codex Desktop Linux and Codex CLI";
       After = [ "network-online.target" ];
     };
 
     Service = {
       Type = "oneshot";
-      ExecStart = "${lib.getExe codexDesktopUpdate}";
+      ExecStart = "${lib.getExe codexUpdate}";
     };
   };
 
-  systemd.user.timers.codex-desktop-update = {
-    Unit.Description = "Update Codex Desktop Linux on a schedule";
+  systemd.user.timers.codex-update = {
+    Unit.Description = "Update Codex Desktop Linux and Codex CLI on a schedule";
 
     Timer = {
       OnCalendar = "daily";
