@@ -46,11 +46,6 @@ in
 
   power = {
     batteryConservationPath = "/sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode";
-    keepAwakeUsbDevices = [
-      { vendor = "1532"; product = "0099"; }
-      { vendor = "320f"; product = "5088"; }
-      { vendor = "2109"; product = "2822"; }
-    ];
   };
 
   services = {

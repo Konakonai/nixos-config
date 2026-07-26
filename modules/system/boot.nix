@@ -70,6 +70,9 @@ in
     "udev.log_level=3"
     "rd.systemd.show_status=false"
     "systemd.show_status=false"
+    # Prefer stable USB input latency over runtime power savings. Device-level
+    # udev rules in power/device-rules.nix also enforce this after hotplug.
+    "usbcore.autosuspend=-1"
     # tty1 is handed to Plymouth/kmscon; keep fbcon on fallback VTs so a
     # non-fullscreen kernel console is less likely to flash during handoff.
     "fbcon=vc:2-6"
