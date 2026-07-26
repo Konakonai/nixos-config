@@ -44,8 +44,6 @@ in
     ${writeKdeConfig plasmaConfig "Theme" "name" "Plasma-Overdose"}
     ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "library" "org.kde.kwin.aurorae"}
     ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "theme" "Plasma-Overdose-KWinDeco"}
-
-    ${pkgs.kdePackages.kservice}/bin/kbuildsycoca6 --noincremental >/dev/null
   '';
 
   home.activation.configurePlasmaShortcuts = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
@@ -57,4 +55,12 @@ in
     ${writeKdeConfig shortcutsConfig "plasmashell" "activate application launcher" "Meta+Space\tMeta\tAlt+F1,Meta\tAlt+F1,激活应用程序启动器"}
     ${writeKdeConfig shortcutsConfig "plasmashell" "manage activities" "none,Meta+Q,显示活动切换器"}
   '';
+
+  # Both Dolphin and Plasma update KDE service metadata. Rebuild the shared
+  # cache once after both activation steps instead of doing the same full scan
+  # twice on every boot and rebuild.
+  home.activation.refreshKServiceCache =
+    lib.hm.dag.entryAfter [ "configureDolphin" "configurePlasmaAppearance" ] ''
+      ${pkgs.kdePackages.kservice}/bin/kbuildsycoca6 --noincremental >/dev/null
+    '';
 }

@@ -46,7 +46,5 @@ in
     ${writeKdeConfig konsoleProfile "General" "Name" "Lilya"}
     ${writeKdeConfig konsoleProfile "Appearance" "Font" konsoleFont}
     ${writeKdeConfig konsoleConfig "Desktop Entry" "DefaultProfile" "Lilya.profile"}
-
-    ${pkgs.kdePackages.kservice}/bin/kbuildsycoca6 --noincremental >/dev/null
   '';
 }
