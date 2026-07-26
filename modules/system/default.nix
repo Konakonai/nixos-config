@@ -3,7 +3,7 @@
 {
   imports = [
     ./audio.nix
-    ./boot.nix
+    ./boot
     ./containers.nix
     ./display.nix
     ./fonts.nix
