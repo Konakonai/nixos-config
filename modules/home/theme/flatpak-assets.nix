@@ -14,7 +14,11 @@ in
     copy_theme_dir() {
       local src="$1"
       local dst="$2"
+      local marker="$dst/.nix-source"
       if [ -d "$src" ]; then
+        if [ -f "$marker" ] && [ "$(< "$marker")" = "$src" ]; then
+          return
+        fi
         if [ -e "$dst" ]; then
           chmod -R u+w "$dst" 2>/dev/null || true
         fi
@@ -22,6 +26,7 @@ in
         mkdir -p "$(dirname "$dst")"
         cp -aL "$src" "$dst"
         chmod -R u+w "$dst"
+        printf '%s\n' "$src" > "$marker"
       fi
     }
 

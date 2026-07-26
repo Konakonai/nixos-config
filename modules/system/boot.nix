@@ -1,4 +1,4 @@
-{ hostProfile, pkgs, ... }:
+{ hostProfile, lib, pkgs, ... }:
 
 let
   touhouGrubTheme = pkgs.lilya.touhou-grub-theme;
@@ -86,6 +86,16 @@ in
   ];
 
   environment.systemPackages = [ pkgs.efibootmgr ];
+
+  # Home Manager activation is already completed synchronously by every
+  # nixos-rebuild switch, and the resulting home links persist across boots.
+  # Reconcile them again after logins are enabled instead of holding SDDM on
+  # the boot critical path. This machine has no automatic login, so the short
+  # background activation still completes before an interactive session starts.
+  systemd.services."home-manager-${hostProfile.user.userName}" = {
+    before = lib.mkForce [ ];
+    after = lib.mkAfter [ "systemd-user-sessions.service" ];
+  };
 
   security.allowSimultaneousMultithreading = false;
 }
