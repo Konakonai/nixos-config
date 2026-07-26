@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   runtimeDir = "/run/mihomo";
@@ -59,4 +59,18 @@ in
     inherit configFile;
     webui = pkgs.metacubexd;
   };
+
+  # The proxy can establish listeners before the uplink is ready and reconnect
+  # on its own. Do not hold graphical.target behind NetworkManager's online
+  # heuristic.
+  systemd.services.mihomo = {
+    requires = lib.mkForce [ ];
+    after = lib.mkForce [ "network.target" ];
+    serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = "2s";
+    };
+  };
+
+  systemd.services.NetworkManager-wait-online.enable = false;
 }

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ hostProfile, pkgs, ... }:
 
 let
   touhouGrubTheme = pkgs.lilya.touhou-grub-theme;
@@ -52,12 +52,18 @@ in
           ${pkgs.efibootmgr}/bin/efibootmgr -o "$desiredOrder"
         fi
       fi
+
+      # Keep a firmware-standard fallback alongside the NVRAM-managed entry so
+      # a BIOS reset cannot strand the system without a bootable GRUB path.
+      ${pkgs.coreutils}/bin/install -Dm755 \
+        /boot/EFI/NixOS-boot/grubx64.efi \
+        /boot/EFI/BOOT/BOOTX64.EFI
     '';
   };
 
   boot.kernelPackages = pkgs.linuxPackages_latest;
   boot.kernelModules = [ "tun" ];
-  boot.initrd.kernelModules = [ "nvidia" "nvidia_modeset" "nvidia_uvm" "nvidia_drm" ];
+  boot.blacklistedKernelModules = hostProfile.kernel.blacklistedModules or [ ];
   boot.consoleLogLevel = 0;
   boot.initrd.verbose = false;
   boot.plymouth = {

@@ -111,6 +111,14 @@ in
     };
   };
 
+  # Keep declarative reconciliation available through the weekly timer and the
+  # manual service, but do not make Home Manager activation or login wait for
+  # remote Flatpak work.
+  home.activation.flatpak-managed-install =
+    lib.mkForce (lib.hm.dag.entryAnywhere "");
+  systemd.user.services.flatpak-managed-install.Install.WantedBy =
+    lib.mkForce [ ];
+
   home.activation.qqFlatpakWaylandFlags = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     qq_config="$HOME/.var/app/com.qq.QQ/config"
     mkdir -p "$qq_config"

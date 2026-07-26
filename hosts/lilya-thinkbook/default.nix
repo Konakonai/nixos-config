@@ -44,6 +44,12 @@ in
     acAdapter = "ADP0";
   };
 
+  kernel.blacklistedModules = [
+    # This Legion/GameZone-specific WMI path probes on the ThinkBook but cannot
+    # provide a platform profile. ideapad_laptop owns the working profile API.
+    "lenovo_wmi_gamezone"
+  ];
+
   power = {
     batteryConservationPath = "/sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode";
   };

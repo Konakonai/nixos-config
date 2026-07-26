@@ -3,11 +3,7 @@
 {
   systemd.services.openlist = {
     description = "OpenList Service";
-    after = [
-      "network-online.target"
-      "mihomo.service"
-    ];
-    wants = [ "network-online.target" ];
+    after = [ "mihomo.service" ];
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
       Type = "simple";
