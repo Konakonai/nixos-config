@@ -4,6 +4,7 @@ let
   kdeGlobals = "${config.xdg.configHome}/kdeglobals";
   kwinConfig = "${config.xdg.configHome}/kwinrc";
   plasmaConfig = "${config.xdg.configHome}/plasmarc";
+  powerDevilConfig = "${config.xdg.configHome}/powerdevilrc";
   shortcutsConfig = "${config.xdg.configHome}/kglobalshortcutsrc";
   uiFont = "${lilyaGlass.fonts.sans},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
   fixedFont = "${lilyaGlass.fonts.mono},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
@@ -11,6 +12,14 @@ let
     ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
       --file ${lib.escapeShellArg file} \
       --group ${lib.escapeShellArg group} \
+      --key ${lib.escapeShellArg key} \
+      ${lib.escapeShellArg value}
+  '';
+  writePowerDevilConfig = profile: key: value: ''
+    ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
+      --file ${lib.escapeShellArg powerDevilConfig} \
+      --group ${lib.escapeShellArg profile} \
+      --group "SuspendAndShutdown" \
       --key ${lib.escapeShellArg key} \
       ${lib.escapeShellArg value}
   '';
@@ -54,6 +63,20 @@ in
     ${writeKdeConfig shortcutsConfig "kwin" "Window Fullscreen" "Meta+Shift+F,none,全屏显示窗口"}
     ${writeKdeConfig shortcutsConfig "plasmashell" "activate application launcher" "Meta+Space\tMeta\tAlt+F1,Meta\tAlt+F1,激活应用程序启动器"}
     ${writeKdeConfig shortcutsConfig "plasmashell" "manage activities" "none,Meta+Q,显示活动切换器"}
+  '';
+
+  home.activation.configurePlasmaPowerManagement = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    # PowerDevil handles lid events independently of logind. Keep both power
+    # profiles awake on lid close so the panel can turn off without entering
+    # the unreliable NVIDIA s2idle resume path.
+    ${writePowerDevilConfig "AC" "AutoSuspendAction" "0"}
+    ${writePowerDevilConfig "AC" "LidAction" "64"}
+    ${writePowerDevilConfig "Battery" "AutoSuspendAction" "0"}
+    ${writePowerDevilConfig "Battery" "LidAction" "64"}
+
+    if ${pkgs.systemd}/bin/systemctl --user is-active --quiet plasma-powerdevil.service; then
+      ${pkgs.systemd}/bin/systemctl --user restart plasma-powerdevil.service
+    fi
   '';
 
   # Both Dolphin and Plasma update KDE service metadata. Rebuild the shared
