@@ -22,6 +22,7 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 - `modules/home/desktop/`: desktop entries, MIME defaults, Zed, media playback defaults, and font aliases.
 - `modules/system/display/`: Niri/Plasma login sessions, SDDM, console, portals, and desktop service glue.
 - `modules/system/power/`: base power services, battery conservation, device udev rules, and the battery-saver specialisation.
+- `modules/system/virtualization.nix`: libvirt/virt-manager and the external Windows whole-disk VM launcher.
 - `modules/home/theme/`: GTK, Qt, cursor, Xresources, dconf, Flatpak theme integration, and custom Fcitx/Rime icon wiring.
 - `modules/home/niri/`: niri core settings, visual effects, and focused keybinding groups.
 - `modules/shared/`: values shared by NixOS and Home Manager, currently the glass design tokens.
@@ -47,3 +48,16 @@ fully working user session also needs these external state files restored:
 Display layout is applied in the login and niri sessions from stable monitor
 identity data rather than DRM connector names, which may change across hybrid
 GPU boot paths.
+
+## External Windows VM
+
+The application menu entry **External Windows 11** starts the Windows
+installation on the aigo U397 through KVM/libvirt. The launcher identifies the
+disk by its USB serial, unmounts only that disk's mounted partitions, refuses
+to start if any remain mounted, and then opens a SPICE console.
+
+After first enabling this module, log out and back in (or reboot) so the user
+session receives membership in the `libvirtd` group. Shut Windows down inside
+the guest before unplugging the disk or booting it natively. Do not mount its
+NTFS partitions in Linux while the VM is running. Netflix 4K and HDCP still
+need native Windows boot and the physical NVIDIA/display path.

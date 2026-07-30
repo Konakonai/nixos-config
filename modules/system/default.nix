@@ -18,5 +18,6 @@
     ./secrets.nix
     ./services
     ./user.nix
+    ./virtualization.nix
   ];
 }

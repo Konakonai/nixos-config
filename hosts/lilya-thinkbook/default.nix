@@ -58,6 +58,16 @@ in
     openlistDataDir = "${homeDirectory}/.config/openlist";
   };
 
+  virtualization.externalWindows = {
+    enable = true;
+    domainName = "external-windows-11";
+    uuid = "f03897ba-9c7c-4500-b12d-5e3c95eb0c2b";
+    diskById = "/dev/disk/by-id/usb-_aigo_U397_071C3711211EA213-0:0";
+    diskSerial = "071C3711211EA213";
+    memoryGiB = 16;
+    vcpus = 8;
+  };
+
   secrets.identityFile = ageIdentityFile;
 
   mcp.braveSearch.envFile = "${homeDirectory}/.config/antigravity/brave-search.env";
