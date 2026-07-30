@@ -45,11 +45,11 @@
     "codex-desktop-linux": {
       "flake": false,
       "locked": {
-        "lastModified": 1785338716,
-        "narHash": "sha256-ntlZEKygr1aaU7lGgrba5Ml6uVTSQFmzkgLmt4Tbgv4=",
+        "lastModified": 1785407407,
+        "narHash": "sha256-tYCWA6CsnYWiGgyfZTvYjWvn7eNrSfTxOb3cNEHA3JA=",
         "owner": "ilysenko",
         "repo": "codex-desktop-linux",
-        "rev": "042adb7b23b1f47ca8d6a09da0b1abc5e00ff4a7",
+        "rev": "b48075d553475ba7674ea609fea806dc66913638",
         "type": "github"
       },
       "original": {
