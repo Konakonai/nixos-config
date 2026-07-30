@@ -119,7 +119,6 @@ let
           <frequencies state='on'/>
           <tlbflush state='on'/>
           <ipi state='on'/>
-          <evmcs state='on'/>
         </hyperv>
         <kvm>
           <hidden state='on'/>
@@ -128,8 +127,10 @@ let
         <smm state='on'/>
       </features>
       <cpu mode='host-passthrough' check='none' migratable='off'>
-        <topology sockets='1' dies='1' cores='4' threads='2'/>
-        <feature policy='require' name='vmx'/>
+        <topology sockets='1' dies='1' cores='8' threads='1'/>
+        <!-- Windows Hyper-V/WSL2 deadlocks during boot when nested VMX is exposed
+             through this removable whole-disk guest. Native boots are unaffected. -->
+        <feature policy='disable' name='vmx'/>
       </cpu>
       <clock offset='localtime'>
         <timer name='rtc' tickpolicy='catchup'/>

@@ -66,3 +66,8 @@ On the first virtual boot, open the `SPICE_TOOLS` CD in Windows and run
 `Install-Guest-Tools.cmd` as Administrator. Restart Windows afterward. The
 QXL driver and SPICE agent provide dynamic resolution, clipboard integration,
 and substantially smoother window resizing.
+
+The windowed VM intentionally does not expose nested VMX. Hyper-V and WSL2
+remain available when Windows is booted natively, but cannot run inside this
+VM; exposing nested VMX makes this removable Windows installation hang while
+starting Windows Boot Manager.
