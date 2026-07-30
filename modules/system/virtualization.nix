@@ -4,6 +4,7 @@ let
   cfg = hostProfile.virtualization.externalWindows or { enable = false; };
   domainName = cfg.domainName;
   memoryKiB = cfg.memoryGiB * 1024 * 1024;
+  ovmf = pkgs.OVMFFull.fd;
 
   domainXml = pkgs.writeText "${domainName}.xml" ''
     <domain type='kvm'>
@@ -20,13 +21,10 @@ let
       <resource>
         <partition>/machine</partition>
       </resource>
-      <os firmware='efi'>
+      <os>
         <type arch='x86_64' machine='q35'>hvm</type>
-        <firmware>
-          <feature enabled='yes' name='secure-boot'/>
-          <feature enabled='yes' name='enrolled-keys'/>
-        </firmware>
-        <boot dev='hd'/>
+        <loader readonly='yes' secure='yes' type='pflash'>${ovmf}/FV/OVMF_CODE.fd</loader>
+        <nvram template='${ovmf}/FV/OVMF_VARS.ms.fd'/>
         <bootmenu enable='yes' timeout='3000'/>
       </os>
       <features>
@@ -223,8 +221,12 @@ lib.mkIf (cfg.enable or false) {
   systemd.services.external-windows-libvirt-domain = {
     description = "Define the external Windows 11 libvirt domain";
     wantedBy = [ "multi-user.target" ];
-    requires = [ "libvirtd.service" ];
+    requires = [
+      "external-windows-device-permissions.service"
+      "libvirtd.service"
+    ];
     after = [
+      "external-windows-device-permissions.service"
       "libvirtd.service"
       "systemd-udev-settle.service"
     ];
@@ -235,6 +237,24 @@ lib.mkIf (cfg.enable or false) {
     };
     script = ''
       ${pkgs.libvirt}/bin/virsh --connect qemu:///system define ${domainXml}
+    '';
+  };
+
+  # A live switch reloads udev rules but does not reliably retrigger the parent
+  # whole-disk node. Apply the exact serial-scoped rule immediately so QEMU can
+  # open the disk without waiting for a replug or reboot.
+  systemd.services.external-windows-device-permissions = {
+    description = "Apply permissions for the external Windows disk";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-udevd.service" ];
+    before = [ "external-windows-libvirt-domain.service" ];
+    serviceConfig.Type = "oneshot";
+    script = ''
+      ${pkgs.systemd}/bin/udevadm trigger \
+        --action=change \
+        --subsystem-match=block \
+        --property-match=ID_SERIAL_SHORT=${lib.escapeShellArg cfg.diskSerial} \
+        --settle
     '';
   };
 }
