@@ -61,3 +61,8 @@ session receives membership in the `libvirtd` group. Shut Windows down inside
 the guest before unplugging the disk or booting it natively. Do not mount its
 NTFS partitions in Linux while the VM is running. Netflix 4K and HDCP still
 need native Windows boot and the physical NVIDIA/display path.
+
+On the first virtual boot, open the `SPICE_TOOLS` CD in Windows and run
+`Install-Guest-Tools.cmd` as Administrator. Restart Windows afterward. The
+QXL driver and SPICE agent provide dynamic resolution, clipboard integration,
+and substantially smoother window resizing.
