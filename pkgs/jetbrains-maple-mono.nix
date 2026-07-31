@@ -6,7 +6,7 @@ pkgs.stdenvNoCC.mkDerivation rec {
 
   src = pkgs.fetchurl {
     url = "https://github.com/SpaceTimee/Fusion-JetBrainsMapleMono/releases/download/${version}/JetBrainsMapleMono-XX-XX-XX-HT.zip";
-    hash = "sha256-+sqVDT5BVj1f3igS4nqbRst6Yp8lqzTrl5H17audxkM=";
+    hash = "sha256-e0+qq8YsoxM81EHKMyo3Xu5aKMaQON0USHR4ngngOuI=";
   };
 
   nativeBuildInputs = [ pkgs.unzip ];
