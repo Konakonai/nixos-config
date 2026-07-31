@@ -20,6 +20,7 @@ in
     '';
     meta = pkgs.cc-switch.meta;
   };
+  classin = pkgs.callPackage ./classin.nix { };
   codex = pkgs.callPackage ./codex.nix { };
   eden = pkgs.callPackage ./eden.nix { };
   file-roller-wayland = pkgs.callPackage ./file-roller-wayland.nix { };

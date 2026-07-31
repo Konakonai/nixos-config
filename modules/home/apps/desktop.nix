@@ -1,7 +1,8 @@
-{ inputs, lib, pkgs, ... }:
+{ fcitxCompatEnv, inputs, lib, pkgs, ... }:
 
 let
   inherit (pkgs.lilya) antigravity cc-switch file-roller-wayland localsend-no-csd qoder splayer;
+  classin = pkgs.lilya.classin.override { inherit fcitxCompatEnv; };
   claude-desktop =
     inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs;
   fontMimeTypes = [
@@ -49,6 +50,7 @@ in
     antigravity
     cc-switch
     claude-desktop
+    classin
     file-roller-wayland
     foliate
     gnome-font-viewer
