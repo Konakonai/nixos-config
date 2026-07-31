@@ -38,7 +38,6 @@ in
     '';
     meta = pkgs.localsend.meta;
   };
-  mindustry = pkgs.callPackage ./mindustry.nix { };
   plasma-overdose-gtk-theme = pkgs.callPackage ./plasma-overdose-gtk-theme.nix { };
   plasma-overdose-theme = pkgs.callPackage ./plasma-overdose-theme.nix { };
   qoder = pkgs.callPackage ./qoder.nix { };

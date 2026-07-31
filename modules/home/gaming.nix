@@ -71,7 +71,6 @@ in
     linuxConsoleTools
     mangohud
     lilya.eden
-    lilya.mindustry
     protonup-qt
     protontricks
     vulkan-tools
@@ -79,17 +78,6 @@ in
     winetricks
     lilya.wiiu-downloader
   ];
-
-  xdg.desktopEntries.mindustry = {
-    name = "Mindustry";
-    genericName = "Tower Defense Game";
-    exec = "${pkgs.lib.getExe pkgs.lilya.mindustry} %U";
-    icon = "mindustry";
-    type = "Application";
-    terminal = false;
-    categories = [ "Game" "StrategyGame" ];
-    startupNotify = true;
-  };
 
   xdg.configFile."MangoHud/MangoHud.conf".text = ''
     legacy_layout=false
