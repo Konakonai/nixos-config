@@ -18,12 +18,20 @@ stdenvNoCC.mkDerivation rec {
   installPhase = ''
     runHook preInstall
 
-    mkdir -p "$out/share/plasma/desktoptheme" "$out/share/color-schemes" "$out/share/plasma/look-and-feel" "$out/share/aurorae/themes" "$out/share/wallpapers"
+    mkdir -p "$out/share/plasma/desktoptheme" "$out/share/color-schemes" "$out/share/plasma/look-and-feel" "$out/share/aurorae/themes" "$out/share/wallpapers" "$out/share/sddm/themes/MacTahoe-Light" "$out/share/sddm/themes/MacTahoe-Dark"
 
     cp -r color-schemes/* "$out/share/color-schemes/" 2>/dev/null || true
     cp -r plasma/desktoptheme/* "$out/share/plasma/desktoptheme/" 2>/dev/null || true
     cp -r plasma/look-and-feel/* "$out/share/plasma/look-and-feel/" 2>/dev/null || true
     cp -r wallpapers/* "$out/share/wallpapers/" 2>/dev/null || true
+
+    cp -r sddm/MacTahoe-6.0/* "$out/share/sddm/themes/MacTahoe-Light/"
+    cp -r sddm/images/Background-Light.jpeg "$out/share/sddm/themes/MacTahoe-Light/Background.jpeg"
+    cp -r sddm/images/Preview-Light.jpeg "$out/share/sddm/themes/MacTahoe-Light/Preview.jpeg"
+
+    cp -r sddm/MacTahoe-6.0/* "$out/share/sddm/themes/MacTahoe-Dark/"
+    cp -r sddm/images/Background-Dark.jpeg "$out/share/sddm/themes/MacTahoe-Dark/Background.jpeg"
+    cp -r sddm/images/Preview-Dark.jpeg "$out/share/sddm/themes/MacTahoe-Dark/Preview.jpeg"
 
     runHook postInstall
   '';

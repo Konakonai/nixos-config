@@ -63,28 +63,6 @@ let
     desktopNames = "KDE";
   };
 
-  sddmThemeConfig = pkgs.writeText "plasma-overdose-sddm-theme.conf" ''
-    [General]
-    background=${if loginWallpaper != null then toString loginWallpaper else ""}
-    backgroundColor=${lilyaGlass.palette.base}
-    accent=${lilyaGlass.palette.accent}
-    accentSoft=${lilyaGlass.palette.hover}
-    surface=${lilyaGlass.palette.base}
-    surfaceAlt=${lilyaGlass.palette.mantle}
-    textColor=${lilyaGlass.palette.text}
-    mutedText=${lilyaGlass.palette.subtext}
-    outline=${lilyaGlass.palette.overlay}
-    shadowColor=${lilyaGlass.palette.crust}
-    fontFamily=${lilyaGlass.fonts.sans}
-    defaultUser=${hostProfile.user.userName}
-    defaultSessionIndex=1
-  '';
-  sddmTheme = pkgs.runCommand "plasma-overdose-sddm-theme" { } ''
-    themeDir="$out/share/sddm/themes/plasma-overdose"
-    mkdir -p "$themeDir"
-    cp -R ${../../../assets/themes/plasma-overdose-sddm}/. "$themeDir/"
-    ln -s ${sddmThemeConfig} "$themeDir/theme.conf"
-  '';
 in
 {
   programs.niri = {
@@ -114,7 +92,7 @@ in
     sddm = {
       enable = true;
       enableHidpi = true;
-      theme = "${sddmTheme}/share/sddm/themes/plasma-overdose";
+      theme = "${pkgs.lilya.mactahoe-kde}/share/sddm/themes/MacTahoe-Light";
       wayland = {
         enable = true;
         compositor = "kwin";
