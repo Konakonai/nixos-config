@@ -29,17 +29,17 @@ in
   programs.plasma = {
     enable = true;
 
-    # 1. 统一纯正 macOS (WhiteSur) 视觉体系
+    # 1. 统一纯正 macOS Sequoia (MacTahoe) 浅色视觉体系
     workspace = {
-      lookAndFeel = "com.github.vinceliuice.WhiteSur";
-      theme = "WhiteSur";
-      colorScheme = "WhiteSur";
+      lookAndFeel = "org.kde.breeze.desktop";
+      theme = "MacTahoe-Light";
+      colorScheme = "MacTahoeLight";
       iconTheme = "WhiteSur";
       cursor = {
         theme = lilyaGlass.cursorThemeName;
         size = lilyaGlass.cursorSize;
       };
-      wallpaper = "${pkgs.whitesur-kde}/share/wallpapers/WhiteSur-light/contents/images/5120x2880.jpg";
+      wallpaper = "${pkgs.lilya.mactahoe-kde}/share/wallpapers/MacTahoe-Light/contents/images/3840x2160.jpeg";
     };
 
     # 2. 统一字体管理
