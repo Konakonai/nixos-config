@@ -49,7 +49,7 @@ in
     capsules = 16.0;
   };
 
-  iconThemeName = "Adwaita";
+  iconThemeName = "WhiteSur";
   cursorThemeName = "Adwaita";
   cursorSize = 32;
 

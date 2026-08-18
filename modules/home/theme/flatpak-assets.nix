@@ -1,11 +1,11 @@
 { lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "adw-gtk3";
-  gtkThemePackage = pkgs.adw-gtk3;
+  gtkThemeName = "WhiteSur-Light";
+  gtkThemePackage = pkgs.whitesur-gtk-theme;
   cursorThemePackage = pkgs.adwaita-icon-theme;
   cursorThemeName = lilyaGlass.cursorThemeName;
-  iconThemePackage = pkgs.adwaita-icon-theme;
+  iconThemePackage = pkgs.whitesur-icon-theme;
   iconThemeName = lilyaGlass.iconThemeName;
   fallbackIconThemePackage = pkgs.adwaita-icon-theme;
 in

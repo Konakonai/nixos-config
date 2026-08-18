@@ -1,8 +1,8 @@
 { config, lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "adw-gtk3";
-  gtkThemePackage = pkgs.adw-gtk3;
+  gtkThemeName = "WhiteSur-Light";
+  gtkThemePackage = pkgs.whitesur-gtk-theme;
 in
 {
   # GTK4 can report the legacy "gnome" icon theme in Plasma. Keep that lookup
@@ -23,7 +23,7 @@ in
     };
     iconTheme = {
       name = lilyaGlass.iconThemeName;
-      package = pkgs.adwaita-icon-theme;
+      package = pkgs.whitesur-icon-theme;
     };
     cursorTheme = {
       name = lilyaGlass.cursorThemeName;
