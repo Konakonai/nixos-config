@@ -2,11 +2,11 @@
 
 let
   themeEnv = {
-    GTK_THEME = "Plasma-Overdose-GTK";
+    GTK_THEME = "Colloid-Light-hdpi";
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "qt6ct";
-    QT_STYLE_OVERRIDE = "";
+    QT_STYLE_OVERRIDE = "Darkly";
     XCURSOR_THEME = lilyaGlass.cursorThemeName;
     XCURSOR_SIZE = builtins.toString lilyaGlass.cursorSize;
     XCURSOR_PATH = "${config.home.homeDirectory}/.local/share/flatpak-icons:${config.home.homeDirectory}/.local/share/icons";

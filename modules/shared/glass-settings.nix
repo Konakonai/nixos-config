@@ -49,8 +49,8 @@ in
     capsules = 16.0;
   };
 
-  iconThemeName = "Tela";
-  cursorThemeName = "Plasma-Overdose";
+  iconThemeName = "Colloid-Light";
+  cursorThemeName = "Colloid-cursors";
   cursorSize = 32;
 
   fonts = {

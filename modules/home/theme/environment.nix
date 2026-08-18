@@ -9,6 +9,6 @@
     ELECTRON_OZONE_PLATFORM_HINT = "wayland";
     XCURSOR_THEME = lilyaGlass.cursorThemeName;
     XCURSOR_SIZE = builtins.toString lilyaGlass.cursorSize;
-    XCURSOR_PATH = "${pkgs.lilya.plasma-overdose-theme}/share/icons";
+    XCURSOR_PATH = "${pkgs.colloid-cursors}/share/icons";
   };
 }

@@ -1,11 +1,11 @@
 { lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "Plasma-Overdose-GTK";
-  gtkThemePackage = pkgs.lilya.plasma-overdose-gtk-theme;
-  cursorThemePackage = pkgs.lilya.plasma-overdose-theme;
+  gtkThemeName = "Colloid-Light-hdpi";
+  gtkThemePackage = pkgs.lilya.colloid-gtk-theme;
+  cursorThemePackage = pkgs.colloid-cursors;
   cursorThemeName = lilyaGlass.cursorThemeName;
-  iconThemePackage = pkgs.tela-icon-theme;
+  iconThemePackage = pkgs.colloid-icon-theme;
   iconThemeName = lilyaGlass.iconThemeName;
   fallbackIconThemePackage = pkgs.adwaita-icon-theme;
 in

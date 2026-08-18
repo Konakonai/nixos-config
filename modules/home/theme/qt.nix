@@ -10,7 +10,7 @@ let
     custom_palette=true
     icon_theme=${lilyaGlass.iconThemeName}
     standard_dialogs=default
-    style=Windows
+    style=Darkly
 
     [Interface]
     activate_item_on_single_click=1
@@ -31,6 +31,10 @@ let
   '';
 in
 {
+  home.packages = [
+    pkgs.darkly
+  ];
+
   qt = {
     enable = true;
     platformTheme.name = "qt6ct";

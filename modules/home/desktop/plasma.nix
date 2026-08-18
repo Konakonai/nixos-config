@@ -39,7 +39,7 @@ in
   '';
 
   home.activation.configurePlasmaAppearance = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    ${writeKdeConfig kdeGlobals "General" "ColorScheme" "PlasmaOverdose"}
+    ${writeKdeConfig kdeGlobals "General" "ColorScheme" "BreezeLight"}
     ${writeKdeConfig kdeGlobals "General" "font" uiFont}
     ${writeKdeConfig kdeGlobals "General" "fixed" fixedFont}
     ${writeKdeConfig kdeGlobals "General" "menuFont" uiFont}
@@ -48,11 +48,11 @@ in
     ${writeKdeConfig kdeGlobals "WM" "activeFont" uiFont}
     ${writeKdeConfig kdeGlobals "WM" "inactiveFont" uiFont}
     ${writeKdeConfig kdeGlobals "Icons" "Theme" lilyaGlass.iconThemeName}
-    ${writeKdeConfig kdeGlobals "KDE" "LookAndFeelPackage" "Plasma-Overdose"}
-    ${writeKdeConfig kdeGlobals "KDE" "widgetStyle" "Windows"}
-    ${writeKdeConfig plasmaConfig "Theme" "name" "Plasma-Overdose"}
-    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "library" "org.kde.kwin.aurorae"}
-    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "theme" "Plasma-Overdose-KWinDeco"}
+    ${writeKdeConfig kdeGlobals "KDE" "LookAndFeelPackage" "org.kde.breeze.desktop"}
+    ${writeKdeConfig kdeGlobals "KDE" "widgetStyle" "Darkly"}
+    ${writeKdeConfig plasmaConfig "Theme" "name" "default"}
+    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "library" "org.kde.darkly"}
+    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "theme" "Darkly"}
   '';
 
   home.activation.configurePlasmaShortcuts = lib.hm.dag.entryAfter [ "linkGeneration" ] ''

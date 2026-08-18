@@ -33,6 +33,10 @@
 
     adwaita-icon-theme
     tela-icon-theme
+    colloid-icon-theme
+    colloid-cursors
+    lilya.colloid-gtk-theme
+    darkly
     qadwaitadecorations-qt6
     kdePackages.dolphin
     # Dolphin's embedded terminal panel is a KonsolePart plugin. External
