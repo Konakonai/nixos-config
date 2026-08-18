@@ -46,9 +46,15 @@
       url = "git+https://github.com/SteamClientHomebrew/Millennium.git?dir=packages/nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    plasma-manager = {
+      url = "github:nix-community/plasma-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, niri, noctalia, millennium, agenix, ... }:
+  outputs = inputs@{ nixpkgs, home-manager, niri, noctalia, millennium, plasma-manager, agenix, ... }:
   let
     hostProfile = import ./hosts/lilya-thinkbook;
     lilyaGlass = import ./modules/shared/glass-settings.nix;

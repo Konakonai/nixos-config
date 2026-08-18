@@ -3,11 +3,8 @@
 let
   kdeGlobals = "${config.xdg.configHome}/kdeglobals";
   kwinConfig = "${config.xdg.configHome}/kwinrc";
-  plasmaConfig = "${config.xdg.configHome}/plasmarc";
   powerDevilConfig = "${config.xdg.configHome}/powerdevilrc";
-  shortcutsConfig = "${config.xdg.configHome}/kglobalshortcutsrc";
-  uiFont = "${lilyaGlass.fonts.sans},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
-  fixedFont = "${lilyaGlass.fonts.mono},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
+
   writeKdeConfig = file: group: key: value: ''
     ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
       --file ${lib.escapeShellArg file} \
@@ -38,38 +35,156 @@ in
     X-KDE-Shortcuts=Meta+Return
   '';
 
-  home.activation.configurePlasmaAppearance = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    ${writeKdeConfig kdeGlobals "General" "ColorScheme" "BreezeLight"}
-    ${writeKdeConfig kdeGlobals "General" "font" uiFont}
-    ${writeKdeConfig kdeGlobals "General" "fixed" fixedFont}
-    ${writeKdeConfig kdeGlobals "General" "menuFont" uiFont}
-    ${writeKdeConfig kdeGlobals "General" "toolBarFont" uiFont}
-    ${writeKdeConfig kdeGlobals "General" "smallestReadableFont" uiFont}
-    ${writeKdeConfig kdeGlobals "WM" "activeFont" uiFont}
-    ${writeKdeConfig kdeGlobals "WM" "inactiveFont" uiFont}
-    ${writeKdeConfig kdeGlobals "Icons" "Theme" lilyaGlass.iconThemeName}
-    ${writeKdeConfig kdeGlobals "KDE" "LookAndFeelPackage" "org.kde.breeze.desktop"}
-    ${writeKdeConfig kdeGlobals "KDE" "widgetStyle" "klassy"}
-    ${writeKdeConfig plasmaConfig "Theme" "name" "MacTahoe-Light"}
-    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "library" "org.kde.klassy"}
-    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "theme" "klassy"}
-  '';
+  programs.plasma = {
+    enable = true;
+
+    # 1. 声明式 Workspace 外观体系
+    workspace = {
+      theme = "MacTahoe-Light";
+      colorScheme = "BreezeLight";
+      iconTheme = "WhiteSur";
+      cursor = {
+        theme = lilyaGlass.cursorThemeName;
+        size = lilyaGlass.cursorSize;
+      };
+      lookAndFeel = "org.kde.breeze.desktop";
+    };
+
+    # 2. 统一字体管理
+    fonts = {
+      general = {
+        family = lilyaGlass.fonts.sans;
+        pointSize = lilyaGlass.fonts.size;
+      };
+      fixedWidth = {
+        family = lilyaGlass.fonts.mono;
+        pointSize = lilyaGlass.fonts.terminalSize;
+      };
+      small = {
+        family = lilyaGlass.fonts.sans;
+        pointSize = lilyaGlass.fonts.size - 2;
+      };
+      toolbar = {
+        family = lilyaGlass.fonts.sans;
+        pointSize = lilyaGlass.fonts.size;
+      };
+      menu = {
+        family = lilyaGlass.fonts.sans;
+        pointSize = lilyaGlass.fonts.size;
+      };
+      windowTitle = {
+        family = lilyaGlass.fonts.sans;
+        pointSize = lilyaGlass.fonts.size;
+      };
+    };
+
+    # 3. macOS 式顶栏 + 底部浮动 Dock 面板
+    panels = [
+      # 顶部状态栏：高度 30，贴顶，包含启动菜单、全局菜单、居中时钟和系统托盘
+      {
+        location = "top";
+        height = 30;
+        floating = false;
+        widgets = [
+          "org.kde.plasma.kickoff"
+          "org.kde.plasma.appmenu"
+          "org.kde.plasma.panelspacer"
+          {
+            digitalClock = {
+              time.format = "24h";
+              date.enable = false;
+            };
+          }
+          "org.kde.plasma.panelspacer"
+          "org.kde.plasma.systemtray"
+        ];
+      }
+
+      # 底部 Dock：居中悬浮、自适应长度、图标任务栏 + 废纸篓
+      {
+        location = "bottom";
+        alignment = "center";
+        height = 56;
+        lengthMode = "fit";
+        floating = true;
+        hiding = "dodgewindows";
+        widgets = [
+          {
+            iconTasks = {
+              launchers = [
+                "applications:org.kde.dolphin.desktop"
+                "applications:kitty.desktop"
+                "applications:zen-beta.desktop"
+                "applications:codex.desktop"
+                "applications:systemsettings.desktop"
+              ];
+            };
+          }
+          "org.kde.plasma.trash"
+        ];
+      }
+    ];
+
+    # 4. 窗口管理器与特效 (启用毛玻璃模糊)
+    kwin = {
+      effects = {
+        blur.enable = true;
+      };
+    };
+
+    # 5. 快捷键
+    shortcuts = {
+      kwin = {
+        "Overview" = [ "Meta+O" "Meta+W" ];
+        "Window Close" = "Meta+Q";
+        "Window Maximize" = "Meta+F";
+        "Window Fullscreen" = "Meta+Shift+F";
+      };
+      plasmashell = {
+        "activate application launcher" = [ "Meta+Space" "Alt+F1" ];
+        "manage activities" = "none";
+      };
+    };
+
+    # 6. 底层与 Klassy 细粒度主题定制 (交通灯按钮与毛玻璃融合)
+    configFile = {
+      "klassy/klassyrc" = {
+        "Button" = {
+          "ButtonShape" = "TrafficLights";
+          "ButtonIconStyle" = "macOS";
+        };
+        "TitleBar" = {
+          "BlurBehindTitleBar" = true;
+          "TranslucentTitleBar" = true;
+          "OpaqueActiveTitleBar" = false;
+        };
+      };
+      "kdeglobals" = {
+        "General" = {
+          "TerminalApplication" = lib.getExe pkgs.kitty;
+          "TerminalService" = "";
+        };
+        "KDE" = {
+          "widgetStyle" = "klassy";
+        };
+      };
+      "kwinrc" = {
+        "org.kde.kdecoration2" = {
+          "library" = "org.kde.klassy";
+          "theme" = "klassy";
+        };
+      };
+    };
+  };
 
   home.packages = [
     pkgs.klassy
     pkgs.lilya.mactahoe-kde
+    pkgs.whitesur-icon-theme
+    pkgs.whitesur-kde
   ];
 
-  home.activation.configurePlasmaShortcuts = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    # Keep Plasma's Meta+L lock screen and Meta+Alt+Arrow focus navigation.
-    ${writeKdeConfig shortcutsConfig "kwin" "Overview" "Meta+O\tMeta+W,Meta+W,显示/隐藏桌面总览"}
-    ${writeKdeConfig shortcutsConfig "kwin" "Window Close" "Meta+Q,Alt+F4,关闭窗口"}
-    ${writeKdeConfig shortcutsConfig "kwin" "Window Maximize" "Meta+F,Meta+PgUp,最大化窗口"}
-    ${writeKdeConfig shortcutsConfig "kwin" "Window Fullscreen" "Meta+Shift+F,none,全屏显示窗口"}
-    ${writeKdeConfig shortcutsConfig "plasmashell" "activate application launcher" "Meta+Space\tMeta\tAlt+F1,Meta\tAlt+F1,激活应用程序启动器"}
-    ${writeKdeConfig shortcutsConfig "plasmashell" "manage activities" "none,Meta+Q,显示活动切换器"}
-  '';
-
+  # 保留针对电源管理与缓存的独立触发脚本
   home.activation.configurePlasmaPowerManagement = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     # PowerDevil handles lid events independently of logind. Keep both power
     # profiles awake on lid close so the panel can turn off without entering
@@ -88,7 +203,7 @@ in
   # cache once after both activation steps instead of doing the same full scan
   # twice on every boot and rebuild.
   home.activation.refreshKServiceCache =
-    lib.hm.dag.entryAfter [ "configureDolphin" "configurePlasmaAppearance" ] ''
+    lib.hm.dag.entryAfter [ "configureDolphin" "writeBoundary" ] ''
       ${pkgs.kdePackages.kservice}/bin/kbuildsycoca6 --noincremental >/dev/null
     '';
 }

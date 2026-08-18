@@ -5,6 +5,7 @@
     inputs.zen-browser.homeModules.beta
     inputs.noctalia.homeModules.default
     inputs.nix-flatpak.homeManagerModules.nix-flatpak
+    inputs.plasma-manager.homeModules.plasma-manager
 
     ./apps
     ./cli-tools.nix
