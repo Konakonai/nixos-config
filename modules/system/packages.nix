@@ -37,7 +37,7 @@
     colloid-cursors
     lilya.colloid-gtk-theme
     adw-gtk3
-    darkly
+    klassy
     qadwaitadecorations-qt6
     kdePackages.dolphin
     # Dolphin's embedded terminal panel is a KonsolePart plugin. External
