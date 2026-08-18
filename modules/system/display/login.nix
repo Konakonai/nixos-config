@@ -92,7 +92,6 @@ in
     sddm = {
       enable = true;
       enableHidpi = true;
-      theme = "${pkgs.lilya.mactahoe-kde}/share/sddm/themes/MacTahoe-Light";
       wayland = {
         enable = true;
         compositor = "kwin";

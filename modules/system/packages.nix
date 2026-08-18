@@ -33,9 +33,6 @@
 
     adwaita-icon-theme
     tela-icon-theme
-    colloid-icon-theme
-    colloid-cursors
-    lilya.colloid-gtk-theme
     adw-gtk3
     klassy
     lilya.mactahoe-kde

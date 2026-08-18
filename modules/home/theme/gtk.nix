@@ -5,9 +5,8 @@ let
   gtkThemePackage = pkgs.adw-gtk3;
 in
 {
-  # GTK4 can report the legacy "gnome" icon theme in Plasma even when the
-  # desktop preference is Colloid. Keep that lookup usable for libadwaita apps
-  # such as Foliate without duplicating the actual icon assets.
+  # GTK4 can report the legacy "gnome" icon theme in Plasma. Keep that lookup
+  # usable for libadwaita apps such as Foliate without duplicating assets.
   xdg.dataFile."icons/gnome/index.theme".text = ''
     [Icon Theme]
     Name=GNOME compatibility
@@ -24,11 +23,11 @@ in
     };
     iconTheme = {
       name = lilyaGlass.iconThemeName;
-      package = pkgs.colloid-icon-theme;
+      package = pkgs.adwaita-icon-theme;
     };
     cursorTheme = {
       name = lilyaGlass.cursorThemeName;
-      package = pkgs.colloid-cursors;
+      package = pkgs.adwaita-icon-theme;
       size = lilyaGlass.cursorSize;
     };
 

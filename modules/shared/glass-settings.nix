@@ -49,8 +49,8 @@ in
     capsules = 16.0;
   };
 
-  iconThemeName = "Colloid-Light";
-  cursorThemeName = "Colloid-cursors";
+  iconThemeName = "Adwaita";
+  cursorThemeName = "Adwaita";
   cursorSize = 32;
 
   fonts = {
