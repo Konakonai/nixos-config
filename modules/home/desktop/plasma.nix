@@ -50,139 +50,15 @@ in
     ${writeKdeConfig kdeGlobals "Icons" "Theme" lilyaGlass.iconThemeName}
     ${writeKdeConfig kdeGlobals "KDE" "LookAndFeelPackage" "org.kde.breeze.desktop"}
     ${writeKdeConfig kdeGlobals "KDE" "widgetStyle" "klassy"}
-    ${writeKdeConfig plasmaConfig "Theme" "name" "kite-light"}
+    ${writeKdeConfig plasmaConfig "Theme" "name" "MacTahoe-Light"}
     ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "library" "org.kde.klassy"}
     ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "theme" "klassy"}
-    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "ButtonsOnLeft" "XIA"}
-    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "ButtonsOnRight" ""}
   '';
 
   home.packages = [
     pkgs.klassy
+    pkgs.lilya.mactahoe-kde
   ];
-
-  xdg.configFile."klassy/klassyrc".text = ''
-    [Common]
-    ShadowColor=0,0,0
-    ShadowSize=ShadowLarge
-    ShadowStrength=255
-
-    [Style]
-    AnimationsEnabled=true
-    ButtonCornerRadius=10
-    CornerRadius=10
-    DrawToolBarShadow=false
-    DrawWidgetShadow=true
-    MatchTitleBarToApplicationColor=true
-    ShadowSize=ShadowLarge
-    ShadowStrength=255
-    UnisonHovering=true
-    WindowCornerRadius=12
-
-    [Windeco]
-    ActiveTitleBarOpacity=100
-    AdjustBackgroundColorOnPoorContrastActive=true
-    AdjustBackgroundColorOnPoorContrastInactive=true
-    AnimationsEnabled=true
-    AnimationsSpeedRelativeSystem=0
-    ApplyOpacityToHeader=true
-    BlurTransparentTitleBars=true
-    BoldButtonIcons=BoldIconsBold
-    BoldTitle=false
-    ButtonBackgroundColorsActive=AccentTrafficLights
-    ButtonBackgroundColorsInactive=AccentTrafficLights
-    ButtonBackgroundOpacityActive=85
-    ButtonBackgroundOpacityInactive=50
-    ButtonColorsInactiveSameHoverPress=true
-    ButtonCornerRadius=SameAsWindow
-    ButtonCustomCornerRadius=1
-    ButtonIconColorsActive=TitleBarText
-    ButtonIconColorsInactive=TitleBarText
-    ButtonIconOpacityActive=100
-    ButtonIconOpacityInactive=100
-    ButtonIconStyle=StyleArk
-    ButtonShape=ShapeSmallCircle
-    ButtonSpacingLeft=10
-    ButtonSpacingRight=10
-    ButtonStateCheckedActive=Press
-    ButtonStateCheckedInactive=Press
-    CloseButtonIconColorActive=AsSelected
-    CloseButtonIconColorInactive=AsSelected
-    DrawBackgroundGradient=false
-    DrawBorderOnMaximizedWindows=false
-    DrawTitleBarSeparator=false
-    ForceColorizeSystemIcons=true
-    IconSize=IconMedium
-    InactiveTitleBarOpacity=100
-    KwinBorderSize=None
-    KwinButtonsOnLeft=XIA
-    KwinButtonsOnRight=
-    MatchTitleBarToApplicationColor=true
-    NegativeCloseBackgroundHoverPressActive=false
-    NegativeCloseBackgroundHoverPressInactive=false
-    OpaqueMaximizedTitleBars=false
-    OverrideActiveTitleBarOpacity=false
-    OverrideInactiveTitleBarOpacity=false
-    RoundAllCornersWhenNoBorders=true
-    ScaleBackgroundPercent=100
-    ScaleTouchMode=150
-    ShadowColor=0,0,0
-    ShadowSize=ShadowLarge
-    ShadowStrength=255
-    ShowBackgroundNormallyActive=true
-    ShowBackgroundNormallyInactive=true
-    ShowBackgroundOnHoverActive=true
-    ShowBackgroundOnHoverInactive=true
-    ShowBackgroundOnPressActive=true
-    ShowBackgroundOnPressInactive=true
-    ShowCloseBackgroundNormallyActive=true
-    ShowCloseBackgroundNormallyInactive=true
-    ShowCloseBackgroundOnHoverActive=true
-    ShowCloseBackgroundOnHoverInactive=true
-    ShowCloseBackgroundOnPressActive=true
-    ShowCloseBackgroundOnPressInactive=true
-    ShowCloseIconNormallyActive=false
-    ShowCloseIconNormallyInactive=false
-    ShowCloseIconOnHoverActive=true
-    ShowCloseIconOnHoverInactive=true
-    ShowCloseIconOnPressActive=true
-    ShowCloseIconOnPressInactive=true
-    ShowCloseOutlineNormallyActive=true
-    ShowCloseOutlineNormallyInactive=true
-    ShowCloseOutlineOnHoverActive=true
-    ShowCloseOutlineOnHoverInactive=true
-    ShowCloseOutlineOnPressActive=true
-    ShowCloseOutlineOnPressInactive=true
-    ShowIconNormallyActive=false
-    ShowIconNormallyInactive=false
-    ShowIconOnHoverActive=true
-    ShowIconOnHoverInactive=true
-    ShowIconOnPressActive=true
-    ShowIconOnPressInactive=true
-    ShowOutlineNormallyActive=true
-    ShowOutlineNormallyInactive=true
-    ShowOutlineOnHoverActive=true
-    ShowOutlineOnHoverInactive=true
-    ShowOutlineOnPressActive=true
-    ShowOutlineOnPressInactive=true
-    SystemIconSize=SystemIcon18
-    TitleAlignment=AlignCenterFullWidth
-    TitleBarBottomMargin=7
-    TitleBarLeftMargin=10
-    TitleBarRightMargin=10
-    TitleBarTopMargin=7
-    TitleSidePadding=4
-    UnisonHovering=true
-    UseHoverAccentActive=false
-    UseHoverAccentInactive=false
-    UseTitleBarColorForAllBorders=true
-    WindowCornerRadius=12
-    WindowOutlineStyleActive=WindowOutlineContrast
-    WindowOutlineStyleInactive=WindowOutlineContrast
-    WindowOutlineThickness=1
-  '';
-
-  xdg.configFile."klassyrc".text = config.xdg.configFile."klassy/klassyrc".text;
 
   home.activation.configurePlasmaShortcuts = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     # Keep Plasma's Meta+L lock screen and Meta+Alt+Arrow focus navigation.

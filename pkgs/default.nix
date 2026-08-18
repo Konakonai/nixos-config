@@ -39,6 +39,7 @@ in
     meta = pkgs.localsend.meta;
   };
   colloid-gtk-theme = pkgs.callPackage ./colloid-gtk-theme.nix { };
+  mactahoe-kde = pkgs.callPackage ./mactahoe-kde.nix { };
   plasma-overdose-gtk-theme = pkgs.callPackage ./plasma-overdose-gtk-theme.nix { };
   plasma-overdose-theme = pkgs.callPackage ./plasma-overdose-theme.nix { };
   qoder = pkgs.callPackage ./qoder.nix { };
