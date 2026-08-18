@@ -1,8 +1,8 @@
 { config, lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "Colloid-Light-hdpi";
-  gtkThemePackage = pkgs.lilya.colloid-gtk-theme;
+  gtkThemeName = "adw-gtk3";
+  gtkThemePackage = pkgs.adw-gtk3;
 in
 {
   # GTK4 can report the legacy "gnome" icon theme in Plasma even when the

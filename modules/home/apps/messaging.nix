@@ -2,7 +2,7 @@
 
 let
   appThemeEnv = {
-    GTK_THEME = "Colloid-Light-hdpi";
+    GTK_THEME = "adw-gtk3";
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "qt6ct";

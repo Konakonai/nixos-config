@@ -1,8 +1,8 @@
 { lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "Colloid-Light-hdpi";
-  gtkThemePackage = pkgs.lilya.colloid-gtk-theme;
+  gtkThemeName = "adw-gtk3";
+  gtkThemePackage = pkgs.adw-gtk3;
   cursorThemePackage = pkgs.colloid-cursors;
   cursorThemeName = lilyaGlass.cursorThemeName;
   iconThemePackage = pkgs.colloid-icon-theme;

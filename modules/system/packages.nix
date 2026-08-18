@@ -36,6 +36,7 @@
     colloid-icon-theme
     colloid-cursors
     lilya.colloid-gtk-theme
+    adw-gtk3
     darkly
     qadwaitadecorations-qt6
     kdePackages.dolphin

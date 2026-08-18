@@ -53,6 +53,27 @@ in
     ${writeKdeConfig plasmaConfig "Theme" "name" "default"}
     ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "library" "org.kde.darkly"}
     ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "theme" "Darkly"}
+    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "ButtonsOnLeft" "XIA"}
+    ${writeKdeConfig kwinConfig "org.kde.kdecoration2" "ButtonsOnRight" ""}
+  '';
+
+  xdg.configFile."darklyrc".text = ''
+    [Common]
+    ShadowStrength=60
+
+    [Style]
+    CornerRadius=10
+    DrawToolBarShadow=false
+    DrawWidgetShadow=true
+    ShadowSize=ShadowLarge
+
+    [Windeco]
+    ButtonSize=ButtonMedium
+    DrawBackgroundGradient=false
+    DrawTitleBarSeparator=false
+    OtherCornerRadius=12
+    RoundedCorners=true
+    TitleAlignment=AlignCenter
   '';
 
   home.activation.configurePlasmaShortcuts = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
