@@ -3,7 +3,9 @@
 {
   virtualisation.containers = {
     enable = true;
-    registries.search = [ "docker.io" ];
+    registries.settings = {
+      unqualified-search-registries = [ "docker.io" ];
+    };
   };
 
   virtualisation.podman = {
