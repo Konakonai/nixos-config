@@ -59,6 +59,7 @@ let
     name = "codex-update";
     runtimeInputs = [
       pkgs.coreutils
+      pkgs.curl
       pkgs.gawk
       pkgs.git
       pkgs.gh
@@ -124,11 +125,17 @@ access-tokens = github.com=$github_token"
         exit 1
       fi
       latest_cli_version="''${BASH_REMATCH[1]}"
-      latest_cli_digest="$(
+      cli_asset_url="$(
         jq -r --arg asset "$cli_asset" \
-          '.assets[] | select(.name == $asset) | .digest // ""' \
+          '.assets[] | select(.name == $asset) | .browser_download_url // ""' \
           <<<"$cli_release"
       )"
+      if [ -z "$cli_asset_url" ]; then
+        echo "asset URL not found for $cli_asset"
+        notify "Failed: the CLI bundle asset URL was unavailable."
+        exit 1
+      fi
+      latest_cli_digest="sha256:$(curl -fsSL "$cli_asset_url" | sha256sum | awk '{ print $1 }')"
       if ! [[ "$latest_cli_digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
         echo "missing or invalid digest for $cli_asset"
         notify "Failed: the CLI bundle digest was unavailable."
