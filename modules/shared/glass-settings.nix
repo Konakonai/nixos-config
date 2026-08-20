@@ -50,7 +50,7 @@ in
   };
 
   iconThemeName = "Colloid-Light";
-  cursorThemeName = "Adwaita";
+  cursorThemeName = "catppuccin-frappe-lavender-cursors";
   cursorSize = 32;
 
   fonts = {

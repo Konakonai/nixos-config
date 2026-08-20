@@ -26,7 +26,7 @@ in
     };
     cursorTheme = {
       name = lilyaGlass.cursorThemeName;
-      package = pkgs.adwaita-icon-theme;
+      package = pkgs.catppuccin-cursors.frappeLavender;
       size = lilyaGlass.cursorSize;
     };
 

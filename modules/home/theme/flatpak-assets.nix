@@ -3,7 +3,7 @@
 let
   gtkThemeName = "adw-gtk3";
   gtkThemePackage = pkgs.adw-gtk3;
-  cursorThemePackage = pkgs.adwaita-icon-theme;
+  cursorThemePackage = pkgs.catppuccin-cursors.frappeLavender;
   cursorThemeName = lilyaGlass.cursorThemeName;
   iconThemePackage = pkgs.colloid-icon-theme;
   iconThemeName = lilyaGlass.iconThemeName;

@@ -195,7 +195,7 @@ in
   home.packages = [
     pkgs.klassy
     pkgs.colloid-icon-theme
-    pkgs.adwaita-icon-theme
+    pkgs.catppuccin-cursors.frappeLavender
     pkgs.adw-gtk3
   ];
 
