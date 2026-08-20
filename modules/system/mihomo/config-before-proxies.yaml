@@ -6,6 +6,7 @@ mixed-port: 7890
 authentication: []
 skip-auth-prefixes: null
 bind-address: '*'
+allow-lan: true
 mode: rule
 unified-delay: true
 log-level: info

@@ -1,11 +1,32 @@
 proxy-groups:
 - name: Default Proxy
-  interval: 120
   proxies:
+  - Auto
+  - Express
   - TW Fixed IP
   - US Fixed IP
-  type: fallback
-  url: http://www.gstatic.com/generate_204
+  - US-Dedicated-B1-1
+  - US-Dedicated-B1-2
+  - US-Dedicated-B1-3
+  - US-Dedicated-B1-4
+  - JP-Dedicated-B1-1
+  - JP-Dedicated-B1-2
+  - JP-Dedicated-B1-3
+  - JP-Dedicated-B1-4
+  - TW-IPv6-P1-1
+  - TW-IPv6-P1-2
+  - TW-IPv6-P1-3
+  - TW-IPv6-P1-4
+  - Fast-B1-1
+  - Fast-B1-2
+  - Fast-B1-3
+  - Fast-B1-4
+  - Balancer-B1-1
+  - Balancer-B1-2
+  - Balancer-B1-3
+  - Balancer-B1-4
+  - DIRECT
+  type: select
 - name: Research + AI
   proxies:
   - US Fixed IP
@@ -894,115 +915,6 @@ rules:
 - DOMAIN-KEYWORD,xnxx,Streaming
 - DOMAIN-KEYWORD,hentai,Streaming
 - DOMAIN-KEYWORD,adult,Streaming
-- DOMAIN-SUFFIX,arxiv.org,Research + AI
-- DOMAIN-SUFFIX,biorxiv.org,Research + AI
-- DOMAIN-SUFFIX,medrxiv.org,Research + AI
-- DOMAIN-SUFFIX,ssrn.com,Research + AI
-- DOMAIN-SUFFIX,philpapers.org,Research + AI
-- DOMAIN-SUFFIX,zenodo.org,Research + AI
-- DOMAIN-SUFFIX,figshare.com,Research + AI
-- DOMAIN-SUFFIX,osf.io,Research + AI
-- DOMAIN-SUFFIX,springer.com,Research + AI
-- DOMAIN-SUFFIX,springerlink.com,Research + AI
-- DOMAIN-SUFFIX,link.springer.com,Research + AI
-- DOMAIN-SUFFIX,sciencedirect.com,Research + AI
-- DOMAIN-SUFFIX,elsevier.com,Research + AI
-- DOMAIN-SUFFIX,nature.com,Research + AI
-- DOMAIN-SUFFIX,science.org,Research + AI
-- DOMAIN-SUFFIX,sciencemag.org,Research + AI
-- DOMAIN-SUFFIX,wiley.com,Research + AI
-- DOMAIN-SUFFIX,onlinelibrary.wiley.com,Research + AI
-- DOMAIN-SUFFIX,tandfonline.com,Research + AI
-- DOMAIN-SUFFIX,sagepub.com,Research + AI
-- DOMAIN-SUFFIX,cambridge.org,Research + AI
-- DOMAIN-SUFFIX,oxfordjournals.org,Research + AI
-- DOMAIN-SUFFIX,academic.oup.com,Research + AI
-- DOMAIN-SUFFIX,oup.com,Research + AI
-- DOMAIN-SUFFIX,pnas.org,Research + AI
-- DOMAIN-SUFFIX,cell.com,Research + AI
-- DOMAIN-SUFFIX,thelancet.com,Research + AI
-- DOMAIN-SUFFIX,bmj.com,Research + AI
-- DOMAIN-SUFFIX,nejm.org,Research + AI
-- DOMAIN-SUFFIX,acs.org,Research + AI
-- DOMAIN-SUFFIX,pubs.acs.org,Research + AI
-- DOMAIN-SUFFIX,rsc.org,Research + AI
-- DOMAIN-SUFFIX,iop.org,Research + AI
-- DOMAIN-SUFFIX,iopscience.iop.org,Research + AI
-- DOMAIN-SUFFIX,aip.org,Research + AI
-- DOMAIN-SUFFIX,aps.org,Research + AI
-- DOMAIN-SUFFIX,mdpi.com,Research + AI
-- DOMAIN-SUFFIX,frontiersin.org,Research + AI
-- DOMAIN-SUFFIX,plos.org,Research + AI
-- DOMAIN-SUFFIX,plosone.org,Research + AI
-- DOMAIN-SUFFIX,hindawi.com,Research + AI
-- DOMAIN-SUFFIX,degruyter.com,Research + AI
-- DOMAIN-SUFFIX,karger.com,Research + AI
-- DOMAIN-SUFFIX,emerald.com,Research + AI
-- DOMAIN-SUFFIX,ingentaconnect.com,Research + AI
-- DOMAIN-SUFFIX,annualreviews.org,Research + AI
-- DOMAIN-SUFFIX,ieee.org,Research + AI
-- DOMAIN-SUFFIX,ieeexplore.ieee.org,Research + AI
-- DOMAIN-SUFFIX,acm.org,Research + AI
-- DOMAIN-SUFFIX,dl.acm.org,Research + AI
-- DOMAIN-SUFFIX,jstor.org,Research + AI
-- DOMAIN-SUFFIX,muse.jhu.edu,Research + AI
-- DOMAIN-SUFFIX,projecteuclid.org,Research + AI
-- DOMAIN-SUFFIX,mathscinet.ams.org,Research + AI
-- DOMAIN-SUFFIX,ams.org,Research + AI
-- DOMAIN-SUFFIX,siam.org,Research + AI
-- DOMAIN-SUFFIX,doi.org,Research + AI
-- DOMAIN-SUFFIX,crossref.org,Research + AI
-- DOMAIN-SUFFIX,orcid.org,Research + AI
-- DOMAIN-SUFFIX,scopus.com,Research + AI
-- DOMAIN-SUFFIX,webofscience.com,Research + AI
-- DOMAIN-SUFFIX,clarivate.com,Research + AI
-- DOMAIN-SUFFIX,dimensions.ai,Research + AI
-- DOMAIN-SUFFIX,lens.org,Research + AI
-- DOMAIN-SUFFIX,nih.gov,Research + AI
-- DOMAIN-SUFFIX,ncbi.nlm.nih.gov,Research + AI
-- DOMAIN-SUFFIX,pubmed.gov,Research + AI
-- DOMAIN-SUFFIX,pubmedcentral.nih.gov,Research + AI
-- DOMAIN-SUFFIX,clinicaltrials.gov,Research + AI
-- DOMAIN-SUFFIX,cochranelibrary.com,Research + AI
-- DOMAIN-SUFFIX,uptodate.com,Research + AI
-- DOMAIN-SUFFIX,medscape.com,Research + AI
-- DOMAIN-SUFFIX,webmd.com,Research + AI
-- DOMAIN-SUFFIX,scholar.google.com,Research + AI
-- DOMAIN-SUFFIX,semanticscholar.org,Research + AI
-- DOMAIN-SUFFIX,academia.edu,Research + AI
-- DOMAIN-SUFFIX,researchgate.net,Research + AI
-- DOMAIN-SUFFIX,mendeley.com,Research + AI
-- DOMAIN-SUFFIX,zotero.org,Research + AI
-- DOMAIN-SUFFIX,connectedpapers.com,Research + AI
-- DOMAIN-SUFFIX,scite.ai,Research + AI
-- DOMAIN-SUFFIX,litmaps.com,Research + AI
-- DOMAIN-SUFFIX,inciteful.xyz,Research + AI
-- DOMAIN-SUFFIX,base-search.net,Research + AI
-- DOMAIN-SUFFIX,core.ac.uk,Research + AI
-- DOMAIN-SUFFIX,worldcat.org,Research + AI
-- DOMAIN-SUFFIX,loc.gov,Research + AI
-- DOMAIN-SUFFIX,proquest.com,Research + AI
-- DOMAIN-SUFFIX,ebsco.com,Research + AI
-- DOMAIN-SUFFIX,ebscohost.com,Research + AI
-- DOMAIN-SUFFIX,gale.com,Research + AI
-- DOMAIN-SUFFIX,dblp.org,Research + AI
-- DOMAIN-SUFFIX,paperswithcode.com,Research + AI
-- DOMAIN-SUFFIX,openreview.net,Research + AI
-- DOMAIN-SUFFIX,aclweb.org,Research + AI
-- DOMAIN-SUFFIX,aclanthology.org,Research + AI
-- DOMAIN-SUFFIX,neurips.cc,Research + AI
-- DOMAIN-SUFFIX,icml.cc,Research + AI
-- DOMAIN-SUFFIX,iclr.cc,Research + AI
-- DOMAIN-SUFFIX,cvpr.org,Research + AI
-- DOMAIN-SUFFIX,thecvf.com,Research + AI
-- DOMAIN-SUFFIX,wolfram.com,Research + AI
-- DOMAIN-SUFFIX,wolframalpha.com,Research + AI
-- DOMAIN-SUFFIX,mathworld.wolfram.com,Research + AI
-- DOMAIN-SUFFIX,overleaf.com,Research + AI
-- DOMAIN-SUFFIX,sharelatex.com,Research + AI
-- DOMAIN-SUFFIX,authorea.com,Research + AI
-- DOMAIN-SUFFIX,hypothes.is,Research + AI
-- DOMAIN-KEYWORD,scholar.google,Research + AI
 - DOMAIN-SUFFIX,github.com,Developer
 - DOMAIN-SUFFIX,github.io,Developer
 - DOMAIN-SUFFIX,githubusercontent.com,Developer
@@ -1180,50 +1092,6 @@ rules:
 - DOMAIN-SUFFIX,epicgames.dev,Steam
 - DOMAIN-SUFFIX,unrealengine.com,Steam
 - DOMAIN-SUFFIX,fortnite.com,Steam
-- DOMAIN-KEYWORD,steamcdn,Steam
-- DOMAIN-KEYWORD,steamcontent,Steam
-- DOMAIN-KEYWORD,steampowered,Steam
-- DOMAIN-KEYWORD,steamcommunity,Steam
-- DOMAIN-SUFFIX,store.steampowered.com,Steam
-- DOMAIN-SUFFIX,steampowered.com,Steam
-- DOMAIN-SUFFIX,steamgames.com,Steam
-- DOMAIN-SUFFIX,valvesoftware.com,Steam
-- DOMAIN-SUFFIX,s.team,Steam
-- DOMAIN-SUFFIX,steamcommunity.com,Steam
-- DOMAIN-SUFFIX,steamusercontent.com,Steam
-- DOMAIN-SUFFIX,steamstatic.com,Steam
-- DOMAIN-SUFFIX,steamcdn-a.akamaihd.net,Steam
-- DOMAIN-SUFFIX,cdn.cloudflare.steamstatic.com,Steam
-- DOMAIN-SUFFIX,cdn.akamai.steamstatic.com,Steam
-- DOMAIN-SUFFIX,steam-chat.com,Steam
-- DOMAIN-SUFFIX,steamcontent.com,Steam
-- DOMAIN-SUFFIX,steampipe.akamaized.net,Steam
-- DOMAIN-SUFFIX,lancache.steamcontent.com,Steam
-- DOMAIN-SUFFIX,edgecast.steamstatic.com,Steam
-- DOMAIN-SUFFIX,steambroadcast.akamaized.net,Steam
-- DOMAIN-SUFFIX,steamtv.cloud,Steam
-- DOMAIN-SUFFIX,api.steampowered.com,Steam
-- DOMAIN-SUFFIX,partner.steamgames.com,Steam
-- DOMAIN-SUFFIX,help.steampowered.com,Steam
-- DOMAIN-SUFFIX,support.steampowered.com,Steam
-- DOMAIN-SUFFIX,login.steampowered.com,Steam
-- DOMAIN-SUFFIX,checkout.steampowered.com,Steam
-- DOMAIN-SUFFIX,steamuserimages-a.akamaihd.net,Steam
-- DOMAIN-SUFFIX,steamvideo-a.akamaihd.net,Steam
-- DOMAIN-SUFFIX,steamcommunity-a.akamaihd.net,Steam
-- DOMAIN-SUFFIX,steamstore-a.akamaihd.net,Steam
-- DOMAIN-SUFFIX,media.steampowered.com,Steam
-- DOMAIN-SUFFIX,video.steampowered.com,Steam
-- DOMAIN-SUFFIX,workshop.steampowered.com,Steam
-- DOMAIN-SUFFIX,cloud.steampowered.com,Steam
-- DOMAIN-SUFFIX,steamcloud-us-west1.storage.googleapis.com,Steam
-- DOMAIN-SUFFIX,steamcloud-eu-west1.storage.googleapis.com,Steam
-- DOMAIN-SUFFIX,cache.steamcontent.com,Steam
-- DOMAIN-SUFFIX,content-origin.steampowered.com,Steam
-- DOMAIN-SUFFIX,valve.net,Steam
-- DOMAIN-SUFFIX,steamchina.com,Steam
-- DOMAIN-SUFFIX,csgo.wmsj.cn,Steam
-- DOMAIN-SUFFIX,wmsjsteam.com,Steam
 - DOMAIN-KEYWORD,steamcdn,Steam
 - DOMAIN-KEYWORD,steamcontent,Steam
 - DOMAIN-KEYWORD,steampowered,Steam
