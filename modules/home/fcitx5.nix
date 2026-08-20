@@ -110,6 +110,25 @@ let
     </svg>
   '';
 
+  # 中州韵的 tray 图标：fcitx5-rime 自带的 hicolor 图标与 Colloid-Light
+  # 主题风格不搭，这里把 Colloid-Light 主题内为 fcitx-rime 设计的图标
+  # 安装到 fcitx5 用户自定义图标目录（fcitx5 优先于此目录），并注入
+  # 用户级 hicolor 兜底，保证托盘主机无论按 SNI IconName 还是按主题
+  # 解析都能命中 Colloid-Light 风格的图标。
+  colloidRimeIcon = pkgs.runCommand "fcitx5-rime-icon-colloid-light" {
+    nativeBuildInputs = [ pkgs.librsvg ];
+  } ''
+    rime_svg=${pkgs.colloid-icon-theme}/share/icons/${lilyaGlass.iconThemeName}/status/16/fcitx-rime.svg
+
+    mkdir -p $out/fcitx5-icons
+    cp "$rime_svg" $out/fcitx5-icons/fcitx-rime.svg
+    rsvg-convert -w 48 -h 48 -o $out/fcitx5-icons/fcitx-rime.png "$rime_svg"
+
+    mkdir -p $out/hicolor/scalable/apps $out/hicolor/48x48/apps
+    cp "$rime_svg" $out/hicolor/scalable/apps/fcitx-rime.svg
+    rsvg-convert -w 48 -h 48 -o $out/hicolor/48x48/apps/fcitx-rime.png "$rime_svg"
+  '';
+
   catppuccinLavenderGlassTheme = pkgs.runCommand "fcitx5-theme-catppuccin-lavender-glass" { } ''
     theme_dir="$out/share/fcitx5/themes/catppuccin-lavender-glass"
     mkdir -p "$theme_dir"
@@ -132,4 +151,13 @@ in
 
   xdg.dataFile."fcitx5/themes/catppuccin-lavender-glass".source =
     "${catppuccinLavenderGlassTheme}/share/fcitx5/themes/catppuccin-lavender-glass";
+
+  xdg.dataFile."fcitx5/icons/fcitx-rime.svg".source =
+    "${colloidRimeIcon}/fcitx5-icons/fcitx-rime.svg";
+  xdg.dataFile."fcitx5/icons/fcitx-rime.png".source =
+    "${colloidRimeIcon}/fcitx5-icons/fcitx-rime.png";
+  xdg.dataFile."icons/hicolor/scalable/apps/fcitx-rime.svg".source =
+    "${colloidRimeIcon}/hicolor/scalable/apps/fcitx-rime.svg";
+  xdg.dataFile."icons/hicolor/48x48/apps/fcitx-rime.png".source =
+    "${colloidRimeIcon}/hicolor/48x48/apps/fcitx-rime.png";
 }
