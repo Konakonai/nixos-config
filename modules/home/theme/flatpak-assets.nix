@@ -44,5 +44,12 @@ in
     copy_theme_dir "${cursorThemePackage}/share/icons/${cursorThemeName}" "$HOME/.local/share/flatpak-icons/${cursorThemeName}"
     copy_theme_dir "${fallbackIconThemePackage}/share/icons/Adwaita" "$HOME/.local/share/flatpak-icons/Adwaita"
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
+
+    rime_symbolic="${iconThemePackage}/share/icons/${iconThemeName}/status/symbolic/fcitx-rime-symbolic.svg"
+    if [ -f "$rime_symbolic" ]; then
+      install -m 0644 "$rime_symbolic" "$HOME/.local/share/icons/${iconThemeName}/status/symbolic/fcitx-rime.svg"
+      install -m 0644 "$rime_symbolic" "$HOME/.local/share/icons/${iconThemeName}/apps/scalable/fcitx-rime.svg"
+      install -m 0644 "$rime_symbolic" "$HOME/.local/share/icons/${iconThemeName}/status/24/fcitx-rime.svg"
+    fi
   '';
 }
