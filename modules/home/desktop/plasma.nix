@@ -1,6 +1,21 @@
 { config, lib, lilyaGlass, pkgs, ... }:
 
 let
+  catppuccinKde = pkgs.catppuccin-kde.override {
+    flavour = [ "frappe" ];
+    accents = [ "lavender" ];
+  };
+  catppuccinGtk = pkgs.catppuccin-gtk.override {
+    accents = [ "lavender" ];
+    size = "compact";
+    variant = "frappe";
+  };
+  catppuccinPapirus = pkgs.catppuccin-papirus-folders.override {
+    flavor = "frappe";
+    accent = "lavender";
+  };
+  catppuccinCursors = pkgs.catppuccin-cursors.frappeLavender;
+
   powerDevilConfig = "${config.xdg.configHome}/powerdevilrc";
 
   writePowerDevilConfig = profile: key: value: ''
@@ -29,17 +44,16 @@ in
   programs.plasma = {
     enable = true;
 
-    # 1. 统一纯正 macOS Sequoia (MacTahoe) 浅色视觉体系
+    # 1. Catppuccin Frappé + Lavender 外观体系
     workspace = {
-      lookAndFeel = "org.kde.breeze.desktop";
-      theme = "MacTahoe-Light";
-      colorScheme = "MacTahoeLight";
-      iconTheme = "WhiteSur";
+      lookAndFeel = "org.kde.breezedark.desktop";
+      theme = "default";
+      colorScheme = "CatppuccinFrappeLavender";
+      iconTheme = "Papirus-Dark";
       cursor = {
-        theme = lilyaGlass.cursorThemeName;
+        theme = "catppuccin-frappe-lavender-cursors";
         size = lilyaGlass.cursorSize;
       };
-      wallpaper = "${pkgs.lilya.mactahoe-kde}/share/wallpapers/MacTahoe-Light/contents/images/3840x2160.jpeg";
     };
 
     # 2. 统一字体管理
@@ -70,43 +84,19 @@ in
       };
     };
 
-    # 3. macOS 布局：顶部透明状态栏 + 底部浮动居中透明 Dock
+    # 3. 现代底部浮动面板布局 (启动器 + 任务栏 + 托盘 + 时钟)
     panels = [
-      # 顶部状态栏：半透明、贴顶、Apple 启动菜单、全局菜单、居中时钟和系统托盘
       {
-        location = "top";
-        height = 30;
-        floating = false;
+        location = "bottom";
+        height = 44;
+        floating = true;
         opacity = "translucent";
         widgets = [
           {
             kickoff = {
-              icon = "start-here";
+              icon = "nix-snowflake-white";
             };
           }
-          "org.kde.plasma.appmenu"
-          "org.kde.plasma.panelspacer"
-          {
-            digitalClock = {
-              time.format = "24h";
-              date.enable = false;
-            };
-          }
-          "org.kde.plasma.panelspacer"
-          "org.kde.plasma.systemtray"
-        ];
-      }
-
-      # 底部 Dock：居中悬浮、自适应长度、半透明、智能避让窗口、常驻核心应用（移除垃圾桶）
-      {
-        location = "bottom";
-        alignment = "center";
-        height = 56;
-        lengthMode = "fit";
-        floating = true;
-        opacity = "translucent";
-        hiding = "dodgewindows";
-        widgets = [
           {
             iconTasks = {
               launchers = [
@@ -118,11 +108,19 @@ in
               ];
             };
           }
+          "org.kde.plasma.panelspacer"
+          "org.kde.plasma.systemtray"
+          {
+            digitalClock = {
+              time.format = "24h";
+              date.enable = false;
+            };
+          }
         ];
       }
     ];
 
-    # 4. 窗口管理器特效 (启用毛玻璃模糊)
+    # 4. 窗口管理器与特效 (启用毛玻璃模糊)
     kwin = {
       effects = {
         blur.enable = true;
@@ -143,55 +141,38 @@ in
       };
     };
 
-    # 6. 底层与 Klassy macOS 交通灯红绿灯定制
+    # 6. 底层与 Klassy 现代微质感配置
     configFile = {
-      # 窗口管理器按钮布局：交通灯放左侧（X=Close, I=Minimize, A=Maximize），右侧留空
+      # 标准现代窗口控制按钮（放置于右侧）
       "kwinrc" = {
         "org.kde.kdecoration2" = {
           "BorderSize" = "None";
           "BorderSizeAuto" = false;
-          "ButtonsOnLeft" = "XIA";
-          "ButtonsOnRight" = "";
+          "ButtonsOnLeft" = "";
+          "ButtonsOnRight" = "IAX";
           "library" = "org.kde.klassy";
           "theme" = "klassy";
         };
       };
 
-      # Klassy 完整的 macOS 红绿灯与半透明毛玻璃配置
+      # Klassy 现代圆角毛玻璃微质感
       "klassy/klassyrc" = {
         "Button" = {
-          "ButtonIconStyle" = "macOS";
-          "ButtonShape" = "TrafficLights";
+          "ButtonIconStyle" = "StyleKlassy";
+          "ButtonShape" = "ShapeSmallCircle";
         };
         "ButtonBehaviour" = {
           "ShowBackgroundNormallyActive" = true;
-          "ShowBackgroundNormallyInactive" = true;
-          "ShowCloseBackgroundNormallyActive" = true;
-          "ShowCloseBackgroundNormallyInactive" = true;
-          "ShowCloseIconNormallyActive" = false;
-          "ShowCloseIconNormallyInactive" = false;
-          "ShowIconNormallyActive" = false;
-          "ShowIconNormallyInactive" = false;
-          "ShowCloseOutlineNormallyActive" = true;
-          "ShowCloseOutlineNormallyInactive" = true;
-          "ShowOutlineNormallyActive" = true;
-          "ShowOutlineNormallyInactive" = true;
-          "UnisonHovering" = true;
-          "VaryColorCloseBackgroundActive" = "Opaque";
-          "VaryColorCloseBackgroundInactive" = "Opaque";
+          "ShowBackgroundNormallyInactive" = false;
+          "ShowIconNormallyActive" = true;
+          "ShowIconNormallyInactive" = true;
+          "UnisonHovering" = false;
         };
         "ButtonColors" = {
-          "ButtonBackgroundColorsActive" = "AccentTrafficLights";
-          "ButtonBackgroundColorsInactive" = "AccentTrafficLights";
-          "ButtonBackgroundOpacityActive" = 85;
-          "ButtonBackgroundOpacityInactive" = 50;
+          "ButtonBackgroundColorsActive" = "Accent";
+          "ButtonBackgroundColorsInactive" = "TitleBarTextAuto";
           "CloseButtonIconColorActive" = "AsSelected";
           "CloseButtonIconColorInactive" = "AsSelected";
-          "LockButtonColorsActiveInactive" = false;
-        };
-        "ButtonSizing" = {
-          "ButtonSpacingLeft" = 10;
-          "FullHeightButtonSpacingRight" = 2;
         };
         "TitleBar" = {
           "BlurBehindTitleBar" = true;
@@ -199,19 +180,18 @@ in
           "TranslucentTitleBar" = true;
         };
         "TitleBarOpacity" = {
-          "ActiveTitleBarOpacity" = 65;
-          "InactiveTitleBarOpacity" = 45;
+          "ActiveTitleBarOpacity" = 85;
+          "InactiveTitleBarOpacity" = 65;
           "OpaqueMaximizedTitleBars" = false;
         };
         "Windeco" = {
           "BoldButtonIcons" = "BoldIconsBold";
-          "BoldTitle" = false;
-          "ButtonIconStyle" = "StylemacOS";
+          "ButtonIconStyle" = "StyleKlassy";
           "ButtonShape" = "ShapeSmallCircle";
           "DrawTitleBarSeparator" = false;
           "IconSize" = "IconMedium";
           "MatchTitleBarToApplicationColor" = true;
-          "WindowCornerRadius" = 12;
+          "WindowCornerRadius" = 10;
         };
       };
 
@@ -229,10 +209,10 @@ in
 
   home.packages = [
     pkgs.klassy
-    pkgs.whitesur-icon-theme
-    pkgs.whitesur-kde
-    pkgs.whitesur-gtk-theme
-    pkgs.lilya.mactahoe-kde
+    catppuccinKde
+    catppuccinGtk
+    catppuccinPapirus
+    catppuccinCursors
   ];
 
   # 保留针对电源管理与缓存的独立触发脚本

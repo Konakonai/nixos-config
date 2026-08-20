@@ -1,11 +1,18 @@
 { lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "WhiteSur-Light";
-  gtkThemePackage = pkgs.whitesur-gtk-theme;
-  cursorThemePackage = pkgs.adwaita-icon-theme;
+  gtkThemeName = "catppuccin-frappe-lavender-compact";
+  gtkThemePackage = pkgs.catppuccin-gtk.override {
+    accents = [ "lavender" ];
+    size = "compact";
+    variant = "frappe";
+  };
+  cursorThemePackage = pkgs.catppuccin-cursors.frappeLavender;
   cursorThemeName = lilyaGlass.cursorThemeName;
-  iconThemePackage = pkgs.whitesur-icon-theme;
+  iconThemePackage = pkgs.catppuccin-papirus-folders.override {
+    flavor = "frappe";
+    accent = "lavender";
+  };
   iconThemeName = lilyaGlass.iconThemeName;
   fallbackIconThemePackage = pkgs.adwaita-icon-theme;
 in
@@ -35,8 +42,6 @@ in
 
     copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}" "$HOME/.local/share/themes/${gtkThemeName}"
 
-    # This was copied by the previous declarative theme integration. Leaving
-    # it behind makes Noctalia detect adw-gtk3 and switch dconf back to it.
     legacy_gtk_theme="$HOME/.local/share/themes/adw-gtk3"
     if [ -e "$legacy_gtk_theme" ] && [ ! -L "$legacy_gtk_theme" ]; then
       chmod -R u+w "$legacy_gtk_theme" 2>/dev/null || true
@@ -46,7 +51,5 @@ in
     copy_theme_dir "${cursorThemePackage}/share/icons/${cursorThemeName}" "$HOME/.local/share/flatpak-icons/${cursorThemeName}"
     copy_theme_dir "${fallbackIconThemePackage}/share/icons/Adwaita" "$HOME/.local/share/flatpak-icons/Adwaita"
     copy_theme_dir "${iconThemePackage}/share/icons/${iconThemeName}" "$HOME/.local/share/icons/${iconThemeName}"
-
-    # Flatpak filesystem and environment overrides are declared in modules/flatpak.nix.
   '';
 }

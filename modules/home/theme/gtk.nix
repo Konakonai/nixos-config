@@ -1,12 +1,18 @@
 { config, lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "WhiteSur-Light";
-  gtkThemePackage = pkgs.whitesur-gtk-theme;
+  gtkThemeName = "catppuccin-frappe-lavender-compact";
+  gtkThemePackage = pkgs.catppuccin-gtk.override {
+    accents = [ "lavender" ];
+    size = "compact";
+    variant = "frappe";
+  };
+  iconThemePackage = pkgs.catppuccin-papirus-folders.override {
+    flavor = "frappe";
+    accent = "lavender";
+  };
 in
 {
-  # GTK4 can report the legacy "gnome" icon theme in Plasma. Keep that lookup
-  # usable for libadwaita apps such as Foliate without duplicating assets.
   xdg.dataFile."icons/gnome/index.theme".text = ''
     [Icon Theme]
     Name=GNOME compatibility
@@ -23,11 +29,11 @@ in
     };
     iconTheme = {
       name = lilyaGlass.iconThemeName;
-      package = pkgs.whitesur-icon-theme;
+      package = iconThemePackage;
     };
     cursorTheme = {
       name = lilyaGlass.cursorThemeName;
-      package = pkgs.adwaita-icon-theme;
+      package = pkgs.catppuccin-cursors.frappeLavender;
       size = lilyaGlass.cursorSize;
     };
 
@@ -37,20 +43,16 @@ in
 
     gtk3.extraConfig = {
       gtk-font-name = "${lilyaGlass.fonts.sans} ${builtins.toString lilyaGlass.fonts.size}";
-      gtk-application-prefer-dark-theme = 0;
+      gtk-application-prefer-dark-theme = 1;
     };
 
     gtk4.extraConfig = {
       gtk-font-name = "${lilyaGlass.fonts.sans} ${builtins.toString lilyaGlass.fonts.size}";
       gtk-theme-name = gtkThemeName;
-      gtk-application-prefer-dark-theme = 0;
+      gtk-application-prefer-dark-theme = 1;
     };
   };
 
-  # Libadwaita installs its own style provider after the selected GTK theme.
-  # A full GTK theme at user-CSS priority also overrides application layout,
-  # so keep GTK3 on the selected theme and give GTK4 a small structural layer.
-  # Noctalia remains authoritative for the live palette.
   home.activation.cleanLegacyGtkOverlays = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     for version in 3.0 4.0; do
       config_dir=${lib.escapeShellArg config.xdg.configHome}/"gtk-$version"

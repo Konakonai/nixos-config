@@ -5,7 +5,7 @@
     enable = true;
     gtk.enable = true;
     x11.enable = true;
-    package = pkgs.adwaita-icon-theme;
+    package = pkgs.catppuccin-cursors.frappeLavender;
     name = lilyaGlass.cursorThemeName;
     size = lilyaGlass.cursorSize;
   };
