@@ -374,6 +374,9 @@ in
 
   programs.noctalia = {
     enable = true;
-    customPalettes."Plasma Overdose" = ../../assets/noctalia/palettes/plasma-overdose.json;
+    customPalettes = {
+      "Plasma Overdose" = ../../assets/noctalia/palettes/plasma-overdose.json;
+      "Catppuccin Lavender Glass" = ../../assets/noctalia/palettes/catppuccin-lavender-glass.json;
+    };
   };
 }
