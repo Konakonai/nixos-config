@@ -1,16 +1,9 @@
 { config, lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "catppuccin-frappe-lavender-compact";
-  gtkThemePackage = pkgs.catppuccin-gtk.override {
-    accents = [ "lavender" ];
-    size = "compact";
-    variant = "frappe";
-  };
-  iconThemePackage = pkgs.catppuccin-papirus-folders.override {
-    flavor = "frappe";
-    accent = "lavender";
-  };
+  gtkThemeName = "adw-gtk3";
+  gtkThemePackage = pkgs.adw-gtk3;
+  iconThemePackage = pkgs.colloid-icon-theme;
 in
 {
   xdg.dataFile."icons/gnome/index.theme".text = ''
@@ -33,7 +26,7 @@ in
     };
     cursorTheme = {
       name = lilyaGlass.cursorThemeName;
-      package = pkgs.catppuccin-cursors.frappeLavender;
+      package = pkgs.adwaita-icon-theme;
       size = lilyaGlass.cursorSize;
     };
 
@@ -43,13 +36,13 @@ in
 
     gtk3.extraConfig = {
       gtk-font-name = "${lilyaGlass.fonts.sans} ${builtins.toString lilyaGlass.fonts.size}";
-      gtk-application-prefer-dark-theme = 1;
+      gtk-application-prefer-dark-theme = 0;
     };
 
     gtk4.extraConfig = {
       gtk-font-name = "${lilyaGlass.fonts.sans} ${builtins.toString lilyaGlass.fonts.size}";
       gtk-theme-name = gtkThemeName;
-      gtk-application-prefer-dark-theme = 1;
+      gtk-application-prefer-dark-theme = 0;
     };
   };
 

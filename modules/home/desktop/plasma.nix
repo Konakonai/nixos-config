@@ -1,21 +1,6 @@
 { config, lib, lilyaGlass, pkgs, ... }:
 
 let
-  catppuccinKde = pkgs.catppuccin-kde.override {
-    flavour = [ "frappe" ];
-    accents = [ "lavender" ];
-  };
-  catppuccinGtk = pkgs.catppuccin-gtk.override {
-    accents = [ "lavender" ];
-    size = "compact";
-    variant = "frappe";
-  };
-  catppuccinPapirus = pkgs.catppuccin-papirus-folders.override {
-    flavor = "frappe";
-    accent = "lavender";
-  };
-  catppuccinCursors = pkgs.catppuccin-cursors.frappeLavender;
-
   powerDevilConfig = "${config.xdg.configHome}/powerdevilrc";
 
   writePowerDevilConfig = profile: key: value: ''
@@ -44,14 +29,14 @@ in
   programs.plasma = {
     enable = true;
 
-    # 1. Catppuccin Frappé + Lavender 外观体系
+    # 1. 浅色桌面外观体系
     workspace = {
-      lookAndFeel = "org.kde.breezedark.desktop";
+      lookAndFeel = "org.kde.breeze.desktop";
       theme = "default";
-      colorScheme = "CatppuccinFrappeLavender";
-      iconTheme = "Papirus-Dark";
+      colorScheme = "BreezeLight";
+      iconTheme = lilyaGlass.iconThemeName;
       cursor = {
-        theme = "catppuccin-frappe-lavender-cursors";
+        theme = lilyaGlass.cursorThemeName;
         size = lilyaGlass.cursorSize;
       };
     };
@@ -84,7 +69,7 @@ in
       };
     };
 
-    # 3. 现代底部浮动面板布局 (启动器 + 任务栏 + 托盘 + 时钟)
+    # 3. 现代化底部浮动面板布局
     panels = [
       {
         location = "bottom";
@@ -94,7 +79,7 @@ in
         widgets = [
           {
             kickoff = {
-              icon = "nix-snowflake-white";
+              icon = "nix-snowflake";
             };
           }
           {
@@ -209,17 +194,13 @@ in
 
   home.packages = [
     pkgs.klassy
-    catppuccinKde
-    catppuccinGtk
-    catppuccinPapirus
-    catppuccinCursors
+    pkgs.colloid-icon-theme
+    pkgs.adwaita-icon-theme
+    pkgs.adw-gtk3
   ];
 
   # 保留针对电源管理与缓存的独立触发脚本
   home.activation.configurePlasmaPowerManagement = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    # PowerDevil handles lid events independently of logind. Keep both power
-    # profiles awake on lid close so the panel can turn off without entering
-    # the unreliable NVIDIA s2idle resume path.
     ${writePowerDevilConfig "AC" "AutoSuspendAction" "0"}
     ${writePowerDevilConfig "AC" "LidAction" "64"}
     ${writePowerDevilConfig "Battery" "AutoSuspendAction" "0"}

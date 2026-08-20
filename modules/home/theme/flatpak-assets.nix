@@ -1,18 +1,11 @@
 { lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "catppuccin-frappe-lavender-compact";
-  gtkThemePackage = pkgs.catppuccin-gtk.override {
-    accents = [ "lavender" ];
-    size = "compact";
-    variant = "frappe";
-  };
-  cursorThemePackage = pkgs.catppuccin-cursors.frappeLavender;
+  gtkThemeName = "adw-gtk3";
+  gtkThemePackage = pkgs.adw-gtk3;
+  cursorThemePackage = pkgs.adwaita-icon-theme;
   cursorThemeName = lilyaGlass.cursorThemeName;
-  iconThemePackage = pkgs.catppuccin-papirus-folders.override {
-    flavor = "frappe";
-    accent = "lavender";
-  };
+  iconThemePackage = pkgs.colloid-icon-theme;
   iconThemeName = lilyaGlass.iconThemeName;
   fallbackIconThemePackage = pkgs.adwaita-icon-theme;
 in
@@ -42,7 +35,7 @@ in
 
     copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}" "$HOME/.local/share/themes/${gtkThemeName}"
 
-    legacy_gtk_theme="$HOME/.local/share/themes/adw-gtk3"
+    legacy_gtk_theme="$HOME/.local/share/themes/catppuccin-frappe-lavender-compact"
     if [ -e "$legacy_gtk_theme" ] && [ ! -L "$legacy_gtk_theme" ]; then
       chmod -R u+w "$legacy_gtk_theme" 2>/dev/null || true
       rm -rf "$legacy_gtk_theme"
