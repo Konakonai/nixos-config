@@ -47,7 +47,7 @@ in
       ELECTRON_OZONE_PLATFORM_HINT = "wayland";
       XCURSOR_THEME = lilyaGlass.cursorThemeName;
       XCURSOR_SIZE = builtins.toString lilyaGlass.cursorSize;
-      XCURSOR_PATH = "${pkgs.adwaita-icon-theme}/share/icons";
+      XCURSOR_PATH = "${pkgs.catppuccin-cursors.frappeLavender}/share/icons:${pkgs.adwaita-icon-theme}/share/icons";
     };
 
     input = {
