@@ -83,6 +83,7 @@ in
 
     packages = [
       "com.qq.QQ"
+      "com.getpostman.Postman"
     ];
 
     # Strict declarative Flatpak management: apps not listed here are removed.
@@ -98,6 +99,17 @@ in
         # Keep QQ on Wayland while retaining the real X11 socket for compatibility.
         # Flatpak 1.18 crashes on the leading empty permission entry generated
         # when nix-flatpak serializes a negated socket such as !fallback-x11.
+        Context.sockets = [
+          "wayland"
+          "x11"
+        ];
+        Context.filesystems = themeFilesystems;
+        Environment = themeEnv // fcitxCompatEnv // {
+          ELECTRON_OZONE_PLATFORM_HINT = "wayland";
+          NIXOS_OZONE_WL = "1";
+        };
+      };
+      "com.getpostman.Postman" = {
         Context.sockets = [
           "wayland"
           "x11"
