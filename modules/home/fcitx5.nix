@@ -8,6 +8,117 @@ let
     SDL_IM_MODULE = "fcitx";
     GLFW_IM_MODULE = "fcitx";
   };
+
+  catppuccinLavenderGlassThemeConfig = pkgs.writeText "theme.conf" ''
+    [Metadata]
+    Name=Catppuccin Lavender Glass
+    Version=1.0
+    Author=Antigravity
+    Description=Catppuccin Lavender Glass light theme for Fcitx5
+    ScaleWithDPI=True
+
+    [InputPanel]
+    Font="${lilyaGlass.fonts.sans} 11"
+    NormalColor=#2c243e
+    HighlightCandidateColor=#ffffff
+    HighlightColor=#7c5cfa
+    HighlightBackgroundColor=#f0edfc
+    Spacing=4
+
+    [InputPanel/TextMargin]
+    Left=14
+    Right=14
+    Top=8
+    Bottom=8
+
+    [InputPanel/Background]
+    Color=#faf8ff
+    Image=panel.svg
+
+    [InputPanel/Background/Margin]
+    Left=12
+    Right=12
+    Top=12
+    Bottom=12
+
+    [InputPanel/Highlight]
+    Color=#7c5cfa
+    Image=highlight.svg
+
+    [InputPanel/Highlight/Margin]
+    Left=10
+    Right=10
+    Top=6
+    Bottom=6
+
+    [Menu]
+    Font="${lilyaGlass.fonts.sans} 10"
+    NormalColor=#2c243e
+    Spacing=4
+
+    [Menu/Background]
+    Color=#faf8ff
+    Image=panel.svg
+
+    [Menu/Background/Margin]
+    Left=8
+    Right=8
+    Top=8
+    Bottom=8
+
+    [Menu/ContentMargin]
+    Left=4
+    Right=4
+    Top=4
+    Bottom=4
+
+    [Menu/Highlight]
+    Color=#7c5cfa
+    Image=highlight.svg
+
+    [Menu/Highlight/Margin]
+    Left=8
+    Right=8
+    Top=5
+    Bottom=5
+
+    [Menu/Separator]
+    Color=#d8d0f4
+
+    [Menu/CheckBox]
+    Image=radio.png
+
+    [Menu/SubMenu]
+    Image=arrow.png
+
+    [Menu/TextMargin]
+    Left=6
+    Right=6
+    Top=5
+    Bottom=5
+  '';
+
+  panelSvg = pkgs.writeText "panel.svg" ''
+    <svg width="48" height="48" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="46" height="46" rx="12" fill="#faf8ff" stroke="#d8d0f4" stroke-width="1.5"/>
+    </svg>
+  '';
+
+  highlightSvg = pkgs.writeText "highlight.svg" ''
+    <svg width="48" height="48" version="1.1" xmlns="http://www.w3.org/2000/svg">
+      <rect width="48" height="48" rx="8" fill="#7c5cfa"/>
+    </svg>
+  '';
+
+  catppuccinLavenderGlassTheme = pkgs.runCommand "fcitx5-theme-catppuccin-lavender-glass" { } ''
+    theme_dir="$out/share/fcitx5/themes/catppuccin-lavender-glass"
+    mkdir -p "$theme_dir"
+    cp ${catppuccinLavenderGlassThemeConfig} "$theme_dir/theme.conf"
+    cp ${panelSvg} "$theme_dir/panel.svg"
+    cp ${highlightSvg} "$theme_dir/highlight.svg"
+    cp ${pkgs.catppuccin-fcitx5}/share/fcitx5/themes/catppuccin-latte-lavender/arrow.png "$theme_dir/arrow.png"
+    cp ${pkgs.catppuccin-fcitx5}/share/fcitx5/themes/catppuccin-latte-lavender/radio.png "$theme_dir/radio.png"
+  '';
 in
 {
   _module.args = {
@@ -15,7 +126,10 @@ in
   };
 
   xdg.configFile."fcitx5/conf/classicui.conf".text = ''
-    Font="${lilyaGlass.fonts.sans} 10"
-    Theme=catppuccin-latte-lavender
+    Font="${lilyaGlass.fonts.sans} 11"
+    Theme=catppuccin-lavender-glass
   '';
+
+  xdg.dataFile."fcitx5/themes/catppuccin-lavender-glass".source =
+    "${catppuccinLavenderGlassTheme}/share/fcitx5/themes/catppuccin-lavender-glass";
 }
