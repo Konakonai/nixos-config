@@ -189,6 +189,9 @@ if content.startswith("* {"):
   '';
 
   tomlFormat = pkgs.formats.toml { };
+  noctaliaConfigMigrationPython = pkgs.python3.withPackages (pythonPackages: [
+    pythonPackages.tomlkit
+  ]);
   noctaliaSettings = {
     theme.mode = "light";
     theme.source = "custom";
@@ -244,7 +247,12 @@ if content.startswith("* {"):
       capsule_radius = lilyaGlass.radius.capsules;
       capsule_opacity = lilyaGlass.opacity.noctaliaCapsules;
       capsule_border = "outline";
-      start = [ "launcher" "network" "bluetooth" ];
+      start = [
+        "launcher"
+        "network"
+        "bluetooth"
+        "mihomo-control"
+      ];
       center = [ "workspaces" ];
       end = [ "tray" "notifications" "clipboard" "volume" "brightness" "battery" "clock" "control-center" "session" ];
     };
@@ -259,6 +267,29 @@ if content.startswith("* {"):
       background_opacity = lilyaGlass.opacity.noctaliaPopups;
       offset_x = 18;
       offset_y = 12;
+    };
+
+    plugins = {
+      auto_update = "all";
+      enabled = [ "mdj2812/mihomo-control" ];
+    };
+
+    plugin_settings."mdj2812/mihomo-control" = {
+      host = "127.0.0.1";
+      port = "9090";
+      secret = "";
+      use_https = false;
+      allow_insecure_tls = false;
+      test_url = "https://www.gstatic.com/generate_204";
+      refresh_interval = 2;
+      panel_placement = "floating";
+    };
+
+    widget.mihomo-control = {
+      type = "mdj2812/mihomo-control:widget";
+      label_content = "mode";
+      icon_size = 16;
+      icon_color_mode = "status";
     };
 
     theme.templates.user.darkly-qt = {
@@ -339,6 +370,50 @@ in
 
     if [ ! -e "$config_file" ]; then
       ${pkgs.coreutils}/bin/install -Dm600 ${noctaliaSeed} "$config_file"
+    fi
+  '';
+
+  # Noctalia keeps GUI changes in an app-owned state overlay. Migrate only the
+  # plugin keys whose schema changed, and preserve all unrelated UI state.
+  home.activation.migrateNoctaliaPluginConfig = lib.hm.dag.entryAfter [ "seedNoctaliaConfig" ] ''
+    state_file="''${XDG_STATE_HOME:-$HOME/.local/state}/noctalia/settings.toml"
+
+    if [ -f "$state_file" ]; then
+      ${noctaliaConfigMigrationPython}/bin/python3 - "$state_file" <<'PY'
+import pathlib
+import sys
+
+import tomlkit
+
+path = pathlib.Path(sys.argv[1])
+document = tomlkit.parse(path.read_text())
+
+plugins = document.setdefault("plugins", tomlkit.table())
+plugins["auto_update"] = "all"
+for source in plugins.get("source", []):
+    source.pop("auto_update", None)
+
+enabled = plugins.setdefault("enabled", tomlkit.array())
+if "mdj2812/mihomo-control" not in enabled:
+    enabled.append("mdj2812/mihomo-control")
+
+plugin_settings = document.setdefault("plugin_settings", tomlkit.table())
+mihomo = plugin_settings.setdefault("mdj2812/mihomo-control", tomlkit.table())
+defaults = {
+    "host": "127.0.0.1",
+    "port": "9090",
+    "secret": "",
+    "use_https": False,
+    "allow_insecure_tls": False,
+    "test_url": "https://www.gstatic.com/generate_204",
+    "refresh_interval": 2,
+    "panel_placement": "floating",
+}
+for key, value in defaults.items():
+    mihomo.setdefault(key, value)
+
+path.write_text(tomlkit.dumps(document))
+PY
     fi
   '';
 

@@ -1,0 +1,28 @@
+From: Lilya <lilya@localhost>
+Date: Wed, 26 Aug 2026 21:30:00 +0800
+Subject: [PATCH] gtkapplication-wayland: Skip session removal on window forget
+
+File Roller can destroy its batch-operation dialog after the Wayland surface
+has entered teardown. GTK 4.22.4 then reaches
+gdk_wayland_toplevel_remove_from_session() with a stale toplevel and crashes.
+
+Skip this optional session bookkeeping for the app-local GTK build used only by
+File Roller. Window destruction and the parent GtkApplication bookkeeping still
+run normally, and the application remains on native Wayland.
+
+Remove once GTK's Wayland session removal is safe during late window teardown.
+---
+ gtk/gtkapplication-wayland.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/gtk/gtkapplication-wayland.c b/gtk/gtkapplication-wayland.c
+index 2158cf666e6..9d3f4cf1f76 100644
+--- a/gtk/gtkapplication-wayland.c
++++ b/gtk/gtkapplication-wayland.c
+@@ -230,2 +229,0 @@ gtk_application_impl_wayland_window_forget (GtkApplicationImpl *impl,
+-  GdkSurface *surface;
+-
+@@ -234,2 +232 @@ gtk_application_impl_wayland_window_forget (GtkApplicationImpl *impl,
+-  surface = gtk_native_get_surface (GTK_NATIVE (window));
+-  gdk_wayland_toplevel_remove_from_session (GDK_TOPLEVEL (surface));
++  /* File Roller uses an app-local GTK build which omits late session cleanup. */
