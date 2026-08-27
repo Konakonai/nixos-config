@@ -1,7 +1,15 @@
 { fcitxCompatEnv, inputs, lib, pkgs, ... }:
 
 let
-  inherit (pkgs.lilya) antigravity cc-switch file-roller-wayland localsend-no-csd qoder splayer;
+  inherit (pkgs.lilya)
+    antigravity
+    cc-switch
+    file-roller-wayland
+    localsend-no-csd
+    nemo-with-extensions-wayland
+    qoder
+    splayer
+    ;
   classin = pkgs.lilya.classin.override { inherit fcitxCompatEnv; };
   claude-desktop =
     inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs;
@@ -61,7 +69,7 @@ in
     loupe
     mcomix
     mission-center
-    nemo-with-extensions
+    nemo-with-extensions-wayland
     obsidian
     pavucontrol
     pwvucontrol
@@ -85,7 +93,7 @@ in
     nemo = {
       name = "Files";
       genericName = "File Manager";
-      exec = "${pkgs.nemo-with-extensions}/bin/nemo %U";
+      exec = "${nemo-with-extensions-wayland}/bin/nemo %U";
       icon = "system-file-manager";
       terminal = false;
       categories = [ "Utility" "FileTools" "System" "FileManager" ];

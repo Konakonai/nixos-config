@@ -18,6 +18,9 @@ let
     codexDesktopFlake.packages.${system}.codex-desktop.override {
       linuxFeatureIds = [
         "computer-use-linux"
+        # Replace the upstream Parcel Git watcher with a watcher whose
+        # disposal is joined before the Electron process exits.
+        "directory-only-working-tree-watch"
         "frameless-titlebar"
       ];
     };

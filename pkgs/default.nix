@@ -2,6 +2,7 @@
 
 let
   braveOrigin = pkgs.callPackage ./brave-origin.nix { };
+  fileRollerWayland = pkgs.callPackage ./file-roller-wayland.nix { };
 in
 {
   antigravity = pkgs.callPackage ./antigravity.nix { };
@@ -23,7 +24,7 @@ in
   classin = pkgs.callPackage ./classin.nix { };
   codex = pkgs.callPackage ./codex.nix { };
   eden = pkgs.callPackage ./eden.nix { };
-  file-roller-wayland = pkgs.callPackage ./file-roller-wayland.nix { };
+  file-roller-wayland = fileRollerWayland;
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
   localsend-no-csd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";
@@ -39,6 +40,13 @@ in
     meta = pkgs.localsend.meta;
   };
   mactahoe-kde = pkgs.callPackage ./mactahoe-kde.nix { };
+  # nemo-fileroller embeds File Roller's absolute path at build time, so the
+  # extension must be rebuilt to make Nemo use the app-local GTK workaround.
+  nemo-with-extensions-wayland = pkgs.nemo-with-extensions.override {
+    nemo-fileroller = pkgs.nemo-fileroller.override {
+      file-roller = fileRollerWayland;
+    };
+  };
   plasma-overdose-gtk-theme = pkgs.callPackage ./plasma-overdose-gtk-theme.nix { };
   plasma-overdose-theme = pkgs.callPackage ./plasma-overdose-theme.nix { };
   qoder = pkgs.callPackage ./qoder.nix { };
