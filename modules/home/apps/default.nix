@@ -6,6 +6,5 @@
     ./desktop.nix
     ./libreoffice.nix
     ./messaging.nix
-    ./pear-desktop.nix
   ];
 }

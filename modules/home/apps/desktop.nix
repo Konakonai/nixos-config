@@ -72,6 +72,7 @@ in
     nemo-with-extensions-wayland
     obsidian
     pavucontrol
+    pear-desktop
     pwvucontrol
     qoder
     resources
