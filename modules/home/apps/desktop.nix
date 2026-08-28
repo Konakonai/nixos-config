@@ -77,6 +77,7 @@ in
     qoder
     resources
     splayer
+    spotube
     thunderbird
   ];
 
