@@ -25,6 +25,10 @@ let
 
     include "noctalia.kdl"
 
+    blur {
+        off
+    }
+
     window-rule {
         draw-border-with-background false
     }
