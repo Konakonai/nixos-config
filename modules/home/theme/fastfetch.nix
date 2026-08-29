@@ -1,4 +1,4 @@
-{ lilyaGlass, pkgs, ... }:
+{ lilyaTheme, pkgs, ... }:
 
 let
   logoSvg = ../../../assets/fastfetch-nixos-logo.svg;
@@ -37,8 +37,8 @@ in
         width = 14;
       };
       constants = [
-        "fg:${lilyaGlass.palette.text}"
-        "accent:${lilyaGlass.palette.accent}"
+        "fg:${lilyaTheme.palette.text}"
+        "accent:${lilyaTheme.palette.accent}"
       ];
     };
 

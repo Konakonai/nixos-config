@@ -1,4 +1,4 @@
-{ hostProfile, lilyaGlass, pkgs, ... }:
+{ hostProfile, lilyaTheme, pkgs, ... }:
 
 let
   nh = pkgs.lib.getExe pkgs.nh;
@@ -131,42 +131,42 @@ in
       # Active Noctalia palette, exposed with Catppuccin-compatible role names.
       palettes.noctalia = {
         # Standard colors
-        blue      = lilyaGlass.palette.terminal.normal.blue;
-        red       = lilyaGlass.palette.terminal.normal.red;
-        green     = lilyaGlass.palette.terminal.normal.green;
-        yellow    = lilyaGlass.palette.terminal.normal.yellow;
-        cyan      = lilyaGlass.palette.terminal.normal.cyan;
-        magenta   = lilyaGlass.palette.terminal.normal.magenta;
-        white     = lilyaGlass.palette.base;
-        black     = lilyaGlass.palette.accent;
+        blue      = lilyaTheme.palette.terminal.normal.blue;
+        red       = lilyaTheme.palette.terminal.normal.red;
+        green     = lilyaTheme.palette.terminal.normal.green;
+        yellow    = lilyaTheme.palette.terminal.normal.yellow;
+        cyan      = lilyaTheme.palette.terminal.normal.cyan;
+        magenta   = lilyaTheme.palette.terminal.normal.magenta;
+        white     = lilyaTheme.palette.base;
+        black     = lilyaTheme.palette.accent;
 
         # Extended palette (Catppuccin-compatible names)
-        rosewater = lilyaGlass.palette.crust;
-        flamingo  = lilyaGlass.palette.error;
-        pink      = lilyaGlass.palette.tertiary;
-        mauve     = lilyaGlass.palette.terminal.normal.magenta;
-        maroon    = lilyaGlass.palette.error;
-        peach     = lilyaGlass.palette.terminal.normal.yellow;
-        teal      = lilyaGlass.palette.terminal.normal.cyan;
-        sky       = lilyaGlass.palette.terminal.bright.blue;
-        sapphire  = lilyaGlass.palette.terminal.normal.blue;
-        lavender  = lilyaGlass.palette.lavender;
+        rosewater = lilyaTheme.palette.crust;
+        flamingo  = lilyaTheme.palette.error;
+        pink      = lilyaTheme.palette.tertiary;
+        mauve     = lilyaTheme.palette.terminal.normal.magenta;
+        maroon    = lilyaTheme.palette.error;
+        peach     = lilyaTheme.palette.terminal.normal.yellow;
+        teal      = lilyaTheme.palette.terminal.normal.cyan;
+        sky       = lilyaTheme.palette.terminal.bright.blue;
+        sapphire  = lilyaTheme.palette.terminal.normal.blue;
+        lavender  = lilyaTheme.palette.lavender;
 
         # Text shades
-        text      = lilyaGlass.palette.text;
-        subtext1  = lilyaGlass.palette.subtext;
-        subtext0  = lilyaGlass.palette.terminal.bright.black;
+        text      = lilyaTheme.palette.text;
+        subtext1  = lilyaTheme.palette.subtext;
+        subtext0  = lilyaTheme.palette.terminal.bright.black;
 
         # Surface shades
-        overlay2  = lilyaGlass.palette.overlay;
-        overlay1  = lilyaGlass.palette.hover;
-        overlay0  = lilyaGlass.palette.crust;
-        surface2  = lilyaGlass.palette.mantle;
-        surface1  = lilyaGlass.palette.mantle;
-        surface0  = lilyaGlass.palette.base;
-        base      = lilyaGlass.palette.base;
-        mantle    = lilyaGlass.palette.mantle;
-        crust     = lilyaGlass.palette.crust;
+        overlay2  = lilyaTheme.palette.overlay;
+        overlay1  = lilyaTheme.palette.hover;
+        overlay0  = lilyaTheme.palette.crust;
+        surface2  = lilyaTheme.palette.mantle;
+        surface1  = lilyaTheme.palette.mantle;
+        surface0  = lilyaTheme.palette.base;
+        base      = lilyaTheme.palette.base;
+        mantle    = lilyaTheme.palette.mantle;
+        crust     = lilyaTheme.palette.crust;
       };
     };
   };

@@ -1,4 +1,4 @@
-{ config, lilyaGlass, pkgs, ... }:
+{ config, lilyaTheme, pkgs, ... }:
 
 {
   home.sessionVariables = {
@@ -7,8 +7,8 @@
     QT_QPA_PLATFORMTHEME = "qt6ct";
     QT_WAYLAND_DECORATION = "adwaita";
     ELECTRON_OZONE_PLATFORM_HINT = "wayland";
-    XCURSOR_THEME = lilyaGlass.cursorThemeName;
-    XCURSOR_SIZE = builtins.toString lilyaGlass.cursorSize;
+    XCURSOR_THEME = lilyaTheme.cursorThemeName;
+    XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
     XCURSOR_PATH = "${pkgs.catppuccin-cursors.frappeLavender}/share/icons:${pkgs.adwaita-icon-theme}/share/icons";
   };
 }

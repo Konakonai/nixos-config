@@ -1,4 +1,4 @@
-{ config, lilyaGlass, pkgs, ... }:
+{ config, lilyaTheme, pkgs, ... }:
 
 let
   xwaylandCoreFonts = pkgs.writeShellScript "xwayland-core-fonts" ''
@@ -34,8 +34,8 @@ in
     hotkey-overlay.skip-at-startup = true;
 
     cursor = {
-      theme = lilyaGlass.cursorThemeName;
-      size = lilyaGlass.cursorSize;
+      theme = lilyaTheme.cursorThemeName;
+      size = lilyaTheme.cursorSize;
     };
 
     environment = {
@@ -45,8 +45,8 @@ in
       QT_QPA_PLATFORMTHEME = "qt6ct";
       QT_WAYLAND_DECORATION = "adwaita";
       ELECTRON_OZONE_PLATFORM_HINT = "wayland";
-      XCURSOR_THEME = lilyaGlass.cursorThemeName;
-      XCURSOR_SIZE = builtins.toString lilyaGlass.cursorSize;
+      XCURSOR_THEME = lilyaTheme.cursorThemeName;
+      XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
       XCURSOR_PATH = "${pkgs.catppuccin-cursors.frappeLavender}/share/icons:${pkgs.adwaita-icon-theme}/share/icons";
     };
 
@@ -81,8 +81,8 @@ in
       focus-ring = {
         enable = true;
         width = 2;
-        active.color = lilyaGlass.palette.lavender;
-        inactive.color = lilyaGlass.palette.crust;
+        active.color = lilyaTheme.palette.lavender;
+        inactive.color = lilyaTheme.palette.crust;
       };
 
       border.enable = false;
@@ -95,14 +95,14 @@ in
           x = 0;
           y = 10;
         };
-        color = lilyaGlass.palette.shadow;
+        color = lilyaTheme.palette.shadow;
       };
     };
 
     window-rules = [
       {
         geometry-corner-radius = let
-          radius = lilyaGlass.radius.windows;
+          radius = lilyaTheme.radius.windows;
         in {
           top-left = radius;
           top-right = radius;

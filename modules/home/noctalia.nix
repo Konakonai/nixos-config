@@ -1,4 +1,4 @@
-{ config, hostProfile, lib, lilyaGlass, pkgs, ... }:
+{ config, hostProfile, lib, lilyaTheme, pkgs, ... }:
 
 let
   darklyQtTemplate = pkgs.writeText "noctalia-darkly-qtct.conf" ''
@@ -76,10 +76,10 @@ let
       --background-lighter: {{colors.surface_variant.default.hex}};
       --body-background: {{colors.background.default.hex}};
       --input-background: {{colors.surface_variant.default.hex}};
-      --controller-hints-background: transparent;
+      --controller-hints-background: {{colors.surface_variant.default.hex}};
       --current-background: var(--body-background);
       --modal-background: {{colors.background.default.hex}};
-      --modal-backdrop: rgba(0, 0, 0, ${builtins.toString lilyaGlass.opacity.modalBackdrop});
+      --modal-backdrop: rgba(0, 0, 0, ${builtins.toString lilyaTheme.opacity.modalBackdrop});
       --modal-border: {{colors.outline.default.hex}};
       --osk-background: var(--body-background);
       --osk-button-background: var(--input-background);
@@ -133,7 +133,7 @@ let
     }
 
     body.noctalia {
-      font-family: "${lilyaGlass.fonts.sans}", sans-serif !important;
+      font-family: "${lilyaTheme.fonts.sans}", sans-serif !important;
     }
 
     body.noctalia .sidebar {
@@ -141,7 +141,7 @@ let
     }
 
     body.noctalia .game-card {
-      border-radius: ${builtins.toString (builtins.floor lilyaGlass.radius.windows)}px !important;
+      border-radius: ${builtins.toString (builtins.floor lilyaTheme.radius.windows)}px !important;
       overflow: hidden;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
@@ -154,7 +154,7 @@ let
   zenCompatibilityTemplate = pkgs.writeText "zen-noctalia-compatibility.css" (
     lib.replaceStrings
       [ "@disabled-opacity@" ]
-      [ (builtins.toString lilyaGlass.opacity.disabled) ]
+      [ (builtins.toString lilyaTheme.opacity.disabled) ]
       (builtins.readFile ../../assets/themes/zen-noctalia-compatibility.css)
   );
   zenCompatibilityHook = pkgs.writeShellScript "noctalia-zen-compatibility" ''
@@ -200,9 +200,9 @@ if content.startswith("* {"):
     pythonPackages.tomlkit
   ]);
   noctaliaSettings = {
-    theme.mode = lilyaGlass.theme.mode;
-    theme.source = lilyaGlass.theme.source;
-    theme.custom_palette = lilyaGlass.theme.paletteName;
+    theme.mode = lilyaTheme.theme.mode;
+    theme.source = lilyaTheme.theme.source;
+    theme.custom_palette = lilyaTheme.theme.paletteName;
     theme.templates.enable_builtin_templates = true;
     theme.templates.builtin_ids = [ "btop" "gtk3" "gtk4" "kitty" "niri" ];
     theme.templates.enable_community_templates = true;
@@ -210,7 +210,7 @@ if content.startswith("* {"):
 
     shell = {
       corner_radius_scale = 1.65;
-      font_family = lilyaGlass.fonts.sans;
+      font_family = lilyaTheme.fonts.sans;
 
       animation = {
         enabled = true;
@@ -219,11 +219,11 @@ if content.startswith("* {"):
 
       shadow = {
         direction = "down";
-        alpha = lilyaGlass.shadow.alpha;
+        alpha = lilyaTheme.shadow.alpha;
       };
 
       panel = {
-        transparency_mode = lilyaGlass.noctalia.panelTransparencyMode;
+        transparency_mode = lilyaTheme.noctalia.panelTransparencyMode;
         borders = false;
         shadow = false;
         launcher_placement = "floating";
@@ -239,8 +239,8 @@ if content.startswith("* {"):
     bar.main = {
       position = "top";
       thickness = 38;
-      background_opacity = lilyaGlass.opacity.noctaliaPanels;
-      radius = lilyaGlass.radius.panels;
+      background_opacity = lilyaTheme.opacity.noctaliaPanels;
+      radius = lilyaTheme.radius.panels;
       margin_ends = 180;
       margin_edge = 10;
       padding = 0;
@@ -250,10 +250,6 @@ if content.startswith("* {"):
       auto_hide = false;
       reserve_space = true;
       capsule = false;
-      capsule_fill = "surface_variant";
-      capsule_radius = lilyaGlass.radius.capsules;
-      capsule_opacity = lilyaGlass.opacity.noctaliaCapsules;
-      capsule_border = "outline";
       start = [
         "launcher"
         "network"
@@ -265,29 +261,29 @@ if content.startswith("* {"):
     };
 
     notification = {
-      background_opacity = lilyaGlass.opacity.noctaliaPopups;
+      background_opacity = lilyaTheme.opacity.noctaliaPopups;
       offset_x = 18;
       offset_y = 12;
     };
 
     osd = {
-      background_opacity = lilyaGlass.opacity.noctaliaPopups;
+      background_opacity = lilyaTheme.opacity.noctaliaPopups;
       offset_x = 18;
       offset_y = 12;
     };
 
     backdrop = {
-      enabled = true;
-      blur_intensity = lilyaGlass.blur.backdrop;
-      tint_intensity = lilyaGlass.blur.backdropTint;
+      enabled = false;
+      blur_intensity = lilyaTheme.effects.backdropBlur;
+      tint_intensity = lilyaTheme.effects.backdropTint;
     };
 
     lockscreen = {
-      blur_intensity = lilyaGlass.blur.lockscreen;
-      tint_intensity = lilyaGlass.blur.lockscreenTint;
+      blur_intensity = lilyaTheme.effects.lockscreenBlur;
+      tint_intensity = lilyaTheme.effects.lockscreenTint;
     };
 
-    dock.background_opacity = lilyaGlass.opacity.noctaliaDock;
+    dock.background_opacity = lilyaTheme.opacity.noctaliaDock;
 
     plugins = {
       auto_update = "all";
@@ -410,35 +406,44 @@ path = pathlib.Path(sys.argv[1])
 document = tomlkit.parse(path.read_text())
 
 theme = document.setdefault("theme", tomlkit.table())
-theme["mode"] = "${lilyaGlass.theme.mode}"
-theme["source"] = "${lilyaGlass.theme.source}"
-theme["custom_palette"] = "${lilyaGlass.theme.paletteName}"
+theme["mode"] = "${lilyaTheme.theme.mode}"
+theme["source"] = "${lilyaTheme.theme.source}"
+theme["custom_palette"] = "${lilyaTheme.theme.paletteName}"
 
 bar = document.setdefault("bar", tomlkit.table()).setdefault("main", tomlkit.table())
-bar["background_opacity"] = ${builtins.toString lilyaGlass.opacity.noctaliaPanels}
-bar["capsule_opacity"] = ${builtins.toString lilyaGlass.opacity.noctaliaCapsules}
+bar["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPanels}
+bar["capsule"] = False
+for key in ("capsule_fill", "capsule_radius", "capsule_opacity", "capsule_border"):
+    bar.pop(key, None)
 
 dock = document.setdefault("dock", tomlkit.table())
-dock["background_opacity"] = ${builtins.toString lilyaGlass.opacity.noctaliaDock}
+dock["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaDock}
 
 notification = document.setdefault("notification", tomlkit.table())
-notification["background_opacity"] = ${builtins.toString lilyaGlass.opacity.noctaliaPopups}
+notification["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPopups}
 
 osd = document.setdefault("osd", tomlkit.table())
-osd["background_opacity"] = ${builtins.toString lilyaGlass.opacity.noctaliaPopups}
+osd["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPopups}
 
 shell = document.setdefault("shell", tomlkit.table())
-shell.setdefault("panel", tomlkit.table())["transparency_mode"] = "${lilyaGlass.noctalia.panelTransparencyMode}"
-shell.setdefault("shadow", tomlkit.table())["alpha"] = ${builtins.toString lilyaGlass.shadow.alpha}
+shell.setdefault("panel", tomlkit.table())["transparency_mode"] = "${lilyaTheme.noctalia.panelTransparencyMode}"
+shell.setdefault("shadow", tomlkit.table())["alpha"] = ${builtins.toString lilyaTheme.shadow.alpha}
 
 backdrop = document.setdefault("backdrop", tomlkit.table())
-backdrop["enabled"] = True
-backdrop["blur_intensity"] = ${builtins.toString lilyaGlass.blur.backdrop}
-backdrop["tint_intensity"] = ${builtins.toString lilyaGlass.blur.backdropTint}
+backdrop["enabled"] = False
+backdrop["blur_intensity"] = ${builtins.toString lilyaTheme.effects.backdropBlur}
+backdrop["tint_intensity"] = ${builtins.toString lilyaTheme.effects.backdropTint}
 
 lockscreen = document.setdefault("lockscreen", tomlkit.table())
-lockscreen["blur_intensity"] = ${builtins.toString lilyaGlass.blur.lockscreen}
-lockscreen["tint_intensity"] = ${builtins.toString lilyaGlass.blur.lockscreenTint}
+lockscreen["blur_intensity"] = ${builtins.toString lilyaTheme.effects.lockscreenBlur}
+lockscreen["tint_intensity"] = ${builtins.toString lilyaTheme.effects.lockscreenTint}
+
+lockscreen_widgets = document.get("lockscreen_widgets", {}).get("widget", {})
+for widget in lockscreen_widgets.values():
+    settings = widget.get("settings")
+    if settings is not None:
+        settings["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPopups}
+        settings["input_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPopups}
 
 plugins = document.setdefault("plugins", tomlkit.table())
 plugins["auto_update"] = "all"
@@ -533,9 +538,17 @@ PY
         "$HOME/.local/share/wallpapers/Plasma-Overdose"
     '';
 
+  home.activation.removeLegacyThemeNames =
+    lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      rm -f \
+        "$HOME/.config/noctalia/palettes/Catppuccin Lavender Glass.json" \
+        "$HOME/.config/noctalia/palettes/Catppuccin Lavender Glass.json.backup"
+      rm -rf "$HOME/.local/share/fcitx5/themes/catppuccin-lavender-glass"
+    '';
+
   programs.noctalia = {
     enable = true;
-    customPalettes.${lilyaGlass.theme.paletteName} =
-      ../../assets/noctalia/palettes/catppuccin-lavender-glass.json;
+    customPalettes.${lilyaTheme.theme.paletteName} =
+      ../../assets/noctalia/palettes/catppuccin-lavender-light.json;
   };
 }

@@ -1,4 +1,4 @@
-{ config, lilyaGlass, pkgs, ... }:
+{ config, lilyaTheme, pkgs, ... }:
 
 {
   # Kitty 终端配置
@@ -6,8 +6,8 @@
     enable = true;
 
     font = {
-      name = lilyaGlass.fonts.mono;
-      size = lilyaGlass.fonts.terminalSize;
+      name = lilyaTheme.fonts.mono;
+      size = lilyaTheme.fonts.terminalSize;
     };
 
     settings = {
@@ -15,8 +15,8 @@
       enable_audio_bell = false;
       linux_display_server = "wayland";
 
-      # Kitty owns its subtle transparency; niri supplies the blur behind it.
-      background_opacity = lilyaGlass.opacity.terminal;
+      # Keep terminal content fully opaque and independent of the wallpaper.
+      background_opacity = lilyaTheme.opacity.terminal;
       window_padding_width = 16;
       hide_window_decorations = "yes";
 

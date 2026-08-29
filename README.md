@@ -25,7 +25,7 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 - `modules/system/virtualization.nix`: libvirt/virt-manager and the external Windows whole-disk VM launcher.
 - `modules/home/theme/`: GTK, Qt, cursor, Xresources, dconf, Flatpak theme integration, and custom Fcitx/Rime icon wiring.
 - `modules/home/niri/`: niri core settings, visual effects, and focused keybinding groups.
-- `modules/shared/`: values shared by NixOS and Home Manager, currently the glass design tokens.
+- `modules/shared/`: values shared by NixOS and Home Manager, currently the theme design tokens.
 - `modules/`: contains only the `system`, `home`, and `shared` layers.
 - `hosts/lilya-thinkbook/`: machine-specific display, GPU, power, user path, and service state locations.
 - `pkgs/default.nix`: the single local package-set entry point consumed through `pkgs.lilya`.

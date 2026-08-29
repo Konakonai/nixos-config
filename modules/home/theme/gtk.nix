@@ -1,7 +1,7 @@
-{ config, lib, lilyaGlass, pkgs, ... }:
+{ config, lib, lilyaTheme, pkgs, ... }:
 
 let
-  gtkThemeName = lilyaGlass.theme.gtk;
+  gtkThemeName = lilyaTheme.theme.gtk;
   gtkThemePackage = pkgs.adw-gtk3;
   iconThemePackage = pkgs.colloid-icon-theme;
 in
@@ -10,7 +10,7 @@ in
     [Icon Theme]
     Name=GNOME compatibility
     Comment=Compatibility fallback for GTK applications
-    Inherits=${lilyaGlass.iconThemeName},Adwaita,hicolor
+    Inherits=${lilyaTheme.iconThemeName},Adwaita,hicolor
     Directories=
   '';
 
@@ -21,26 +21,26 @@ in
       name = gtkThemeName;
     };
     iconTheme = {
-      name = lilyaGlass.iconThemeName;
+      name = lilyaTheme.iconThemeName;
       package = iconThemePackage;
     };
     cursorTheme = {
-      name = lilyaGlass.cursorThemeName;
+      name = lilyaTheme.cursorThemeName;
       package = pkgs.catppuccin-cursors.frappeLavender;
-      size = lilyaGlass.cursorSize;
+      size = lilyaTheme.cursorSize;
     };
 
     gtk2.extraConfig = ''
-      gtk-font-name="${lilyaGlass.fonts.sans} ${builtins.toString lilyaGlass.fonts.size}"
+      gtk-font-name="${lilyaTheme.fonts.sans} ${builtins.toString lilyaTheme.fonts.size}"
     '';
 
     gtk3.extraConfig = {
-      gtk-font-name = "${lilyaGlass.fonts.sans} ${builtins.toString lilyaGlass.fonts.size}";
+      gtk-font-name = "${lilyaTheme.fonts.sans} ${builtins.toString lilyaTheme.fonts.size}";
       gtk-application-prefer-dark-theme = 0;
     };
 
     gtk4.extraConfig = {
-      gtk-font-name = "${lilyaGlass.fonts.sans} ${builtins.toString lilyaGlass.fonts.size}";
+      gtk-font-name = "${lilyaTheme.fonts.sans} ${builtins.toString lilyaTheme.fonts.size}";
       gtk-theme-name = gtkThemeName;
       gtk-application-prefer-dark-theme = 0;
     };

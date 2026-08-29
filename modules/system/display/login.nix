@@ -1,4 +1,4 @@
-{ pkgs, inputs, hostProfile, lib, lilyaGlass, ... }:
+{ pkgs, inputs, hostProfile, lib, lilyaTheme, ... }:
 
 let
   loginWallpaper = hostProfile.display.loginWallpaper or null;
@@ -97,9 +97,9 @@ in
         compositor = "kwin";
       };
       settings.Theme = {
-        CursorTheme = lilyaGlass.cursorThemeName;
-        CursorSize = lilyaGlass.cursorSize;
-        Font = lilyaGlass.fonts.sans;
+        CursorTheme = lilyaTheme.cursorThemeName;
+        CursorSize = lilyaTheme.cursorSize;
+        Font = lilyaTheme.fonts.sans;
       };
       settings.Users.RememberLastSession = false;
     };

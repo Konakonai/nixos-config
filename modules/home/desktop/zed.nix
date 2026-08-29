@@ -1,4 +1,4 @@
-{ config, lib, lilyaGlass, pkgs, ... }:
+{ config, lib, lilyaTheme, pkgs, ... }:
 
 let
   zed = lib.getExe config.programs.zed-editor.package;
@@ -16,8 +16,8 @@ let
       model_parameters = [ ];
     };
     session.trust_all_worktrees = true;
-    ui_font_family = lilyaGlass.fonts.mono;
-    buffer_font_family = lilyaGlass.fonts.mono;
+    ui_font_family = lilyaTheme.fonts.mono;
+    buffer_font_family = lilyaTheme.fonts.mono;
     ui_font_size = 16;
     buffer_font_size = 15;
     theme = {

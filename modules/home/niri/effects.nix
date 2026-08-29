@@ -1,4 +1,4 @@
-{ config, hostProfile, lilyaGlass, pkgs, lib, ... }:
+{ config, hostProfile, lilyaTheme, pkgs, lib, ... }:
 
 let
   internalDisplay = hostProfile.display.internal;
@@ -26,76 +26,27 @@ let
     include "noctalia.kdl"
 
     window-rule {
-        exclude app-id="^kitty$"
-        opacity ${lilyaGlass.opacity.windows}
         draw-border-with-background false
-    }
-
-    window-rule {
-        match app-id="^(wechat|wechat-uos|com\\.tencent\\.WeChat|linuxqq|QQ|wemeetapp|com\\.tencent\\.wemeet)$"
-        opacity ${lilyaGlass.opacity.windows}
-        draw-border-with-background false
-    }
-
-    window-rule {
-        match app-id="^kitty$"
-        draw-border-with-background false
-        background-effect {
-            blur true
-            noise ${lilyaGlass.blur.noise}
-            saturation ${lilyaGlass.blur.saturation}
-        }
     }
 
     layer-rule {
         match namespace="^noctalia-bar-main$"
-        opacity ${lilyaGlass.opacity.compositorLayers}
-        background-effect {
-            blur true
-            noise ${lilyaGlass.blur.noise}
-            saturation ${lilyaGlass.blur.saturation}
-        }
         popups {
-            opacity ${lilyaGlass.opacity.compositorLayers}
-            geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
-            background-effect {
-                blur true
-                noise ${lilyaGlass.blur.noise}
-                saturation ${lilyaGlass.blur.saturation}
-            }
+            geometry-corner-radius ${builtins.toString lilyaTheme.radius.windows}
         }
     }
 
     layer-rule {
         match namespace="^(noctalia-control-center|noctalia-launcher|noctalia-session|noctalia-clipboard|notifications|swaync-control-center|launcher|vicinae|waybar)$"
-        opacity ${lilyaGlass.opacity.compositorLayers}
-        geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
-        background-effect {
-            blur true
-            noise ${lilyaGlass.blur.noise}
-            saturation ${lilyaGlass.blur.saturation}
-        }
+        geometry-corner-radius ${builtins.toString lilyaTheme.radius.windows}
         popups {
-            opacity ${lilyaGlass.opacity.compositorLayers}
-            geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
-            background-effect {
-                blur true
-                noise ${lilyaGlass.blur.noise}
-                saturation ${lilyaGlass.blur.saturation}
-            }
+            geometry-corner-radius ${builtins.toString lilyaTheme.radius.windows}
         }
     }
 
     layer-rule {
         match namespace="^noctalia-wallpaper.*"
         place-within-backdrop true
-    }
-
-    blur {
-        passes ${builtins.toString lilyaGlass.blur.passes}
-        offset ${lilyaGlass.blur.offset}
-        noise ${lilyaGlass.blur.noise}
-        saturation ${lilyaGlass.blur.saturation}
     }
   '';
   sessionConfig = ''

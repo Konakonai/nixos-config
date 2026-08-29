@@ -1,11 +1,11 @@
-{ config, lib, lilyaGlass, pkgs, ... }:
+{ config, lib, lilyaTheme, pkgs, ... }:
 
 let
   dolphinConfig = "${config.xdg.configHome}/dolphinrc";
   kdeGlobals = "${config.xdg.configHome}/kdeglobals";
   konsoleConfig = "${config.xdg.configHome}/konsolerc";
   konsoleProfile = "${config.xdg.dataHome}/konsole/Lilya.profile";
-  konsoleFont = "${lilyaGlass.fonts.mono},${builtins.toString lilyaGlass.fonts.terminalSize},-1,5,50,0,0,0,0,0";
+  konsoleFont = "${lilyaTheme.fonts.mono},${builtins.toString lilyaTheme.fonts.terminalSize},-1,5,50,0,0,0,0,0";
   writeKdeConfig = file: group: key: value: ''
     ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
       --file ${lib.escapeShellArg file} \

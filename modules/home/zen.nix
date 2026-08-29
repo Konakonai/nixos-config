@@ -1,4 +1,4 @@
-{ config, hostProfile, lib, lilyaGlass, pkgs, ... }:
+{ config, hostProfile, lib, lilyaTheme, pkgs, ... }:
 
 let
   zenProfilePath = hostProfile.zen.profilePath;
@@ -39,12 +39,12 @@ in
         "zen.widget.linux.transparency" = false;
 
         "font.default.zh-CN" = "sans-serif";
-        "font.name.sans-serif.zh-CN" = lilyaGlass.fonts.sans;
-        "font.name.serif.zh-CN" = lilyaGlass.fonts.serif;
-        "font.name.monospace.zh-CN" = lilyaGlass.fonts.mono;
+        "font.name.sans-serif.zh-CN" = lilyaTheme.fonts.sans;
+        "font.name.serif.zh-CN" = lilyaTheme.fonts.serif;
+        "font.name.monospace.zh-CN" = lilyaTheme.fonts.mono;
         "font.name.sans-serif.x-western" = "Noto Sans";
         "font.name.serif.x-western" = "Noto Serif";
-        "font.name.monospace.x-western" = lilyaGlass.fonts.mono;
+        "font.name.monospace.x-western" = lilyaTheme.fonts.mono;
 
         # Keep Zen from restoring duplicate windows after session/crash handoff.
         "browser.startup.page" = 1;

@@ -1,4 +1,4 @@
-{ lilyaGlass, pkgs, ... }:
+{ lilyaTheme, pkgs, ... }:
 
 let
   jetbrainsMapleMono = pkgs.lilya.jetbrains-maple-mono;
@@ -28,18 +28,18 @@ in
 
     fontconfig.defaultFonts = {
       monospace = [
-        lilyaGlass.fonts.mono
+        lilyaTheme.fonts.mono
         "Maple Mono Normal NF"
         "Noto Sans Mono CJK SC"
       ];
 
       sansSerif = [
-        lilyaGlass.fonts.sans
+        lilyaTheme.fonts.sans
         "Noto Sans"
       ];
 
       serif = [
-        lilyaGlass.fonts.serif
+        lilyaTheme.fonts.serif
         "Noto Serif"
       ];
 

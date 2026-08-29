@@ -1,16 +1,16 @@
-{ config, lib, lilyaGlass, pkgs, ... }:
+{ config, lib, lilyaTheme, pkgs, ... }:
 
 let
   qtColorSchemeName = "darkly-noctalia.conf";
-  qtFont = "${lilyaGlass.fonts.sans},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
-  qtFixedFont = "${lilyaGlass.fonts.mono},${builtins.toString lilyaGlass.fonts.size},-1,5,50,0,0,0,0,0";
+  qtFont = "${lilyaTheme.fonts.sans},${builtins.toString lilyaTheme.fonts.size},-1,5,50,0,0,0,0,0";
+  qtFixedFont = "${lilyaTheme.fonts.mono},${builtins.toString lilyaTheme.fonts.size},-1,5,50,0,0,0,0,0";
   qtctConfig = qtctDir: ''
     [Appearance]
     color_scheme_path=${config.home.homeDirectory}/.config/${qtctDir}/colors/${qtColorSchemeName}
     custom_palette=true
-    icon_theme=${lilyaGlass.iconThemeName}
+    icon_theme=${lilyaTheme.iconThemeName}
     standard_dialogs=default
-    style=${lilyaGlass.theme.qtStyle}
+    style=${lilyaTheme.theme.qtStyle}
 
     [Interface]
     activate_item_on_single_click=1

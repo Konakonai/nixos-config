@@ -1,14 +1,14 @@
-{ config, fcitxCompatEnv, lib, lilyaGlass, pkgs, ... }:
+{ config, fcitxCompatEnv, lib, lilyaTheme, pkgs, ... }:
 
 let
   themeEnv = {
-    GTK_THEME = lilyaGlass.theme.gtk;
+    GTK_THEME = lilyaTheme.theme.gtk;
     GTK_USE_PORTAL = "1";
     GTK2_RC_FILES = "${config.home.homeDirectory}/.gtkrc-2.0";
     QT_QPA_PLATFORMTHEME = "qt6ct";
-    QT_STYLE_OVERRIDE = lilyaGlass.theme.qtStyle;
-    XCURSOR_THEME = lilyaGlass.cursorThemeName;
-    XCURSOR_SIZE = builtins.toString lilyaGlass.cursorSize;
+    QT_STYLE_OVERRIDE = lilyaTheme.theme.qtStyle;
+    XCURSOR_THEME = lilyaTheme.cursorThemeName;
+    XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
     XCURSOR_PATH = "${config.home.homeDirectory}/.local/share/flatpak-icons:${config.home.homeDirectory}/.local/share/icons";
   };
 

@@ -1,12 +1,12 @@
-{ lib, lilyaGlass, pkgs, ... }:
+{ lib, lilyaTheme, pkgs, ... }:
 
 let
-  gtkThemeName = lilyaGlass.theme.gtk;
+  gtkThemeName = lilyaTheme.theme.gtk;
   gtkThemePackage = pkgs.adw-gtk3;
   cursorThemePackage = pkgs.catppuccin-cursors.frappeLavender;
-  cursorThemeName = lilyaGlass.cursorThemeName;
+  cursorThemeName = lilyaTheme.cursorThemeName;
   iconThemePackage = pkgs.colloid-icon-theme;
-  iconThemeName = lilyaGlass.iconThemeName;
+  iconThemeName = lilyaTheme.iconThemeName;
   fallbackIconThemePackage = pkgs.adwaita-icon-theme;
 in
 {

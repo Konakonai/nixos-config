@@ -1,4 +1,4 @@
-{ config, lib, lilyaGlass, pkgs, ... }:
+{ config, lib, lilyaTheme, pkgs, ... }:
 
 let
   powerDevilConfig = "${config.xdg.configHome}/powerdevilrc";
@@ -31,41 +31,41 @@ in
 
     # 1. 浅色桌面外观体系
     workspace = {
-      lookAndFeel = lilyaGlass.theme.plasma.lookAndFeel;
-      theme = lilyaGlass.theme.plasma.workspace;
-      colorScheme = lilyaGlass.theme.plasma.colorScheme;
-      iconTheme = lilyaGlass.iconThemeName;
+      lookAndFeel = lilyaTheme.theme.plasma.lookAndFeel;
+      theme = lilyaTheme.theme.plasma.workspace;
+      colorScheme = lilyaTheme.theme.plasma.colorScheme;
+      iconTheme = lilyaTheme.iconThemeName;
       cursor = {
-        theme = lilyaGlass.cursorThemeName;
-        size = lilyaGlass.cursorSize;
+        theme = lilyaTheme.cursorThemeName;
+        size = lilyaTheme.cursorSize;
       };
     };
 
     # 2. 统一字体管理
     fonts = {
       general = {
-        family = lilyaGlass.fonts.sans;
-        pointSize = lilyaGlass.fonts.size;
+        family = lilyaTheme.fonts.sans;
+        pointSize = lilyaTheme.fonts.size;
       };
       fixedWidth = {
-        family = lilyaGlass.fonts.mono;
-        pointSize = lilyaGlass.fonts.terminalSize;
+        family = lilyaTheme.fonts.mono;
+        pointSize = lilyaTheme.fonts.terminalSize;
       };
       small = {
-        family = lilyaGlass.fonts.sans;
-        pointSize = lilyaGlass.fonts.size - 2;
+        family = lilyaTheme.fonts.sans;
+        pointSize = lilyaTheme.fonts.size - 2;
       };
       toolbar = {
-        family = lilyaGlass.fonts.sans;
-        pointSize = lilyaGlass.fonts.size;
+        family = lilyaTheme.fonts.sans;
+        pointSize = lilyaTheme.fonts.size;
       };
       menu = {
-        family = lilyaGlass.fonts.sans;
-        pointSize = lilyaGlass.fonts.size;
+        family = lilyaTheme.fonts.sans;
+        pointSize = lilyaTheme.fonts.size;
       };
       windowTitle = {
-        family = lilyaGlass.fonts.sans;
-        pointSize = lilyaGlass.fonts.size;
+        family = lilyaTheme.fonts.sans;
+        pointSize = lilyaTheme.fonts.size;
       };
     };
 
@@ -75,7 +75,7 @@ in
         location = "bottom";
         height = 44;
         floating = true;
-        opacity = lilyaGlass.opacity.plasmaPanel;
+        opacity = lilyaTheme.opacity.plasmaPanel;
         widgets = [
           {
             kickoff = {
@@ -105,13 +105,9 @@ in
       }
     ];
 
-    # 4. 窗口管理器与特效 (启用毛玻璃模糊)
+    # 4. 窗口管理器与特效（关闭背景模糊）
     kwin = {
-      effects.blur = {
-        enable = true;
-        strength = lilyaGlass.blur.plasmaStrength;
-        noiseStrength = lilyaGlass.blur.plasmaNoise;
-      };
+      effects.blur.enable = lilyaTheme.effects.backgroundBlur;
     };
 
     # 5. 全局快捷键
@@ -138,11 +134,11 @@ in
           "ButtonsOnLeft" = "";
           "ButtonsOnRight" = "IAX";
           "library" = "org.kde.klassy";
-          "theme" = lilyaGlass.theme.qtStyle;
+          "theme" = lilyaTheme.theme.qtStyle;
         };
       };
 
-      # Klassy 现代圆角毛玻璃微质感
+      # Klassy 现代圆角与实色标题栏
       "klassy/klassyrc" = {
         "Button" = {
           "ButtonIconStyle" = "StyleKlassy";
@@ -162,14 +158,14 @@ in
           "CloseButtonIconColorInactive" = "AsSelected";
         };
         "TitleBar" = {
-          "BlurBehindTitleBar" = true;
-          "OpaqueActiveTitleBar" = false;
-          "TranslucentTitleBar" = true;
+          "BlurBehindTitleBar" = false;
+          "OpaqueActiveTitleBar" = true;
+          "TranslucentTitleBar" = false;
         };
         "TitleBarOpacity" = {
-          "ActiveTitleBarOpacity" = lilyaGlass.opacity.plasmaTitlebarActive;
-          "InactiveTitleBarOpacity" = lilyaGlass.opacity.plasmaTitlebarInactive;
-          "OpaqueMaximizedTitleBars" = false;
+          "ActiveTitleBarOpacity" = lilyaTheme.opacity.plasmaTitlebarActive;
+          "InactiveTitleBarOpacity" = lilyaTheme.opacity.plasmaTitlebarInactive;
+          "OpaqueMaximizedTitleBars" = true;
         };
         "Windeco" = {
           "BoldButtonIcons" = "BoldIconsBold";
@@ -188,10 +184,10 @@ in
           "TerminalService" = "";
         };
         "KDE" = {
-          "widgetStyle" = lilyaGlass.theme.qtStyle;
+          "widgetStyle" = lilyaTheme.theme.qtStyle;
         };
         "Sounds" = {
-          "Theme" = lilyaGlass.theme.sound;
+          "Theme" = lilyaTheme.theme.sound;
         };
       };
     };

@@ -1,4 +1,4 @@
-{ lilyaGlass, pkgs, ... }:
+{ lilyaTheme, pkgs, ... }:
 
 let
   fcitxCompatEnv = {
@@ -9,16 +9,16 @@ let
     GLFW_IM_MODULE = "fcitx";
   };
 
-  catppuccinLavenderGlassThemeConfig = pkgs.writeText "theme.conf" ''
+  catppuccinLavenderLightThemeConfig = pkgs.writeText "theme.conf" ''
     [Metadata]
-    Name=Catppuccin Lavender Glass
+    Name=Catppuccin Lavender Light
     Version=1.0
     Author=Antigravity
-    Description=Catppuccin Lavender Glass light theme for Fcitx5
+    Description=Catppuccin Lavender Light theme for Fcitx5
     ScaleWithDPI=True
 
     [InputPanel]
-    Font="${lilyaGlass.fonts.sans} 11"
+    Font="${lilyaTheme.fonts.sans} 11"
     NormalColor=#2c243e
     HighlightCandidateColor=#ffffff
     HighlightColor=#7c5cfa
@@ -52,7 +52,7 @@ let
     Bottom=6
 
     [Menu]
-    Font="${lilyaGlass.fonts.sans} 10"
+    Font="${lilyaTheme.fonts.sans} 10"
     NormalColor=#2c243e
     Spacing=4
 
@@ -118,7 +118,7 @@ let
   colloidRimeIcon = pkgs.runCommand "fcitx5-rime-icon-colloid-light" {
     nativeBuildInputs = [ pkgs.librsvg ];
   } ''
-    rime_svg=${pkgs.colloid-icon-theme}/share/icons/${lilyaGlass.iconThemeName}/status/symbolic/fcitx-rime-symbolic.svg
+    rime_svg=${pkgs.colloid-icon-theme}/share/icons/${lilyaTheme.iconThemeName}/status/symbolic/fcitx-rime-symbolic.svg
 
     mkdir -p $out/fcitx5-icons
     cp "$rime_svg" $out/fcitx5-icons/fcitx-rime.svg
@@ -129,10 +129,10 @@ let
     rsvg-convert -w 48 -h 48 -o $out/hicolor/48x48/apps/fcitx-rime.png "$rime_svg"
   '';
 
-  catppuccinLavenderGlassTheme = pkgs.runCommand "fcitx5-theme-catppuccin-lavender-glass" { } ''
-    theme_dir="$out/share/fcitx5/themes/catppuccin-lavender-glass"
+  catppuccinLavenderLightTheme = pkgs.runCommand "fcitx5-theme-catppuccin-lavender-light" { } ''
+    theme_dir="$out/share/fcitx5/themes/catppuccin-lavender-light"
     mkdir -p "$theme_dir"
-    cp ${catppuccinLavenderGlassThemeConfig} "$theme_dir/theme.conf"
+    cp ${catppuccinLavenderLightThemeConfig} "$theme_dir/theme.conf"
     cp ${panelSvg} "$theme_dir/panel.svg"
     cp ${highlightSvg} "$theme_dir/highlight.svg"
     cp ${pkgs.catppuccin-fcitx5}/share/fcitx5/themes/catppuccin-latte-lavender/arrow.png "$theme_dir/arrow.png"
@@ -145,12 +145,12 @@ in
   };
 
   xdg.configFile."fcitx5/conf/classicui.conf".text = ''
-    Font="${lilyaGlass.fonts.sans} 11"
-    Theme=catppuccin-lavender-glass
+    Font="${lilyaTheme.fonts.sans} 11"
+    Theme=catppuccin-lavender-light
   '';
 
-  xdg.dataFile."fcitx5/themes/catppuccin-lavender-glass".source =
-    "${catppuccinLavenderGlassTheme}/share/fcitx5/themes/catppuccin-lavender-glass";
+  xdg.dataFile."fcitx5/themes/catppuccin-lavender-light".source =
+    "${catppuccinLavenderLightTheme}/share/fcitx5/themes/catppuccin-lavender-light";
 
   xdg.dataFile."fcitx5/icons/fcitx-rime.svg".source =
     "${colloidRimeIcon}/fcitx5-icons/fcitx-rime.svg";
