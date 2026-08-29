@@ -33,7 +33,7 @@ let
 
     window-rule {
         match app-id="^(wechat|wechat-uos|com\\.tencent\\.WeChat|linuxqq|QQ|wemeetapp|com\\.tencent\\.wemeet)$"
-        opacity 1.0
+        opacity ${lilyaGlass.opacity.windows}
         draw-border-with-background false
     }
 
@@ -49,11 +49,14 @@ let
 
     layer-rule {
         match namespace="^noctalia-bar-main$"
+        opacity ${lilyaGlass.opacity.compositorLayers}
         background-effect {
-            blur false
+            blur true
+            noise ${lilyaGlass.blur.noise}
+            saturation ${lilyaGlass.blur.saturation}
         }
         popups {
-            opacity ${lilyaGlass.opacity.layerPopups}
+            opacity ${lilyaGlass.opacity.compositorLayers}
             geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
             background-effect {
                 blur true
@@ -65,15 +68,15 @@ let
 
     layer-rule {
         match namespace="^(noctalia-control-center|noctalia-launcher|noctalia-session|noctalia-clipboard|notifications|swaync-control-center|launcher|vicinae|waybar)$"
-        opacity ${lilyaGlass.opacity.layerShell}
+        opacity ${lilyaGlass.opacity.compositorLayers}
         geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
         background-effect {
             blur true
-            noise 0.0
+            noise ${lilyaGlass.blur.noise}
             saturation ${lilyaGlass.blur.saturation}
         }
         popups {
-            opacity ${lilyaGlass.opacity.layerPopups}
+            opacity ${lilyaGlass.opacity.compositorLayers}
             geometry-corner-radius ${builtins.toString lilyaGlass.radius.windows}
             background-effect {
                 blur true

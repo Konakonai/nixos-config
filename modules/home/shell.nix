@@ -128,7 +128,7 @@ in
         disabled = false;
       };
 
-      # Plasma Overdose palette, matching Noctalia's custom palette.
+      # Active Noctalia palette, exposed with Catppuccin-compatible role names.
       palettes.noctalia = {
         # Standard colors
         blue      = lilyaGlass.palette.terminal.normal.blue;

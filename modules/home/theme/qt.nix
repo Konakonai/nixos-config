@@ -10,7 +10,7 @@ let
     custom_palette=true
     icon_theme=${lilyaGlass.iconThemeName}
     standard_dialogs=default
-    style=klassy
+    style=${lilyaGlass.theme.qtStyle}
 
     [Interface]
     activate_item_on_single_click=1

@@ -1,42 +1,76 @@
 let
-  plasmaOverdose =
+  catppuccinLavenderGlass =
     (builtins.fromJSON (
-      builtins.readFile ../../assets/noctalia/palettes/plasma-overdose.json
+      builtins.readFile ../../assets/noctalia/palettes/catppuccin-lavender-glass.json
     )).light;
 in
 {
-  palette = {
-    accent = plasmaOverdose.mPrimary;
-    lavender = plasmaOverdose.mSecondary;
-    tertiary = plasmaOverdose.mTertiary;
-    error = plasmaOverdose.mError;
-    text = plasmaOverdose.mOnSurface;
-    subtext = plasmaOverdose.mOnSurfaceVariant;
-    base = plasmaOverdose.mSurface;
-    mantle = plasmaOverdose.mSurfaceVariant;
-    crust = plasmaOverdose.mShadow;
-    overlay = plasmaOverdose.mOutline;
-    hover = plasmaOverdose.mHover;
-    onHover = plasmaOverdose.mOnHover;
-    shadow = "${plasmaOverdose.mPrimary}33";
-    inherit (plasmaOverdose) terminal;
+  # One explicit source of truth for the active light appearance. Noctalia
+  # supplies the palette and generated application colors; native toolkits keep
+  # their current light widget styles so application geometry stays reliable.
+  theme = {
+    paletteName = "Catppuccin Lavender Glass";
+    mode = "light";
+    source = "custom";
+    gtk = "adw-gtk3";
+    qtStyle = "klassy";
+    sound = "ocean";
+    plasma = {
+      lookAndFeel = "org.kde.breeze.desktop";
+      workspace = "default";
+      colorScheme = "BreezeLight";
+    };
   };
 
+  palette = {
+    accent = catppuccinLavenderGlass.mPrimary;
+    lavender = catppuccinLavenderGlass.mSecondary;
+    tertiary = catppuccinLavenderGlass.mTertiary;
+    error = catppuccinLavenderGlass.mError;
+    text = catppuccinLavenderGlass.mOnSurface;
+    subtext = catppuccinLavenderGlass.mOnSurfaceVariant;
+    base = catppuccinLavenderGlass.mSurface;
+    mantle = catppuccinLavenderGlass.mSurfaceVariant;
+    crust = catppuccinLavenderGlass.mShadow;
+    overlay = catppuccinLavenderGlass.mOutline;
+    hover = catppuccinLavenderGlass.mHover;
+    onHover = catppuccinLavenderGlass.mOnHover;
+    shadow = "${catppuccinLavenderGlass.mPrimary}29";
+    inherit (catppuccinLavenderGlass) terminal;
+  };
+
+  # Modern light glass: keep content opaque, use subtle component-owned alpha,
+  # and never multiply it again at the compositor layer.
   opacity = {
     windows = "1.0";
-    terminal = "1.0";
-    noctaliaPanels = 0.70;
-    noctaliaPopups = 0.82;
-    noctaliaCapsules = 0.32;
-    layerShell = "0.92";
-    layerPopups = "0.94";
+    terminal = "0.96";
+    noctaliaPanels = 0.92;
+    noctaliaDock = 0.90;
+    noctaliaPopups = 0.96;
+    noctaliaCapsules = 0.82;
+    compositorLayers = "1.0";
+    plasmaPanel = "translucent";
+    plasmaTitlebarActive = 96;
+    plasmaTitlebarInactive = 90;
+    modalBackdrop = 0.48;
+    disabled = 0.68;
   };
 
   blur = {
-    passes = 2;
+    passes = 3;
     offset = "2.0";
-    noise = "0.0";
-    saturation = "1.08";
+    noise = "0.01";
+    saturation = "1.04";
+    backdrop = 0.48;
+    backdropTint = 0.14;
+    lockscreen = 0.55;
+    lockscreenTint = 0.22;
+    plasmaStrength = 8;
+    plasmaNoise = 2;
+  };
+
+  shadow = {
+    alpha = 0.16;
   };
 
   noctalia = {

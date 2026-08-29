@@ -27,8 +27,6 @@
     imagemagick
 
     lilya.codex
-    lilya.plasma-overdose-theme
-
     officecli
 
     adwaita-icon-theme

@@ -1,7 +1,7 @@
 { config, lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "adw-gtk3";
+  gtkThemeName = lilyaGlass.theme.gtk;
   gtkThemePackage = pkgs.adw-gtk3;
   iconThemePackage = pkgs.colloid-icon-theme;
 in

@@ -47,8 +47,6 @@ in
       file-roller = fileRollerWayland;
     };
   };
-  plasma-overdose-gtk-theme = pkgs.callPackage ./plasma-overdose-gtk-theme.nix { };
-  plasma-overdose-theme = pkgs.callPackage ./plasma-overdose-theme.nix { };
   qoder = pkgs.callPackage ./qoder.nix { };
   splayer = pkgs.callPackage ./splayer.nix { };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };

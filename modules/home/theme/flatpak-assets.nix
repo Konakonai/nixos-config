@@ -1,7 +1,7 @@
 { lib, lilyaGlass, pkgs, ... }:
 
 let
-  gtkThemeName = "adw-gtk3";
+  gtkThemeName = lilyaGlass.theme.gtk;
   gtkThemePackage = pkgs.adw-gtk3;
   cursorThemePackage = pkgs.catppuccin-cursors.frappeLavender;
   cursorThemeName = lilyaGlass.cursorThemeName;

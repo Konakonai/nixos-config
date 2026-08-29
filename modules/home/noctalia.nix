@@ -79,7 +79,7 @@ let
       --controller-hints-background: transparent;
       --current-background: var(--body-background);
       --modal-background: {{colors.background.default.hex}};
-      --modal-backdrop: rgba(0, 0, 0, 0.85);
+      --modal-backdrop: rgba(0, 0, 0, ${builtins.toString lilyaGlass.opacity.modalBackdrop});
       --modal-border: {{colors.outline.default.hex}};
       --osk-background: var(--body-background);
       --osk-button-background: var(--input-background);
@@ -151,25 +151,32 @@ let
       box-shadow: 0 4px 12px var(--divider);
     }
   '';
-  zenOverridesTemplate = pkgs.writeText "zen-plasma-overdose-overrides.css" (
-    builtins.readFile ../../assets/themes/zen-plasma-overdose-overrides.css
+  zenCompatibilityTemplate = pkgs.writeText "zen-noctalia-compatibility.css" (
+    lib.replaceStrings
+      [ "@disabled-opacity@" ]
+      [ (builtins.toString lilyaGlass.opacity.disabled) ]
+      (builtins.readFile ../../assets/themes/zen-noctalia-compatibility.css)
   );
-  zenOverridesHook = pkgs.writeShellScript "noctalia-zen-overrides" ''
+  zenCompatibilityHook = pkgs.writeShellScript "noctalia-zen-compatibility" ''
     set -eu
 
     config_home="''${XDG_CONFIG_HOME:-$HOME/.config}"
     cache_home="''${XDG_CACHE_HOME:-$HOME/.cache}"
     chrome_dir="$config_home/zen/${hostProfile.zen.profilePath}/chrome"
     user_chrome="$chrome_dir/userChrome.css"
-    override_css="$cache_home/noctalia/zen-browser/zen-plasma-overdose-overrides.css"
-    import_line="@import \"$override_css\";"
+    compatibility_css="$cache_home/noctalia/zen-browser/zen-noctalia-compatibility.css"
+    import_line="@import \"$compatibility_css\";"
+    legacy_import="@import \"$cache_home/noctalia/zen-browser/zen-plasma-overdose-overrides.css\";"
     usercontent_css="$cache_home/noctalia/zen-browser/zen-userContent.css"
     temp_file=
 
     mkdir -p "$chrome_dir"
     touch "$user_chrome"
     temp_file="$(${pkgs.coreutils}/bin/mktemp "$chrome_dir/userChrome.css.XXXXXX")"
-    ${pkgs.gnugrep}/bin/grep -Fvx "$import_line" "$user_chrome" > "$temp_file" || true
+    ${pkgs.gnugrep}/bin/grep -Fvx \
+      -e "$import_line" \
+      -e "$legacy_import" \
+      "$user_chrome" > "$temp_file" || true
     printf '%s\n' "$import_line" >> "$temp_file"
     mv "$temp_file" "$user_chrome"
 
@@ -193,9 +200,9 @@ if content.startswith("* {"):
     pythonPackages.tomlkit
   ]);
   noctaliaSettings = {
-    theme.mode = "light";
-    theme.source = "custom";
-    theme.custom_palette = "Plasma Overdose";
+    theme.mode = lilyaGlass.theme.mode;
+    theme.source = lilyaGlass.theme.source;
+    theme.custom_palette = lilyaGlass.theme.paletteName;
     theme.templates.enable_builtin_templates = true;
     theme.templates.builtin_ids = [ "btop" "gtk3" "gtk4" "kitty" "niri" ];
     theme.templates.enable_community_templates = true;
@@ -212,7 +219,7 @@ if content.startswith("* {"):
 
       shadow = {
         direction = "down";
-        alpha = 0.18;
+        alpha = lilyaGlass.shadow.alpha;
       };
 
       panel = {
@@ -269,6 +276,19 @@ if content.startswith("* {"):
       offset_y = 12;
     };
 
+    backdrop = {
+      enabled = true;
+      blur_intensity = lilyaGlass.blur.backdrop;
+      tint_intensity = lilyaGlass.blur.backdropTint;
+    };
+
+    lockscreen = {
+      blur_intensity = lilyaGlass.blur.lockscreen;
+      tint_intensity = lilyaGlass.blur.lockscreenTint;
+    };
+
+    dock.background_opacity = lilyaGlass.opacity.noctaliaDock;
+
     plugins = {
       auto_update = "all";
       enabled = [ "mdj2812/mihomo-control" ];
@@ -312,13 +332,13 @@ if content.startswith("* {"):
       index = 1001;
     };
 
-    theme.templates.user.zen-plasma-overdose-overrides = {
+    theme.templates.user.zen-noctalia-compatibility = {
       enabled = true;
-      input_path = "${config.xdg.configHome}/noctalia/templates/zen-plasma-overdose-overrides.css";
+      input_path = "${config.xdg.configHome}/noctalia/templates/zen-noctalia-compatibility.css";
       output_path = [
-        "$XDG_CACHE_HOME/noctalia/zen-browser/zen-plasma-overdose-overrides.css"
+        "$XDG_CACHE_HOME/noctalia/zen-browser/zen-noctalia-compatibility.css"
       ];
-      post_hook = "${config.xdg.configHome}/noctalia/templates/zen-plasma-overdose-overrides";
+      post_hook = "${config.xdg.configHome}/noctalia/templates/zen-noctalia-compatibility";
       index = 2000;
     };
 
@@ -349,9 +369,9 @@ in
       executable = true;
     };
     "noctalia/templates/heroic.css".source = heroicNoctaliaTemplate;
-    "noctalia/templates/zen-plasma-overdose-overrides.css".source = zenOverridesTemplate;
-    "noctalia/templates/zen-plasma-overdose-overrides" = {
-      source = zenOverridesHook;
+    "noctalia/templates/zen-noctalia-compatibility.css".source = zenCompatibilityTemplate;
+    "noctalia/templates/zen-noctalia-compatibility" = {
+      source = zenCompatibilityHook;
       executable = true;
     };
   };
@@ -373,9 +393,10 @@ in
     fi
   '';
 
-  # Noctalia keeps GUI changes in an app-owned state overlay. Migrate only the
-  # plugin keys whose schema changed, and preserve all unrelated UI state.
-  home.activation.migrateNoctaliaPluginConfig = lib.hm.dag.entryAfter [ "seedNoctaliaConfig" ] ''
+  # Noctalia keeps GUI changes in an app-owned state overlay. Reconcile the
+  # active palette and the small set of visual-effect tokens that this module
+  # owns while preserving layout, widgets, shortcuts, and all other GUI state.
+  home.activation.reconcileNoctaliaSettings = lib.hm.dag.entryAfter [ "seedNoctaliaConfig" ] ''
     state_file="''${XDG_STATE_HOME:-$HOME/.local/state}/noctalia/settings.toml"
 
     if [ -f "$state_file" ]; then
@@ -387,6 +408,37 @@ import tomlkit
 
 path = pathlib.Path(sys.argv[1])
 document = tomlkit.parse(path.read_text())
+
+theme = document.setdefault("theme", tomlkit.table())
+theme["mode"] = "${lilyaGlass.theme.mode}"
+theme["source"] = "${lilyaGlass.theme.source}"
+theme["custom_palette"] = "${lilyaGlass.theme.paletteName}"
+
+bar = document.setdefault("bar", tomlkit.table()).setdefault("main", tomlkit.table())
+bar["background_opacity"] = ${builtins.toString lilyaGlass.opacity.noctaliaPanels}
+bar["capsule_opacity"] = ${builtins.toString lilyaGlass.opacity.noctaliaCapsules}
+
+dock = document.setdefault("dock", tomlkit.table())
+dock["background_opacity"] = ${builtins.toString lilyaGlass.opacity.noctaliaDock}
+
+notification = document.setdefault("notification", tomlkit.table())
+notification["background_opacity"] = ${builtins.toString lilyaGlass.opacity.noctaliaPopups}
+
+osd = document.setdefault("osd", tomlkit.table())
+osd["background_opacity"] = ${builtins.toString lilyaGlass.opacity.noctaliaPopups}
+
+shell = document.setdefault("shell", tomlkit.table())
+shell.setdefault("panel", tomlkit.table())["transparency_mode"] = "${lilyaGlass.noctalia.panelTransparencyMode}"
+shell.setdefault("shadow", tomlkit.table())["alpha"] = ${builtins.toString lilyaGlass.shadow.alpha}
+
+backdrop = document.setdefault("backdrop", tomlkit.table())
+backdrop["enabled"] = True
+backdrop["blur_intensity"] = ${builtins.toString lilyaGlass.blur.backdrop}
+backdrop["tint_intensity"] = ${builtins.toString lilyaGlass.blur.backdropTint}
+
+lockscreen = document.setdefault("lockscreen", tomlkit.table())
+lockscreen["blur_intensity"] = ${builtins.toString lilyaGlass.blur.lockscreen}
+lockscreen["tint_intensity"] = ${builtins.toString lilyaGlass.blur.lockscreenTint}
 
 plugins = document.setdefault("plugins", tomlkit.table())
 plugins["auto_update"] = "all"
@@ -421,37 +473,69 @@ PY
   # the last generated community theme. Install the compatibility layer during
   # Home Manager activation as well; the template post-hook keeps it current
   # whenever Noctalia is running.
-  home.activation.installZenThemeOverrides = lib.hm.dag.entryAfter [ "seedNoctaliaConfig" ] ''
+  home.activation.installZenThemeCompatibility = lib.hm.dag.entryAfter [ "seedNoctaliaConfig" ] ''
     cache_dir="''${XDG_CACHE_HOME:-$HOME/.cache}/noctalia/zen-browser"
     config_file=${lib.escapeShellArg "${config.xdg.configHome}/noctalia/config.toml"}
-    template_section='[theme.templates.user.zen-plasma-overdose-overrides]'
 
     mkdir -p "$cache_dir"
-    ${pkgs.coreutils}/bin/install -m644 ${zenOverridesTemplate} \
-      "$cache_dir/zen-plasma-overdose-overrides.css"
-    ${zenOverridesHook}
+    ${pkgs.coreutils}/bin/install -m644 ${zenCompatibilityTemplate} \
+      "$cache_dir/zen-noctalia-compatibility.css"
+    ${zenCompatibilityHook}
 
     # The main Noctalia config is intentionally app-owned after its first
-    # seed. Register only this missing integration and preserve all GUI edits.
-    if ! ${pkgs.gnugrep}/bin/grep -Fqx "$template_section" "$config_file"; then
-      {
-        printf '\n%s\n' "$template_section"
-        printf 'enabled = true\n'
-        printf 'index = 2000\n'
-        printf 'input_path = "%s/noctalia/templates/zen-plasma-overdose-overrides.css"\n' \
-          ${lib.escapeShellArg config.xdg.configHome}
-        printf 'output_path = ["$XDG_CACHE_HOME/noctalia/zen-browser/zen-plasma-overdose-overrides.css"]\n'
-        printf 'post_hook = "%s/noctalia/templates/zen-plasma-overdose-overrides"\n' \
-          ${lib.escapeShellArg config.xdg.configHome}
-      } >> "$config_file"
-    fi
+    # seed. Replace the legacy-named template entry and preserve all GUI edits.
+    ${noctaliaConfigMigrationPython}/bin/python3 - "$config_file" <<'PY'
+import pathlib
+import sys
+
+import tomlkit
+
+path = pathlib.Path(sys.argv[1])
+document = tomlkit.parse(path.read_text())
+theme = document.setdefault("theme", tomlkit.table())
+templates = theme.setdefault("templates", tomlkit.table())
+user_templates = templates.setdefault("user", tomlkit.table())
+user_templates.pop("zen-plasma-overdose-overrides", None)
+
+compatibility = tomlkit.table()
+compatibility["enabled"] = True
+compatibility["index"] = 2000
+compatibility["input_path"] = "${config.xdg.configHome}/noctalia/templates/zen-noctalia-compatibility.css"
+compatibility["output_path"] = ["$XDG_CACHE_HOME/noctalia/zen-browser/zen-noctalia-compatibility.css"]
+compatibility["post_hook"] = "${config.xdg.configHome}/noctalia/templates/zen-noctalia-compatibility"
+user_templates["zen-noctalia-compatibility"] = compatibility
+
+path.write_text(tomlkit.dumps(document))
+PY
   '';
+
+  home.activation.removePlasmaOverdoseResidue =
+    lib.hm.dag.entryAfter [ "installZenThemeCompatibility" "linkGeneration" ] ''
+      rm -f \
+        "$HOME/.config/noctalia/palettes/Plasma Overdose.json" \
+        "$HOME/.config/noctalia/templates/zen-plasma-overdose-overrides" \
+        "$HOME/.config/noctalia/templates/zen-plasma-overdose-overrides.css" \
+        "''${XDG_CACHE_HOME:-$HOME/.cache}/noctalia/zen-browser/zen-plasma-overdose-overrides.css" \
+        "''${XDG_CACHE_HOME:-$HOME/.cache}/plasma_theme_Plasma-Overdose.kcache"
+
+      rm -rf \
+        "$HOME/.local/share/aurorae/themes/Plasma-Overdose" \
+        "$HOME/.local/share/color-schemes/PlasmaOverdose.colors" \
+        "$HOME/.local/share/flatpak-icons/Plasma-Overdose" \
+        "$HOME/.local/share/icons/Plasma-Overdose" \
+        "$HOME/.local/share/icons/Plasma-Overdose.backup" \
+        "$HOME/.local/share/konsole/Plasma-Overdose.colorscheme" \
+        "$HOME/.local/share/plasma/desktoptheme/Plasma-Overdose" \
+        "$HOME/.local/share/plasma/look-and-feel/Plasma-Overdose" \
+        "$HOME/.local/share/plasma/look-and-feel/overdose" \
+        "$HOME/.local/share/sounds/PlasmaOverdose" \
+        "$HOME/.local/share/themes/Plasma-Overdose-GTK" \
+        "$HOME/.local/share/wallpapers/Plasma-Overdose"
+    '';
 
   programs.noctalia = {
     enable = true;
-    customPalettes = {
-      "Plasma Overdose" = ../../assets/noctalia/palettes/plasma-overdose.json;
-      "Catppuccin Lavender Glass" = ../../assets/noctalia/palettes/catppuccin-lavender-glass.json;
-    };
+    customPalettes.${lilyaGlass.theme.paletteName} =
+      ../../assets/noctalia/palettes/catppuccin-lavender-glass.json;
   };
 }

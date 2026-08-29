@@ -15,7 +15,7 @@
       enable_audio_bell = false;
       linux_display_server = "wayland";
 
-      # Keep the pixel-art surface opaque like the rest of Plasma Overdose.
+      # Kitty owns its subtle transparency; niri supplies the blur behind it.
       background_opacity = lilyaGlass.opacity.terminal;
       window_padding_width = 16;
       hide_window_decorations = "yes";

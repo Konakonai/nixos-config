@@ -44,7 +44,7 @@
 ) {
   color: var(--muted) !important;
   fill: var(--muted) !important;
-  opacity: 0.72 !important;
+  opacity: @disabled-opacity@ !important;
 }
 
 #appMenu-popup panelview,

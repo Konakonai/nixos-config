@@ -31,9 +31,9 @@ in
 
     # 1. 浅色桌面外观体系
     workspace = {
-      lookAndFeel = "org.kde.breeze.desktop";
-      theme = "default";
-      colorScheme = "BreezeLight";
+      lookAndFeel = lilyaGlass.theme.plasma.lookAndFeel;
+      theme = lilyaGlass.theme.plasma.workspace;
+      colorScheme = lilyaGlass.theme.plasma.colorScheme;
       iconTheme = lilyaGlass.iconThemeName;
       cursor = {
         theme = lilyaGlass.cursorThemeName;
@@ -75,7 +75,7 @@ in
         location = "bottom";
         height = 44;
         floating = true;
-        opacity = "translucent";
+        opacity = lilyaGlass.opacity.plasmaPanel;
         widgets = [
           {
             kickoff = {
@@ -107,8 +107,10 @@ in
 
     # 4. 窗口管理器与特效 (启用毛玻璃模糊)
     kwin = {
-      effects = {
-        blur.enable = true;
+      effects.blur = {
+        enable = true;
+        strength = lilyaGlass.blur.plasmaStrength;
+        noiseStrength = lilyaGlass.blur.plasmaNoise;
       };
     };
 
@@ -136,7 +138,7 @@ in
           "ButtonsOnLeft" = "";
           "ButtonsOnRight" = "IAX";
           "library" = "org.kde.klassy";
-          "theme" = "klassy";
+          "theme" = lilyaGlass.theme.qtStyle;
         };
       };
 
@@ -165,8 +167,8 @@ in
           "TranslucentTitleBar" = true;
         };
         "TitleBarOpacity" = {
-          "ActiveTitleBarOpacity" = 85;
-          "InactiveTitleBarOpacity" = 65;
+          "ActiveTitleBarOpacity" = lilyaGlass.opacity.plasmaTitlebarActive;
+          "InactiveTitleBarOpacity" = lilyaGlass.opacity.plasmaTitlebarInactive;
           "OpaqueMaximizedTitleBars" = false;
         };
         "Windeco" = {
@@ -186,7 +188,10 @@ in
           "TerminalService" = "";
         };
         "KDE" = {
-          "widgetStyle" = "klassy";
+          "widgetStyle" = lilyaGlass.theme.qtStyle;
+        };
+        "Sounds" = {
+          "Theme" = lilyaGlass.theme.sound;
         };
       };
     };
