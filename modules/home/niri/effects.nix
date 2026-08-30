@@ -34,6 +34,20 @@ let
     }
 
     layer-rule {
+        match layer="top"
+        background-effect {
+            xray false
+        }
+    }
+
+    layer-rule {
+        match layer="overlay"
+        background-effect {
+            xray false
+        }
+    }
+
+    layer-rule {
         match namespace="^noctalia-bar-main$"
         popups {
             geometry-corner-radius ${builtins.toString lilyaTheme.radius.windows}
