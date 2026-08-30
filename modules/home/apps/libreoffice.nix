@@ -1,21 +1,21 @@
 { lib, pkgs, ... }:
 
 let
-  libreofficeWayland = pkgs.symlinkJoin {
-    name = "libreoffice-qt-wayland-${pkgs.libreoffice-qt.version}";
-    paths = [ pkgs.libreoffice-qt ];
+  libreofficeGtkWayland = pkgs.symlinkJoin {
+    name = "libreoffice-gtk-wayland-${pkgs.libreoffice.version}";
+    paths = [ pkgs.libreoffice ];
     nativeBuildInputs = [ pkgs.makeWrapper ];
 
     postBuild = ''
       for program in libreoffice sbase scalc sdraw simpress smath soffice swriter; do
         rm "$out/bin/$program"
-        makeWrapper "${pkgs.libreoffice-qt}/bin/$program" "$out/bin/$program" \
-          --set QT_QPA_PLATFORM wayland \
-          --set SAL_USE_VCLPLUGIN qt6
+        makeWrapper "${pkgs.libreoffice}/bin/$program" "$out/bin/$program" \
+          --set GDK_BACKEND wayland \
+          --set SAL_USE_VCLPLUGIN gtk3
       done
     '';
 
-    meta = pkgs.libreoffice-qt.meta;
+    meta = pkgs.libreoffice.meta;
   };
 
   seedTabbedMode = app: ''
@@ -25,7 +25,7 @@ let
   '';
 in
 {
-  home.packages = [ libreofficeWayland ];
+  home.packages = [ libreofficeGtkWayland ];
 
   # Seed the Office-like tabbed interface once, while leaving later UI changes
   # under LibreOffice's ownership.
