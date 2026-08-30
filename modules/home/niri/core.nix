@@ -66,6 +66,10 @@ in
 
     layout = {
       gaps = 18;
+      struts = {
+        top = 48;
+        bottom = 56;
+      };
       center-focused-column = "never";
       background-color = "transparent";
 
