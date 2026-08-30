@@ -4,7 +4,10 @@
  * inherits --arrowpanel-color for application-menu descendants.
  */
 
-#appMenu-popup,
+#appMenu-popup {
+  background-color: transparent !important;
+}
+
 #appMenu-popup > panelmultiview,
 #appMenu-popup panelview,
 #appMenu-popup .panel-subview-body {
