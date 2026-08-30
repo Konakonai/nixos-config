@@ -69,3 +69,9 @@
   border-radius: @window-radius@px !important;
   overflow: clip !important;
 }
+
+/* Let the rounded toolbox surface show through its full-height tab chrome. */
+#TabsToolbar,
+hbox#titlebar {
+  background-color: transparent !important;
+}
