@@ -1,4 +1,4 @@
-{ config, hostProfile, lib, lilyaTheme, pkgs, ... }:
+{ config, lib, lilyaTheme, pkgs, ... }:
 
 let
   darklyQtTemplate = pkgs.writeText "noctalia-darkly-qtct.conf" ''
@@ -162,7 +162,7 @@ let
     theme.templates.enable_builtin_templates = true;
     theme.templates.builtin_ids = [ "btop" "gtk3" "gtk4" "kitty" "niri" ];
     theme.templates.enable_community_templates = true;
-    theme.templates.community_ids = [ "zed" "discord" "steam" "telegram" "yazi" ];
+    theme.templates.community_ids = [ "zen-browser" "zed" "discord" "steam" "telegram" "yazi" ];
 
     shell = {
       corner_radius_scale = 1.65;
@@ -350,11 +350,6 @@ theme = document.setdefault("theme", tomlkit.table())
 theme["mode"] = "${lilyaTheme.theme.mode}"
 theme["source"] = "${lilyaTheme.theme.source}"
 theme["custom_palette"] = "${lilyaTheme.theme.paletteName}"
-templates = theme.setdefault("templates", tomlkit.table())
-community_ids = templates.get("community_ids")
-if community_ids is not None:
-    while "zen-browser" in community_ids:
-        community_ids.remove("zen-browser")
 
 bar = document.setdefault("bar", tomlkit.table()).setdefault("main", tomlkit.table())
 bar["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPanels}
@@ -420,75 +415,8 @@ PY
     fi
   '';
 
-  home.activation.removeZenThemeResidue = lib.hm.dag.entryAfter [ "seedNoctaliaConfig" "linkGeneration" ] ''
-    config_home="''${XDG_CONFIG_HOME:-$HOME/.config}"
-    cache_dir="''${XDG_CACHE_HOME:-$HOME/.cache}/noctalia/zen-browser"
-    chrome_dir="$config_home/zen/${hostProfile.zen.profilePath}/chrome"
-    config_file=${lib.escapeShellArg "${config.xdg.configHome}/noctalia/config.toml"}
-    community_chrome_import="@import \"$cache_dir/zen-userChrome.css\";"
-    community_content_import="@import \"$cache_dir/zen-userContent.css\";"
-    compatibility_import="@import \"$cache_dir/zen-noctalia-compatibility.css\";"
-    legacy_import="@import \"$cache_dir/zen-plasma-overdose-overrides.css\";"
-
-    remove_imports() {
-      local target="$1"
-      shift
-      local temp_file
-
-      [ -f "$target" ] || return 0
-      temp_file="$(${pkgs.coreutils}/bin/mktemp "$target.XXXXXX")"
-      ${pkgs.gnugrep}/bin/grep -Fvx "$@" "$target" > "$temp_file" || true
-      if [ -s "$temp_file" ]; then
-        mv "$temp_file" "$target"
-      else
-        rm -f "$target" "$temp_file"
-      fi
-    }
-
-    remove_imports "$chrome_dir/userChrome.css" \
-      -e "$community_chrome_import" \
-      -e "$compatibility_import" \
-      -e "$legacy_import"
-    remove_imports "$chrome_dir/userContent.css" \
-      -e "$community_content_import"
-
-    rm -f \
-      "$config_home/noctalia/templates/zen-noctalia-compatibility" \
-      "$config_home/noctalia/templates/zen-noctalia-compatibility.css" \
-      "$cache_dir/zen-noctalia-compatibility.css" \
-      "$cache_dir/zen-plasma-overdose-overrides.css" \
-      "$cache_dir/zen-userChrome.css" \
-      "$cache_dir/zen-userContent.css"
-    rmdir "$cache_dir" 2>/dev/null || true
-
-    # The main Noctalia config is app-owned after seeding. Remove only the Zen
-    # entries so the user's other template choices remain untouched.
-    ${noctaliaConfigMigrationPython}/bin/python3 - "$config_file" <<'PY'
-import pathlib
-import sys
-
-import tomlkit
-
-path = pathlib.Path(sys.argv[1])
-if not path.exists():
-    raise SystemExit(0)
-document = tomlkit.parse(path.read_text())
-theme = document.setdefault("theme", tomlkit.table())
-templates = theme.setdefault("templates", tomlkit.table())
-community_ids = templates.get("community_ids")
-if community_ids is not None:
-    while "zen-browser" in community_ids:
-        community_ids.remove("zen-browser")
-user_templates = templates.setdefault("user", tomlkit.table())
-user_templates.pop("zen-plasma-overdose-overrides", None)
-user_templates.pop("zen-noctalia-compatibility", None)
-
-path.write_text(tomlkit.dumps(document))
-PY
-  '';
-
   home.activation.removePlasmaOverdoseResidue =
-    lib.hm.dag.entryAfter [ "removeZenThemeResidue" "linkGeneration" ] ''
+    lib.hm.dag.entryAfter [ "linkGeneration" ] ''
       rm -f \
         "$HOME/.config/noctalia/palettes/Plasma Overdose.json" \
         "$HOME/.config/noctalia/templates/zen-plasma-overdose-overrides" \
