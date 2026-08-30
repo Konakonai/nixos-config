@@ -87,7 +87,16 @@ in
 
       border.enable = false;
 
-      shadow.enable = false;
+      shadow = {
+        enable = true;
+        softness = 28;
+        spread = 4;
+        offset = {
+          x = 0;
+          y = 10;
+        };
+        color = lilyaTheme.palette.shadow;
+      };
     };
 
     window-rules = [

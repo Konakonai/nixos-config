@@ -4,6 +4,12 @@
  * inherits --arrowpanel-color for application-menu descendants.
  */
 
+:root {
+  /* Firefox renamed the top-level chrome background variables. */
+  --toolbox-background-color: var(--base) !important;
+  --toolbox-background-color-inactive: var(--base) !important;
+}
+
 #appMenu-popup {
   background-color: transparent !important;
 }
