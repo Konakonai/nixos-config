@@ -1,22 +1,22 @@
 { pkgs, ... }:
 
 let
-  pname = "splayer";
-  version = "3.1.1";
+  pname = "splayer-next";
+  version = "1.0.0";
   src = pkgs.fetchurl {
-    url = "https://github.com/SPlayer-Dev/SPlayer/releases/download/v3.1.1/splayer-3.1.1-x86_64.AppImage";
-    sha256 = "0krcl9gfxmg8m15gn1qwqr2f2i6mwrzrd8izvrqw06zbm1m74zz4";
+    url = "https://github.com/SPlayer-Dev/SPlayer-Next/releases/download/v${version}/splayer-next-${version}-x86_64.AppImage";
+    hash = "sha256-11aQDxg76QtHG8cuRFGZRb5is1Ne5YercPXaI8la9Ug=";
   };
   appimageContents = pkgs.appimageTools.extractType2 { inherit pname version src; };
   desktopItem = pkgs.makeDesktopItem {
-    name = "SPlayer";
-    desktopName = "SPlayer";
-    exec = "splayer %U";
-    icon = "SPlayer";
-    comment = "A minimalist music player";
+    name = "top.imsyy.splayer_next";
+    desktopName = "SPlayer Next";
+    exec = "splayer-next %U";
+    icon = "SPlayer-Next";
+    comment = "Cross-platform music player with rich lyric and audio format support";
     categories = [ "Audio" "Music" "AudioVideo" ];
     mimeTypes = [ "x-scheme-handler/orpheus" ];
-    startupWMClass = "SPlayer";
+    startupWMClass = "top.imsyy.splayer_next";
   };
 in
 pkgs.appimageTools.wrapType2 {
@@ -29,7 +29,7 @@ pkgs.appimageTools.wrapType2 {
   ];
 
   extraInstallCommands = ''
-    install -Dm444 ${desktopItem}/share/applications/SPlayer.desktop -t $out/share/applications/
+    install -Dm444 ${desktopItem}/share/applications/top.imsyy.splayer_next.desktop -t $out/share/applications/
     cp -r ${appimageContents}/usr/share/icons $out/share/
   '';
 }
