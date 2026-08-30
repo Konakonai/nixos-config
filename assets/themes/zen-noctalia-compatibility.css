@@ -55,7 +55,17 @@
   border-radius: 3px !important;
 }
 
-/* Keep Zen's bottom workspace switcher free of a square theme backdrop. */
-#zen-workspaces-button {
+/*
+ * Noctalia paints Zen's toolbox, tabbox wrapper, and sidebar splitter as
+ * separate opaque rectangles. Keep only the toolbox as the sidebar surface;
+ * the wrapper and splitter are transparent in Zen's native layout.
+ */
+#zen-tabbox-wrapper,
+#zen-sidebar-splitter {
   background-color: transparent !important;
+}
+
+#navigator-toolbox {
+  border-radius: @window-radius@px !important;
+  overflow: clip !important;
 }

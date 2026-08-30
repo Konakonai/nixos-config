@@ -153,8 +153,11 @@ let
   '';
   zenCompatibilityTemplate = pkgs.writeText "zen-noctalia-compatibility.css" (
     lib.replaceStrings
-      [ "@disabled-opacity@" ]
-      [ (builtins.toString lilyaTheme.opacity.disabled) ]
+      [ "@disabled-opacity@" "@window-radius@" ]
+      [
+        (builtins.toString lilyaTheme.opacity.disabled)
+        (builtins.toString lilyaTheme.radius.windows)
+      ]
       (builtins.readFile ../../assets/themes/zen-noctalia-compatibility.css)
   );
   zenCompatibilityHook = pkgs.writeShellScript "noctalia-zen-compatibility" ''
