@@ -204,7 +204,7 @@ let
       scale = 1.0;
       shadow = false;
       auto_hide = false;
-      reserve_space = true;
+      reserve_space = false;
       capsule = false;
       start = [
         "launcher"
@@ -239,7 +239,10 @@ let
       tint_intensity = lilyaTheme.effects.lockscreenTint;
     };
 
-    dock.background_opacity = lilyaTheme.opacity.noctaliaDock;
+    dock = {
+      background_opacity = lilyaTheme.opacity.noctaliaDock;
+      reserve_space = false;
+    };
 
     plugins = {
       auto_update = "all";
@@ -353,12 +356,14 @@ theme["custom_palette"] = "${lilyaTheme.theme.paletteName}"
 
 bar = document.setdefault("bar", tomlkit.table()).setdefault("main", tomlkit.table())
 bar["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPanels}
+bar["reserve_space"] = False
 bar["capsule"] = False
 for key in ("capsule_fill", "capsule_radius", "capsule_opacity", "capsule_border"):
     bar.pop(key, None)
 
 dock = document.setdefault("dock", tomlkit.table())
 dock["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaDock}
+dock["reserve_space"] = False
 
 notification = document.setdefault("notification", tomlkit.table())
 notification["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPopups}
