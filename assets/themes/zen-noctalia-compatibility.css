@@ -54,3 +54,8 @@
 #appMenu-popup .panel-subview-body {
   border-radius: 3px !important;
 }
+
+/* Keep Zen's bottom workspace switcher free of a square theme backdrop. */
+#zen-workspaces-button {
+  background-color: transparent !important;
+}
