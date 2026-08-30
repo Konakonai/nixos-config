@@ -26,6 +26,7 @@ in
   eden = pkgs.callPackage ./eden.nix { };
   file-roller-wayland = fileRollerWayland;
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
+  libreoffice-gtk4 = pkgs.callPackage ./libreoffice-gtk4.nix { };
   localsend-no-csd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";
     paths = [ pkgs.localsend ];
