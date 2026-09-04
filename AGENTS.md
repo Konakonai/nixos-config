@@ -1,70 +1,81 @@
 # Agent Notes
 
-本文件适用于整个 `nixos-config` 仓库。它定义修改规范，而不是记录每个具体功能的历史细节。具体实现背景应写在对应模块注释、README/AUDIT 或提交信息里。
+本文件适用于整个 `nixos-config` 仓库，定义 AI Agent 在本机配置下的开发、打包、验证与提交流程。
 
-## 仓库定位
+---
 
-- `main` 是用户本机的精确 NixOS 配置，目标是可复刻、可审计、可长期维护。
-- 通用模板、示例化配置或去本机化改造应放到独立分支，不要削弱 `main` 对本机的精确描述。
-- 默认保留用户已经验证可用的行为。需要改变启动、登录、显示、输入、网络、secret、文件同步等高影响路径时，要有明确理由并做验证。
+## 1. 仓库架构与现状
 
-## 模块化原则
+- **架构定位**：基于 Nix Flakes + Home Manager 的个人配置仓库。系统配置入口为 `configuration.nix`，用户配置入口为 `home.nix`。
+- **模块分层**：
+  - `modules/system/`：系统级 NixOS 模块（显示、引导、音频、虚拟化、系统服务等）。
+  - `modules/home/`：用户级 Home Manager 模块（应用、桌面环境、主题、Shell、开发工具等）。
+  - `modules/shared/`：系统与用户共享配置（如主题设计 Token）。
+  - `hosts/lilya-thinkbook/`：本机硬件与事实配置（GPU/显示器 ID、路径、电源及设备特征）。
+  - `pkgs/`：自定义本地包与包装脚本，由 `pkgs/default.nix` 汇总并通过 `pkgs.lilya.<name>` 导出。
+  - `assets/` / `patches/`：壁纸、图标等静态资产及局部源码补丁。
+- **桌面环境**：Niri (Wayland 合成器) + Noctalia (桌面 Shell / Launcher)。
 
-- 先读现有结构再改，优先沿用仓库已有模式，不为了“更抽象”而新增层级。
-- 通用逻辑放在 `modules/`；本机硬件、路径、显示器、GPU、电源、用户目录、secret 位置等本机事实放在 `hosts/<host>/`。
-- 自定义包或包装逻辑放在 `pkgs/`，不要把大段 packaging 塞进 Home/NixOS 模块。
-- 资产放在 `assets/`，补丁放在 `patches/`，文档放在根目录或贴近相关模块的位置。
-- 模块应小而有边界：一个模块负责一个主题；跨模块共享值优先通过 `hostProfile`、现有 option 或局部 `let`，不要用散落硬编码。
-- 不要提交运行态数据库、明文 secret、临时备份、`result` symlink、下载缓存或构建产物。
+---
 
-## 变更风格
+## 2. 开发与打包规范
 
-- 保持声明式。不要依赖手动系统状态、一次性命令、隐式 `/home` 文件或未记录的外部副作用来完成配置。
-- 改动要尽量小而完整。不要把无关重构、格式化、依赖升级混进功能修复。
-- 本地补丁必须有明确用途和移除条件。确认上游支持后优先删除补丁，而不是长期堆叠。
-- 新增硬编码前先判断它属于“本机事实”还是“通用逻辑”。本机事实必须集中到 host profile。
-- 不要回滚或覆盖用户/其他 agent 的未提交改动。遇到 dirty worktree 时先看清楚，只处理本任务需要的文件。
+- **绝对声明式**：严禁使用 `nix-env` 或 `nix profile` 命令安装软件，所有应用与环境均通过声明式配置管理。
+- **Git 追踪（Flakes 规则）**：新建任何 `.nix` 或静态资源文件后，**必须先执行 `git add`**，否则 Nix Flakes 会忽略该文件导致求值/构建失败。
+- **分层与边界**：
+  - 通用逻辑放 `modules/`，本机硬件与特定事实放 `hosts/`。
+  - 复杂打包与应用封装放 `pkgs/`，不要将大段 Derivation 逻辑直接写在 NixOS/Home Manager 模块内。
+- **AppImage 打包**：
+  - 专有 AppImage 优先使用 `pkgs.appimageTools.wrapType2` 打包。
+  - 使用 `extractType2` 提取 `.desktop` 和图标，并在 `.desktop` 中将 `Exec=AppRun` 替换为包装后的可执行文件名（如 `Exec=splayer %U`）。
+- **桌面环境重载**：
+  - 当安装/更新桌面应用导致应用菜单或图标未刷新时，可在后台重启 Noctalia：
+    ```bash
+    pkill noctalia && noctalia & disown
+    ```
 
-## 验证要求
+---
 
-验证应与改动的风险、影响面和失败成本相称，不要把完整 NixOS 验证链机械地用于所有修改：
+## 3. 轻量化验证流程
 
-- 仅修改文档、注释、说明文字或不影响求值结果的格式时，检查 diff、路径和引用即可，不需要运行 Nix 求值或构建。
-- 仅安装普通用户态应用、注册本地应用包或把现有包加入 Home Manager 软件列表时，默认不运行 Nix 解析、求值、构建或启动验证；只检查变更范围和来源固定是否正确后提交。若同时修改 systemd 服务、驱动、boot/display/power/network 等系统行为，则按对应风险级别验证。
-- 小型、局部的 Nix 修改，优先解析改动文件，并运行能覆盖实际行为接缝的定向 eval、生成配置检查或目标构建。
-- 跨模块、系统级、flake input、包依赖以及 boot/display/power/network 等高风险修改，才默认运行下面的完整验证链。
-- 用户明确要求快速提交或跳过验证时可以照做，但最终回复必须说明哪些检查没有运行，以及仍需怎样实机验证。
+为避免不必要的全量构建开销与冗长等待，**严禁对常规修改机械运行耗时的 `nix build system.build.toplevel`**。请按以下轻量阶梯按需验证：
 
-完整 NixOS 验证链：
+- **文档、注释、静态资源修改**：
+  - 仅检查 `git diff`，无需运行任何 Nix 验证。
+- **普通配置修改（NixOS / Home Manager 配置调整、新增已有软件包）**：
+  - 快速检查改动文件的语法：
+    ```bash
+    nix-instantiate --parse <改动的.nix文件> >/dev/null
+    ```
+    或进行无构建的 Flake 结构与求值检查：
+    ```bash
+    nix flake check --no-build
+    ```
+  - 语法/求值无误后即可提交，实际系统生效直接交给用户运行 `rebuild`。
+- **新增/修改本地包 (`pkgs/`)**：
+  - 仅对目标 Package 进行针对性局部构建验证：
+    ```bash
+    nix build .#packages.x86_64-linux.<包名> --no-link
+    ```
+- **核心系统/引导等高风险改动**：
+  - 仅在涉及内核参数、驱动重构或 flake inputs 大版本升级时，才按需进行进一步求值或构建测试。
 
-```bash
-rg --files -g '*.nix' | xargs nix-instantiate --parse --quiet >/dev/null
-nix flake check --no-build
-nix eval .#nixosConfigurations.nixos.config.warnings --json
-nix build .#nixosConfigurations.nixos.config.system.build.toplevel --no-link --print-out-paths
-```
+---
 
-按风险追加验证：
+## 4. Git 与提交流程
 
-- 修改 boot/display/specialisation：检查 kernel params、specialisation 列表，并说明需要用户实机验证什么。
-- 修改 niri/桌面会话：验证生成配置；如果包含 include，要按实际运行目录验证。
-- 修改包、补丁或 flake input：构建 toplevel，并用 `nvd diff /run/current-system /nix/store/<new-toplevel>` 审查闭包变化。
-- 修改 systemd service/timer：eval 或查看生成 unit，确认 `Install`、`WantedBy`、`ExecStart` 和运行条件合理。
+- **暂存与提交范围**：
+  - 提交前检查 `git status --short`，确保只包含当前任务相关的文件。
+  - 自动更新或生成的预期固定源变更（如 `flake.lock`、`pkgs/codex.nix`）可一同提交。
+- **Commit 风格**：
+  - 使用简短清晰的英文祈使句描述行为变化，例如 `Configure Celluloid stream cache`、`Add splayer package`。
+- **推送规则**：
+  - 提交完成后默认直接推送到对应 remote 分支（`git push`），除非用户明确要求不推送或环境受限。
+  - 禁止使用 `--force` 推送。
 
-如果某项验证因为环境限制不能跑，要在最终回复里明确说明。
+---
 
-## Git 流程
+## 5. 与用户沟通
 
-- 修改完成并验证后必须提交，除非用户明确说不要提交。
-- Codex 自动更新器生成的预期 `flake.lock`、`pkgs/codex.nix` 或对应固定源变更属于正常待提交更新，不要仅因它来自后台任务就当作无关 dirty state 留下；先核对版本、来源、哈希和构建结果，再将它与相关 Codex 更新提交并按本节规则推送。若变更范围超出 Codex 固定源或验证失败，再暂停并向用户确认。
-- 提交前检查 `git status --short` 和 staged diff，确保只包含本任务相关文件。
-- 提交信息用简短祈使句，描述行为变化，例如 `Fix display geometry`。
-- 提交成功后默认推送当前分支到对应 remote，除非用户明确说不要 push、当前分支没有 upstream、网络/权限失败，或仓库状态显示不适合推送。
-- 不要使用 force push，除非用户明确要求并确认风险。
-- 如果自动任务生成提交，也应保证工作区没有混入无关变更、完成与风险相称的验证，并禁用需要交互的签名流程。
-
-## 与用户沟通
-
-- 最终回复要说明改了什么、验证了什么、提交 hash、是否已 push，以及用户下一步是否需要运行 `rebuild`。
-- 用户有 `rebuild` alias；需要应用配置时说 `rebuild`，不要默认给长 `nixos-rebuild` 命令。
-- 不确定需求时优先从代码和系统状态中查证；确实需要取舍时再问用户。
+- 简要说明改动内容、轻量验证结果、提交 Hash 以及是否已推送。
+- 用户配置了系统切换 alias；如需应用配置，提示用户在终端运行 `rebuild`（无需输出冗长的 `nixos-rebuild switch ...` 命令）。
