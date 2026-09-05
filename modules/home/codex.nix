@@ -81,7 +81,7 @@ let
       upstream_url=https://github.com/ilysenko/codex-desktop-linux.git
       cli_package=pkgs/codex.nix
       cli_repo=openai/codex
-      cli_asset=codex-x86_64-unknown-linux-musl-bundle.tar.zst
+      cli_asset=codex-package-x86_64-unknown-linux-musl.tar.zst
       log_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/codex-update"
       log_file="$log_dir/update.log"
 
