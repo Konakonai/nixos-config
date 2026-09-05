@@ -43,7 +43,7 @@ let
       if [ -e "$out/bin/codex-desktop" ]; then
         rm -f "$out/bin/codex-desktop"
         makeWrapper "${codexDesktopBase}/bin/codex-desktop" "$out/bin/codex-desktop" \
-          --set-default CODEX_CLI_PATH "${codexCli}/bin/codex" \
+          --set CODEX_CLI_PATH "${codexCli}/bin/codex" \
           --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath documentRuntimeLibs}"
       fi
 
@@ -292,8 +292,6 @@ in
     codexDesktop
     codexUpdate
   ];
-
-  home.sessionVariables.CODEX_CLI_PATH = "${codexCli}/bin/codex";
 
   systemd.user.services.codex-update = {
     Unit = {
