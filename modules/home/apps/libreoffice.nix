@@ -1,6 +1,23 @@
 { lib, pkgs, ... }:
 
 let
+  libreofficeGtkWayland = pkgs.symlinkJoin {
+    name = "libreoffice-gtk-wayland-${pkgs.libreoffice.version}";
+    paths = [ pkgs.libreoffice ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+
+    postBuild = ''
+      for program in libreoffice sbase scalc sdraw simpress smath soffice swriter; do
+        rm "$out/bin/$program"
+        makeWrapper "${pkgs.libreoffice}/bin/$program" "$out/bin/$program" \
+          --set GDK_BACKEND wayland \
+          --set SAL_USE_VCLPLUGIN gtk3
+      done
+    '';
+
+    meta = pkgs.libreoffice.meta;
+  };
+
   seedTabbedMode = app: ''
     if ! grep -Fq 'oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/${app}"' "$registry"; then
       ${pkgs.perl}/bin/perl -0pi -e 's|</oor:items>|<item oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/${app}"><prop oor:name="Active" oor:op="fuse"><value>notebookbar.ui</value></prop></item>\n</oor:items>|' "$registry"
@@ -8,7 +25,7 @@ let
   '';
 in
 {
-  home.packages = [ pkgs.lilya.libreoffice-gtk4 ];
+  home.packages = [ libreofficeGtkWayland ];
 
   # Seed the Office-like tabbed interface once, while leaving later UI changes
   # under LibreOffice's ownership.
