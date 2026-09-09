@@ -18,7 +18,6 @@
       # Keep terminal content fully opaque and independent of the wallpaper.
       background_opacity = lilyaTheme.opacity.terminal;
       window_padding_width = 16;
-      hide_window_decorations = "yes";
 
       # Font Line Height
       modify_font = "cell_height 115%";
@@ -47,6 +46,7 @@
 
     extraConfig = ''
       include themes/noctalia.conf
+      envinclude KITTY_CONF_*
     '';
   };
 }

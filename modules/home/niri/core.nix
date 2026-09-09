@@ -45,6 +45,10 @@ in
       QT_QPA_PLATFORMTHEME = "qt6ct";
       QT_WAYLAND_DECORATION = "adwaita";
       ELECTRON_OZONE_PLATFORM_HINT = "wayland";
+      # Keep niri's decoration and tiled-size preferences out of Plasma.
+      # kitty.conf imports these values with `envinclude KITTY_CONF_*`.
+      KITTY_CONF_NIRI_DECORATIONS = "hide_window_decorations yes";
+      KITTY_CONF_NIRI_WINDOW_SIZE = "remember_window_size no";
       XCURSOR_THEME = lilyaTheme.cursorThemeName;
       XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
       XCURSOR_PATH = "${pkgs.catppuccin-cursors.frappeLavender}/share/icons:${pkgs.adwaita-icon-theme}/share/icons";

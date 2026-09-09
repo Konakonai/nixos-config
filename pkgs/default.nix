@@ -30,12 +30,12 @@ in
     name = "${pkgs.localsend.name}-no-csd";
     paths = [ pkgs.localsend ];
     nativeBuildInputs = [ pkgs.makeWrapper ];
-    # niri does not provide server-side decorations, and LocalSend's Flutter
-    # runner otherwise adds a redundant GTK header bar on every Wayland session.
+    # niri does not draw server-side decorations, while KWin does. Keep the
+    # Flutter CSD workaround scoped to niri so Plasma can provide its title bar.
     postBuild = ''
       rm "$out/bin/localsend_app"
       makeWrapper ${lib.getExe pkgs.localsend} "$out/bin/localsend_app" \
-        --set GTK_CSD 0
+        --run 'case "''${XDG_CURRENT_DESKTOP:-}:''${XDG_SESSION_DESKTOP:-}" in *niri*) export GTK_CSD=0 ;; esac'
     '';
     meta = pkgs.localsend.meta;
   };
