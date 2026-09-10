@@ -52,7 +52,8 @@ let
     export QT_IM_MODULE=fcitx
     export XMODIFIERS=@im=fcitx
     export GTK_IM_MODULE=fcitx
-    export QT_QPA_PLATFORM=wayland
+    export QT_QPA_PLATFORM=xcb
+    export QT_AUTO_SCREEN_SCALE_FACTOR=1
 
     exec ${pkgs.flatpak}/bin/flatpak run \
       --branch=stable \
@@ -61,7 +62,8 @@ let
       --env=QT_IM_MODULE=fcitx \
       --env=XMODIFIERS=@im=fcitx \
       --env=GTK_IM_MODULE=fcitx \
-      --env=QT_QPA_PLATFORM=wayland \
+      --env=QT_QPA_PLATFORM=xcb \
+      --env=QT_AUTO_SCREEN_SCALE_FACTOR=1 \
       --file-forwarding \
       com.tencent.WeChat @@u "$@" @@
   '';
@@ -160,12 +162,16 @@ in
         };
       };
       "com.tencent.WeChat" = {
+        Context.sockets = [
+          "wayland"
+          "x11"
+        ];
         Context.filesystems = themeFilesystems;
         # WeChat's bundled Qt5 embeds a static fcitx platform input context
-        # plugin. Direct it to Fcitx via DBus since its Wayland backend only
-        # speaks the legacy zwp_text_input_v2 protocol.
+        # plugin. Direct it to Fcitx via DBus and X11 to eliminate candidate drift.
         Environment = themeEnv // fcitxCompatEnv // {
-          QT_QPA_PLATFORM = "wayland";
+          QT_QPA_PLATFORM = "xcb";
+          QT_AUTO_SCREEN_SCALE_FACTOR = "1";
           XCURSOR_THEME = lilyaTheme.cursorThemeName;
           XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
           XCURSOR_PATH = themeEnv.XCURSOR_PATH;
@@ -196,10 +202,13 @@ in
 
   home.activation.wechatFlatpakOverrides = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     ${pkgs.flatpak}/bin/flatpak override --user \
+      --socket=x11 \
+      --socket=wayland \
       --env=QT_IM_MODULE=fcitx \
       --env=XMODIFIERS=@im=fcitx \
       --env=GTK_IM_MODULE=fcitx \
-      --env=QT_QPA_PLATFORM=wayland \
+      --env=QT_QPA_PLATFORM=xcb \
+      --env=QT_AUTO_SCREEN_SCALE_FACTOR=1 \
       com.tencent.WeChat >/dev/null 2>&1 || true
   '';
 }
