@@ -76,7 +76,10 @@
         {
           nixpkgs.overlays = [
             millennium.overlays.default
-            (final: _prev: {
+            (final: prev: {
+              xwayland-satellite = final.callPackage ./pkgs/xwayland-satellite.nix {
+                xwayland-satellite = prev.xwayland-satellite;
+              };
               lilya = import ./pkgs {
                 pkgs = final;
                 lib = final.lib;
