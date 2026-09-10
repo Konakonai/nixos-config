@@ -7,7 +7,7 @@ let
     url = "https://github.com/SPlayer-Dev/SPlayer-Next/releases/download/v${version}/splayer-next-${version}-x86_64.AppImage";
     hash = "sha256-11aQDxg76QtHG8cuRFGZRb5is1Ne5YercPXaI8la9Ug=";
   };
-  appimageContents = pkgs.appimageTools.extractType2 { inherit pname version src; };
+  appimageContents = pkgs.appimageTools.extract { inherit pname version src; };
   desktopItem = pkgs.makeDesktopItem {
     name = "top.imsyy.splayer_next";
     desktopName = "SPlayer Next";
