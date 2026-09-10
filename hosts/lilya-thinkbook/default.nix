@@ -14,8 +14,6 @@ in
   };
 
   display = {
-    loginWallpaper = ../../assets/login-wallpaper.jpg;
-
     internal = {
       make = "California Institute of Technology";
       model = "0x1626";
@@ -23,7 +21,6 @@ in
       scale = 1.75;
       # Match the physical layout: the laptop panel sits on the left.
       position = { x = -1829; y = 149; };
-      loginPosition = { x = 0; y = 0; };
     };
 
     external = {
@@ -32,7 +29,6 @@ in
       serial = "UHB2341003696";
       scale = 1.5;
       position = { x = 0; y = 0; };
-      loginPosition = { x = 0; y = 0; };
     };
   };
 
@@ -40,8 +36,6 @@ in
     enable = true;
     intelBusId = "PCI:0:2:0";
     nvidiaBusId = "PCI:1:0:0";
-    pciAddress = "0000:01:00.0";
-    acAdapter = "ADP0";
   };
 
   kernel.blacklistedModules = [
@@ -49,10 +43,6 @@ in
     # provide a platform profile. ideapad_laptop owns the working profile API.
     "lenovo_wmi_gamezone"
   ];
-
-  power = {
-    batteryConservationPath = "/sys/class/power_supply/BAT0/extensions/ideapad_laptop/conservation_mode";
-  };
 
   services = {
     openlistDataDir = "${homeDirectory}/.config/openlist";

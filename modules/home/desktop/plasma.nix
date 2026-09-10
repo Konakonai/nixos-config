@@ -1,17 +1,5 @@
-{ config, lib, lilyaTheme, pkgs, ... }:
+{ lib, lilyaTheme, pkgs, ... }:
 
-let
-  powerDevilConfig = "${config.xdg.configHome}/powerdevilrc";
-
-  writePowerDevilConfig = profile: key: value: ''
-    ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
-      --file ${lib.escapeShellArg powerDevilConfig} \
-      --group ${lib.escapeShellArg profile} \
-      --group "SuspendAndShutdown" \
-      --key ${lib.escapeShellArg key} \
-      ${lib.escapeShellArg value}
-  '';
-in
 {
   # A desktop service lets KGlobalAccel own Meta+Return without wrapping Kitty.
   xdg.dataFile."applications/lilya-kitty-shortcut.desktop".text = ''
@@ -28,6 +16,18 @@ in
 
   programs.plasma = {
     enable = true;
+
+    # Keep the existing suspend workaround until resume is tested separately.
+    powerdevil = {
+      AC = {
+        autoSuspend.action = "nothing";
+        whenLaptopLidClosed = "turnOffScreen";
+      };
+      battery = {
+        autoSuspend.action = "nothing";
+        whenLaptopLidClosed = "turnOffScreen";
+      };
+    };
 
     # 1. 浅色桌面外观体系
     workspace = {
@@ -199,18 +199,6 @@ in
     pkgs.catppuccin-cursors.frappeLavender
     pkgs.adw-gtk3
   ];
-
-  # 保留针对电源管理与缓存的独立触发脚本
-  home.activation.configurePlasmaPowerManagement = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    ${writePowerDevilConfig "AC" "AutoSuspendAction" "0"}
-    ${writePowerDevilConfig "AC" "LidAction" "64"}
-    ${writePowerDevilConfig "Battery" "AutoSuspendAction" "0"}
-    ${writePowerDevilConfig "Battery" "LidAction" "64"}
-
-    if ${pkgs.systemd}/bin/systemctl --user is-active --quiet plasma-powerdevil.service; then
-      ${pkgs.systemd}/bin/systemctl --user restart plasma-powerdevil.service
-    fi
-  '';
 
   # Both Dolphin and Plasma update KDE service metadata. Rebuild the shared
   # cache once after both activation steps instead of doing the same full scan

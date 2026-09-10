@@ -1,8 +1,6 @@
-{ pkgs, inputs, hostProfile, lib, lilyaTheme, ... }:
+{ pkgs, inputs, lib, lilyaTheme, ... }:
 
 let
-  loginWallpaper = hostProfile.display.loginWallpaper or null;
-
   niriPackage = inputs.niri.packages.${pkgs.stdenv.hostPlatform.system}.niri-unstable;
   niriSession = "${niriPackage}/bin/niri-session";
   niriLogin = pkgs.writeShellScriptBin "Niri" ''

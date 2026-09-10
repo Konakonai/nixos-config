@@ -18,9 +18,8 @@ in
     nvidiaSettings = true;
 
     powerManagement = {
-      # Keep the regular profile focused on dGPU reliability. The
-      # battery-saver specialisation disables NVIDIA entirely when power saving
-      # matters, so avoid RTD3/runtime power management here.
+      # Preserve the tested driver behavior until suspend and runtime power
+      # management have been validated separately on this machine.
       enable = false;
       finegrained = false;
     };
