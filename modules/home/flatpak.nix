@@ -46,9 +46,29 @@ let
       com.qq.QQ "$@"
   '';
 
+  wechatLauncher = pkgs.writeShellScriptBin "wechat-session" ''
+    set -euo pipefail
+
+    export QT_IM_MODULE=fcitx
+    export XMODIFIERS=@im=fcitx
+    export GTK_IM_MODULE=fcitx
+    export QT_QPA_PLATFORM=wayland
+
+    exec ${pkgs.flatpak}/bin/flatpak run \
+      --branch=stable \
+      --arch=x86_64 \
+      --command=wechat \
+      --env=QT_IM_MODULE=fcitx \
+      --env=XMODIFIERS=@im=fcitx \
+      --env=GTK_IM_MODULE=fcitx \
+      --env=QT_QPA_PLATFORM=wayland \
+      --file-forwarding \
+      com.tencent.WeChat @@u "$@" @@
+  '';
+
 in
 {
-  home.packages = [ qqLauncher ];
+  home.packages = [ qqLauncher wechatLauncher ];
 
   # Shadow the Flatpak export so the Niri-only NVIDIA workaround is selected
   # at launch time and cannot leak into Plasma.
@@ -68,6 +88,24 @@ in
       Categories=Network;InstantMessaging;
       Comment=QQ
       X-Flatpak=com.qq.QQ
+    '';
+  };
+
+  xdg.dataFile."applications/com.tencent.WeChat.desktop" = {
+    force = true;
+    text = ''
+      [Desktop Entry]
+      Name=WeChat
+      Name[zh_CN]=微信
+      Exec=${lib.getExe wechatLauncher} @@u %U @@
+      Terminal=false
+      Type=Application
+      Icon=com.tencent.WeChat
+      StartupWMClass=WeChat
+      Categories=Network;InstantMessaging;
+      Comment=WeChat Desktop
+      Comment[zh_CN]=微信桌面版
+      X-Flatpak=com.tencent.WeChat
     '';
   };
 
@@ -154,5 +192,14 @@ in
       "--enable-wayland-ime" \
       "--wayland-text-input-version=3" \
       > "$qq_config/qq-flags.conf"
+  '';
+
+  home.activation.wechatFlatpakOverrides = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    ${pkgs.flatpak}/bin/flatpak override --user \
+      --env=QT_IM_MODULE=fcitx \
+      --env=XMODIFIERS=@im=fcitx \
+      --env=GTK_IM_MODULE=fcitx \
+      --env=QT_QPA_PLATFORM=wayland \
+      com.tencent.WeChat >/dev/null 2>&1 || true
   '';
 }
