@@ -8,7 +8,7 @@ in
 
   programs.steam = {
     enable = true;
-    package = pkgs.millennium-steam;
+    package = pkgs.steam;
     extraPackages = with pkgs; [
       pulseaudio
     ];
