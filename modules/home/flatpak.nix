@@ -84,10 +84,11 @@ in
     packages = [
       "com.qq.QQ"
       "com.getpostman.Postman"
+      "com.tencent.WeChat"
     ];
 
-    # Strict declarative Flatpak management: apps not listed here are removed.
-    uninstallUnmanaged = true;
+    # Keep manually installed Flatpak applications alongside the declared set.
+    uninstallUnmanaged = false;
 
     update.auto = {
       enable = true;
@@ -118,6 +119,14 @@ in
         Environment = themeEnv // fcitxCompatEnv // {
           ELECTRON_OZONE_PLATFORM_HINT = "wayland";
           NIXOS_OZONE_WL = "1";
+        };
+      };
+      "com.tencent.WeChat" = {
+        Context.filesystems = themeFilesystems;
+        Environment = fcitxCompatEnv // {
+          XCURSOR_THEME = lilyaTheme.cursorThemeName;
+          XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
+          XCURSOR_PATH = themeEnv.XCURSOR_PATH;
         };
       };
     };

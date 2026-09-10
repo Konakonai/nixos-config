@@ -55,7 +55,4 @@ in
 
   mcp-server-brave-search = args:
     pkgs.callPackage ./mcp-server-brave-search.nix args;
-
-  wechat = args:
-    pkgs.callPackage ./wechat.nix args;
 }
