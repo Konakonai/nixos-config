@@ -21,7 +21,7 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 - `modules/home/services/`: user-session services and mounts, including OpenList WebDAV.
 - `modules/home/desktop/`: desktop entries, MIME defaults, Zed, media playback defaults, and font aliases.
 - `modules/system/display/`: Niri/Plasma login sessions, SDDM, console, portals, and desktop service glue.
-- `modules/system/power/`: base power services, battery conservation, device udev rules, and the battery-saver specialisation.
+- `modules/system/power/`: base power services and device udev rules. Charging thresholds are controlled through Noctalia/UPower.
 - `modules/system/virtualization.nix`: libvirt/virt-manager and the external Windows whole-disk VM launcher.
 - `modules/home/theme/`: GTK, Qt, cursor, Xresources, dconf, Flatpak theme integration, and custom Fcitx/Rime icon wiring.
 - `modules/home/niri/`: niri core settings, visual effects, and focused keybinding groups.
@@ -34,8 +34,8 @@ Personal NixOS + Home Manager configuration for a light niri desktop.
 ## Reproducing this machine
 
 `main` is the exact ThinkBook profile. It expects the host facts declared in
-`hosts/lilya-thinkbook`, including NVIDIA/Intel render nodes, display
-identities, AC/battery sysfs names, and selected USB devices.
+`hosts/lilya-thinkbook`, including NVIDIA/Intel bus IDs, display
+identities, and the external Windows USB disk.
 
 The Nix store build is reproducible from the repository and `flake.lock`, but a
 fully working user session also needs these external state files restored:
@@ -47,7 +47,23 @@ fully working user session also needs these external state files restored:
 
 Display layout is applied in the login and niri sessions from stable monitor
 identity data rather than DRM connector names, which may change across hybrid
-GPU boot paths.
+GPU boot paths. The SDDM display layout is managed separately by KWin.
+
+## Maintenance
+
+Charging thresholds and normal power profiles are controlled through Noctalia
+and UPower/power-profiles-daemon. There is no custom battery-saver boot profile.
+Automatic suspend remains disabled pending a separate resume test.
+
+The daily `codex-update` timer is retained. It checks releases first, updates
+sources in a temporary detached Git worktree, evaluates the configuration, and
+builds only Codex Desktop and CLI. It fast-forwards the original branch only if
+that checkout is still clean and unchanged. It commits locally without applying
+the system or pushing; run `rebuild` to activate the update. The command can also
+be run manually. Logs are in `~/.local/state/codex-update/update.log`.
+
+See [the configuration audit](docs/configuration-audit-2026-09-11.md) for removed
+workarounds, retained behavior, and the remaining hardware validation work.
 
 ## External Windows VM
 

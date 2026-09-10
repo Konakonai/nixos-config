@@ -1,4 +1,4 @@
-{ pkgs, lib ? pkgs.lib }:
+{ pkgs, inputs, lib ? pkgs.lib }:
 
 let
   braveOrigin = pkgs.callPackage ./brave-origin.nix { };
@@ -23,6 +23,7 @@ in
   };
   classin = pkgs.callPackage ./classin.nix { };
   codex = pkgs.callPackage ./codex.nix { };
+  codex-desktop = pkgs.callPackage ./codex-desktop.nix { inherit inputs; };
   eden = pkgs.callPackage ./eden.nix { };
   file-roller-wayland = fileRollerWayland;
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };

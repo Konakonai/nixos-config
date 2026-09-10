@@ -82,6 +82,7 @@
               };
               lilya = import ./pkgs {
                 pkgs = final;
+                inherit inputs;
                 lib = final.lib;
               };
             })
