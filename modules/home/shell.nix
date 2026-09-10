@@ -141,10 +141,10 @@ in
         black     = lilyaTheme.palette.accent;
 
         # Extended palette (Catppuccin-compatible names)
-        rosewater = lilyaTheme.palette.crust;
+        rosewater = lilyaTheme.palette.tertiary;
         flamingo  = lilyaTheme.palette.error;
         pink      = lilyaTheme.palette.tertiary;
-        mauve     = lilyaTheme.palette.terminal.normal.magenta;
+        mauve     = lilyaTheme.palette.accent;
         maroon    = lilyaTheme.palette.error;
         peach     = lilyaTheme.palette.terminal.normal.yellow;
         teal      = lilyaTheme.palette.terminal.normal.cyan;
