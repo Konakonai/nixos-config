@@ -27,7 +27,6 @@ in
 
     spawn-at-startup = [
       { command = [ "noctalia" ]; }
-      { command = [ "xwayland-satellite" ]; }
       { command = [ "${xwaylandCoreFonts}" ]; }
       { command = [ "xrdb" "-merge" "${config.home.homeDirectory}/.Xresources" ]; }
     ];
