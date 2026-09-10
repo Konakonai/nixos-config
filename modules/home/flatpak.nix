@@ -123,9 +123,11 @@ in
       };
       "com.tencent.WeChat" = {
         Context.filesystems = themeFilesystems;
-        # The current Flatpak uses native Wayland and deliberately leaves the
-        # legacy toolkit IM modules unset so Fcitx can use text-input-v3.
+        # WeChat's native UI uses Qt. Let Qt bridge to the compositor's
+        # Wayland text-input protocol instead of loading the legacy Fcitx module.
         Environment = {
+          QT_QPA_PLATFORM = "wayland";
+          QT_IM_MODULE = "wayland";
           XCURSOR_THEME = lilyaTheme.cursorThemeName;
           XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
           XCURSOR_PATH = themeEnv.XCURSOR_PATH;
