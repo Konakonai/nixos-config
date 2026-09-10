@@ -49,4 +49,39 @@
       envinclude KITTY_CONF_*
     '';
   };
+
+  xdg.configFile."kitty/themes/noctalia.conf".text = ''
+    color0 ${lilyaTheme.palette.terminal.normal.black}
+    color1 ${lilyaTheme.palette.terminal.normal.red}
+    color2 ${lilyaTheme.palette.terminal.normal.green}
+    color3 ${lilyaTheme.palette.terminal.normal.yellow}
+    color4 ${lilyaTheme.palette.terminal.normal.blue}
+    color5 ${lilyaTheme.palette.terminal.normal.magenta}
+    color6 ${lilyaTheme.palette.terminal.normal.cyan}
+    color7 ${lilyaTheme.palette.terminal.normal.white}
+    color8 ${lilyaTheme.palette.terminal.bright.black}
+    color9 ${lilyaTheme.palette.terminal.bright.red}
+    color10 ${lilyaTheme.palette.terminal.bright.green}
+    color11 ${lilyaTheme.palette.terminal.bright.yellow}
+    color12 ${lilyaTheme.palette.terminal.bright.blue}
+    color13 ${lilyaTheme.palette.terminal.bright.magenta}
+    color14 ${lilyaTheme.palette.terminal.bright.cyan}
+    color15 ${lilyaTheme.palette.terminal.bright.white}
+
+    cursor                ${lilyaTheme.palette.terminal.cursor}
+    cursor_text_color     ${lilyaTheme.palette.terminal.cursorText}
+    background            ${lilyaTheme.palette.terminal.background}
+    foreground            ${lilyaTheme.palette.terminal.foreground}
+    selection_foreground  ${lilyaTheme.palette.terminal.selectionFg}
+    selection_background  ${lilyaTheme.palette.terminal.selectionBg}
+    active_border_color   ${lilyaTheme.palette.accent}
+    inactive_border_color ${lilyaTheme.palette.mantle}
+    url_color             ${lilyaTheme.palette.accent}
+
+    active_tab_foreground   #ffffff
+    active_tab_background   ${lilyaTheme.palette.accent}
+    inactive_tab_foreground ${lilyaTheme.palette.subtext}
+    inactive_tab_background ${lilyaTheme.palette.mantle}
+    cursor_trail_color      ${lilyaTheme.palette.subtext}
+  '';
 }

@@ -160,7 +160,7 @@ let
     theme.source = lilyaTheme.theme.source;
     theme.custom_palette = lilyaTheme.theme.paletteName;
     theme.templates.enable_builtin_templates = true;
-    theme.templates.builtin_ids = [ "btop" "gtk3" "gtk4" "kitty" "niri" ];
+    theme.templates.builtin_ids = [ "btop" "gtk3" "gtk4" "niri" ];
     theme.templates.enable_community_templates = true;
     theme.templates.community_ids = [ "zen-browser" "zed" "discord" "steam" "telegram" "yazi" ];
 
