@@ -123,11 +123,11 @@ in
       };
       "com.tencent.WeChat" = {
         Context.filesystems = themeFilesystems;
-        # WeChat's native UI uses Qt. Let Qt bridge to the compositor's
-        # Wayland text-input protocol instead of loading the legacy Fcitx module.
-        Environment = {
+        # WeChat's bundled Qt5 embeds a static fcitx platform input context
+        # plugin. Direct it to Fcitx via DBus since its Wayland backend only
+        # speaks the legacy zwp_text_input_v2 protocol.
+        Environment = themeEnv // fcitxCompatEnv // {
           QT_QPA_PLATFORM = "wayland";
-          QT_IM_MODULE = "wayland";
           XCURSOR_THEME = lilyaTheme.cursorThemeName;
           XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
           XCURSOR_PATH = themeEnv.XCURSOR_PATH;

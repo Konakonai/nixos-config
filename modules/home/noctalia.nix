@@ -364,6 +364,7 @@ for key in ("capsule_fill", "capsule_radius", "capsule_opacity", "capsule_border
 dock = document.setdefault("dock", tomlkit.table())
 dock["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaDock}
 dock["reserve_space"] = False
+dock.pop("monitors", None)
 
 notification = document.setdefault("notification", tomlkit.table())
 notification["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPopups}
@@ -383,6 +384,7 @@ backdrop["tint_intensity"] = ${builtins.toString lilyaTheme.effects.backdropTint
 lockscreen = document.setdefault("lockscreen", tomlkit.table())
 lockscreen["blur_intensity"] = ${builtins.toString lilyaTheme.effects.lockscreenBlur}
 lockscreen["tint_intensity"] = ${builtins.toString lilyaTheme.effects.lockscreenTint}
+lockscreen.pop("monitors", None)
 
 lockscreen_widgets = document.get("lockscreen_widgets", {}).get("widget", {})
 for widget in lockscreen_widgets.values():
