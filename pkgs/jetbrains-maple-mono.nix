@@ -5,8 +5,15 @@ pkgs.stdenvNoCC.mkDerivation rec {
   version = "1.2304.79";
 
   src = pkgs.fetchurl {
-    url = "https://github.com/SpaceTimee/Fusion-JetBrainsMapleMono/releases/download/${version}/JetBrainsMapleMono-XX-XX-XX-HT.zip";
-    hash = "sha256-e0+qq8YsoxM81EHKMyo3Xu5aKMaQON0USHR4ngngOuI=";
+    # The upstream release tag is reused when its generated font assets change.
+    # Pin the GitHub asset ID so a later replacement fails instead of silently
+    # resolving the same versioned URL to different contents.
+    url = "https://api.github.com/repos/SpaceTimee/Fusion-JetBrainsMapleMono/releases/assets/518404936";
+    curlOptsList = [
+      "-H"
+      "Accept: application/octet-stream"
+    ];
+    hash = "sha256-J0wbty9flOAI2cmywNHEIg7A86KpCRq289HhF4KDq/8=";
   };
 
   nativeBuildInputs = [ pkgs.unzip ];
