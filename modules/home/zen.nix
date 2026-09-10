@@ -4,7 +4,7 @@ let
   zenProfilePath = hostProfile.zen.profilePath;
   zen = lib.getExe config.programs.zen-browser.package;
   zenLaunch = pkgs.writeShellScript "launch-zen-beta" ''
-    exec ${zen} --name zen-beta "$@"
+    exec ${zen} "$@"
   '';
 in
 {
