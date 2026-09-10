@@ -7,7 +7,6 @@
     ./kdeconnect.nix
     ./mime.nix
     ./plasma.nix
-    ./scroll.nix
     ./zed.nix
   ];
 }

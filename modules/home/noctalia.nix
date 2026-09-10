@@ -422,38 +422,6 @@ PY
     fi
   '';
 
-  home.activation.removePlasmaOverdoseResidue =
-    lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-      rm -f \
-        "$HOME/.config/noctalia/palettes/Plasma Overdose.json" \
-        "$HOME/.config/noctalia/templates/zen-plasma-overdose-overrides" \
-        "$HOME/.config/noctalia/templates/zen-plasma-overdose-overrides.css" \
-        "''${XDG_CACHE_HOME:-$HOME/.cache}/noctalia/zen-browser/zen-plasma-overdose-overrides.css" \
-        "''${XDG_CACHE_HOME:-$HOME/.cache}/plasma_theme_Plasma-Overdose.kcache"
-
-      rm -rf \
-        "$HOME/.local/share/aurorae/themes/Plasma-Overdose" \
-        "$HOME/.local/share/color-schemes/PlasmaOverdose.colors" \
-        "$HOME/.local/share/flatpak-icons/Plasma-Overdose" \
-        "$HOME/.local/share/icons/Plasma-Overdose" \
-        "$HOME/.local/share/icons/Plasma-Overdose.backup" \
-        "$HOME/.local/share/konsole/Plasma-Overdose.colorscheme" \
-        "$HOME/.local/share/plasma/desktoptheme/Plasma-Overdose" \
-        "$HOME/.local/share/plasma/look-and-feel/Plasma-Overdose" \
-        "$HOME/.local/share/plasma/look-and-feel/overdose" \
-        "$HOME/.local/share/sounds/PlasmaOverdose" \
-        "$HOME/.local/share/themes/Plasma-Overdose-GTK" \
-        "$HOME/.local/share/wallpapers/Plasma-Overdose"
-    '';
-
-  home.activation.removeLegacyThemeNames =
-    lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-      rm -f \
-        "$HOME/.config/noctalia/palettes/Catppuccin Lavender Glass.json" \
-        "$HOME/.config/noctalia/palettes/Catppuccin Lavender Glass.json.backup"
-      rm -rf "$HOME/.local/share/fcitx5/themes/catppuccin-lavender-glass"
-    '';
-
   programs.noctalia = {
     enable = true;
     customPalettes.${lilyaTheme.theme.paletteName} =

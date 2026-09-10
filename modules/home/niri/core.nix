@@ -28,7 +28,6 @@ in
       { command = [ "xwayland-satellite" ]; }
       { command = [ "${xwaylandCoreFonts}" ]; }
       { command = [ "xrdb" "-merge" "${config.home.homeDirectory}/.Xresources" ]; }
-      { command = [ "wl-paste" "--watch" "cliphist" "store" ]; }
     ];
 
     hotkey-overlay.skip-at-startup = true;

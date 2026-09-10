@@ -55,7 +55,7 @@ let
     }
 
     layer-rule {
-        match namespace="^(noctalia-control-center|noctalia-launcher|noctalia-session|noctalia-clipboard|notifications|swaync-control-center|launcher|vicinae|waybar)$"
+        match namespace="^(noctalia-control-center|noctalia-launcher|noctalia-session|noctalia-clipboard|notifications)$"
         geometry-corner-radius ${builtins.toString lilyaTheme.radius.windows}
         popups {
             geometry-corner-radius ${builtins.toString lilyaTheme.radius.windows}

@@ -22,7 +22,6 @@
     tinymist
 
     wl-clipboard
-    cliphist
     hyprsunset
     wlsunset
   ];

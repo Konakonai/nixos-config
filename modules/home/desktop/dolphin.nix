@@ -2,7 +2,6 @@
 
 let
   dolphinConfig = "${config.xdg.configHome}/dolphinrc";
-  kdeGlobals = "${config.xdg.configHome}/kdeglobals";
   konsoleConfig = "${config.xdg.configHome}/konsolerc";
   konsoleProfile = "${config.xdg.dataHome}/konsole/Lilya.profile";
   konsoleFont = "${lilyaTheme.fonts.mono},${builtins.toString lilyaTheme.fonts.terminalSize},-1,5,50,0,0,0,0,0";
@@ -38,9 +37,6 @@ in
     ${writeDolphinConfig "IconsMode" "ViewFont" "Noto Sans CJK SC,10,-1,5,50,0,0,0,0,0"}
     ${writeDolphinConfig "IconsMode" "TextWidthIndex" "1"}
     ${writeDolphinConfig "IconsMode" "MaximumTextLines" "2"}
-
-    ${writeKdeConfig kdeGlobals "General" "TerminalApplication" (lib.getExe pkgs.kitty)}
-    ${writeKdeConfig kdeGlobals "General" "TerminalService" ""}
 
     ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg (builtins.dirOf konsoleProfile)}
     ${writeKdeConfig konsoleProfile "General" "Name" "Lilya"}

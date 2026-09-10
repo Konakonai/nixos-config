@@ -4,18 +4,6 @@ let
   zenProfilePath = hostProfile.zen.profilePath;
   zen = lib.getExe config.programs.zen-browser.package;
   zenLaunch = pkgs.writeShellScript "launch-zen-beta" ''
-    profile="$HOME/.config/zen/${zenProfilePath}"
-
-    if ! ${pkgs.procps}/bin/pgrep -u "$(${pkgs.coreutils}/bin/id -u)" -f '/bin/zen-beta( |$)|/lib/zen-bin-[^ ]*/zen( |$)' >/dev/null; then
-      rm -f \
-        "$profile/sessionstore.jsonlz4" \
-        "$profile/sessionstore-backups/recovery.jsonlz4" \
-        "$profile/sessionstore-backups/recovery.baklz4" \
-        "$profile/sessionstore-backups/previous.jsonlz4" \
-        "$profile/zen-sessions.jsonlz4" \
-        "$profile/zen-sessions-backup/recovery.baklz4"
-    fi
-
     exec ${zen} --name zen-beta "$@"
   '';
 in
@@ -24,13 +12,12 @@ in
     enable = true;
     setAsDefaultBrowser = true;
 
-      profiles.default = {
-        id = 0;
-        name = "Default Profile";
-        # This profile id is host state from the existing Zen install. Keep it
-        # centralized so the duplicate-window workaround is easy to update.
-        path = zenProfilePath;
-        isDefault = true;
+    profiles.default = {
+      id = 0;
+      name = "Default Profile";
+      # Preserve the existing profile directory and browser data.
+      path = zenProfilePath;
+      isDefault = true;
 
       settings = {
         "toolkit.legacyUserProfileCustomizations.stylesheets" = true;

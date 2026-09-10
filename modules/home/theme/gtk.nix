@@ -1,4 +1,4 @@
-{ config, lib, lilyaTheme, pkgs, ... }:
+{ lilyaTheme, pkgs, ... }:
 
 let
   gtkThemeName = lilyaTheme.theme.gtk;
@@ -45,25 +45,4 @@ in
       gtk-application-prefer-dark-theme = 0;
     };
   };
-
-  home.activation.cleanLegacyGtkOverlays = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    for version in 3.0 4.0; do
-      config_dir=${lib.escapeShellArg config.xdg.configHome}/"gtk-$version"
-      gtk_css="$config_dir/gtk.css"
-      if [ -e "$config_dir/plasma-overdose" ]; then
-        chmod -R u+w "$config_dir/plasma-overdose" 2>/dev/null || true
-        rm -rf "$config_dir/plasma-overdose"
-      fi
-      rm -f "$config_dir/plasma-overdose-libadwaita.css"
-
-      if [ -f "$gtk_css" ]; then
-        temp_file="$(${pkgs.coreutils}/bin/mktemp "$config_dir/gtk.css.XXXXXX")"
-        ${pkgs.gnugrep}/bin/grep -Fvx \
-          -e '@import url("plasma-overdose/gtk.css");' \
-          -e '@import url("plasma-overdose-libadwaita.css");' \
-          "$gtk_css" > "$temp_file" || true
-        mv "$temp_file" "$gtk_css"
-      fi
-    done
-  '';
 }

@@ -187,28 +187,4 @@ in
     lib.mkForce (lib.hm.dag.entryAnywhere "");
   systemd.user.services.flatpak-managed-install.Install.WantedBy =
     lib.mkForce [ ];
-
-  home.activation.qqFlatpakWaylandFlags = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    qq_config="$HOME/.var/app/com.qq.QQ/config"
-    mkdir -p "$qq_config"
-    rm -f "$qq_config/qq-flags.conf"
-    # QQ/Electron on niri/NVIDIA Wayland can flash black blocks via the hardware GL buffer path.
-    printf '%s\n' \
-      "--ozone-platform=wayland" \
-      "--enable-wayland-ime" \
-      "--wayland-text-input-version=3" \
-      > "$qq_config/qq-flags.conf"
-  '';
-
-  home.activation.wechatFlatpakOverrides = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    ${pkgs.flatpak}/bin/flatpak override --user \
-      --socket=x11 \
-      --socket=wayland \
-      --env=QT_IM_MODULE=fcitx \
-      --env=XMODIFIERS=@im=fcitx \
-      --env=GTK_IM_MODULE=fcitx \
-      --env=QT_QPA_PLATFORM=xcb \
-      --env=QT_AUTO_SCREEN_SCALE_FACTOR=1 \
-      com.tencent.WeChat >/dev/null 2>&1 || true
-  '';
 }
