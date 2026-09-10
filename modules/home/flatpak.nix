@@ -123,7 +123,9 @@ in
       };
       "com.tencent.WeChat" = {
         Context.filesystems = themeFilesystems;
-        Environment = fcitxCompatEnv // {
+        # The current Flatpak uses native Wayland and deliberately leaves the
+        # legacy toolkit IM modules unset so Fcitx can use text-input-v3.
+        Environment = {
           XCURSOR_THEME = lilyaTheme.cursorThemeName;
           XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
           XCURSOR_PATH = themeEnv.XCURSOR_PATH;
