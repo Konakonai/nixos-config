@@ -57,6 +57,8 @@ in
 
   programs.zed-editor.enable = true;
 
+  xdg.configFile."zed/themes/noctalia.json".source = ../../../assets/zed/themes/noctalia.json;
+
   xdg.dataFile."nixos-config/defaults/zed-settings.json".source = zedSeed;
 
   home.activation.seedZedSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''

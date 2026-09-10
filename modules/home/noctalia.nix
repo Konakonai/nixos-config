@@ -162,7 +162,7 @@ let
     theme.templates.enable_builtin_templates = true;
     theme.templates.builtin_ids = [ "btop" "gtk3" "gtk4" "niri" ];
     theme.templates.enable_community_templates = true;
-    theme.templates.community_ids = [ "zen-browser" "zed" "discord" "steam" "telegram" "yazi" ];
+    theme.templates.community_ids = [ "zen-browser" "discord" "steam" "telegram" "yazi" ];
 
     shell = {
       corner_radius_scale = 1.65;
