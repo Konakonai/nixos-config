@@ -18,10 +18,8 @@ in
     nvidiaSettings = true;
 
     powerManagement = {
-      # Preserve the tested driver behavior until suspend and runtime power
-      # management have been validated separately on this machine.
-      enable = false;
-      finegrained = false;
+      enable = true;
+      finegrained = true;
     };
 
     prime = {
