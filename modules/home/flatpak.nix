@@ -52,8 +52,11 @@ let
     export QT_IM_MODULE=fcitx
     export XMODIFIERS=@im=fcitx
     export GTK_IM_MODULE=fcitx
-    export QT_QPA_PLATFORM=xcb
+    export QT_QPA_PLATFORM=wayland
+    export QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough
     export QT_AUTO_SCREEN_SCALE_FACTOR=1
+    export QT_ENABLE_HIGHDPI_SCALING=1
+    export FCITX_QT_USE_SYNC=1
 
     exec ${pkgs.flatpak}/bin/flatpak run \
       --branch=stable \
@@ -62,8 +65,11 @@ let
       --env=QT_IM_MODULE=fcitx \
       --env=XMODIFIERS=@im=fcitx \
       --env=GTK_IM_MODULE=fcitx \
-      --env=QT_QPA_PLATFORM=xcb \
+      --env=QT_QPA_PLATFORM=wayland \
+      --env=QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough \
       --env=QT_AUTO_SCREEN_SCALE_FACTOR=1 \
+      --env=QT_ENABLE_HIGHDPI_SCALING=1 \
+      --env=FCITX_QT_USE_SYNC=1 \
       --file-forwarding \
       com.tencent.WeChat @@u "$@" @@
   '';
@@ -162,16 +168,16 @@ in
         };
       };
       "com.tencent.WeChat" = {
-        Context.sockets = [
-          "wayland"
-          "x11"
-        ];
         Context.filesystems = themeFilesystems;
         # WeChat's bundled Qt5 embeds a static fcitx platform input context
-        # plugin. Direct it to Fcitx via DBus and X11 to eliminate candidate drift.
+        # plugin. Direct it to Fcitx via DBus while setting PassThrough scaling
+        # to ensure correct cursor coordinates under Wayland fractional scale.
         Environment = themeEnv // fcitxCompatEnv // {
-          QT_QPA_PLATFORM = "xcb";
+          QT_QPA_PLATFORM = "wayland";
+          QT_SCALE_FACTOR_ROUNDING_POLICY = "PassThrough";
           QT_AUTO_SCREEN_SCALE_FACTOR = "1";
+          QT_ENABLE_HIGHDPI_SCALING = "1";
+          FCITX_QT_USE_SYNC = "1";
           XCURSOR_THEME = lilyaTheme.cursorThemeName;
           XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
           XCURSOR_PATH = themeEnv.XCURSOR_PATH;
@@ -202,13 +208,14 @@ in
 
   home.activation.wechatFlatpakOverrides = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     ${pkgs.flatpak}/bin/flatpak override --user \
-      --socket=x11 \
-      --socket=wayland \
       --env=QT_IM_MODULE=fcitx \
       --env=XMODIFIERS=@im=fcitx \
       --env=GTK_IM_MODULE=fcitx \
-      --env=QT_QPA_PLATFORM=xcb \
+      --env=QT_QPA_PLATFORM=wayland \
+      --env=QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough \
       --env=QT_AUTO_SCREEN_SCALE_FACTOR=1 \
+      --env=QT_ENABLE_HIGHDPI_SCALING=1 \
+      --env=FCITX_QT_USE_SYNC=1 \
       com.tencent.WeChat >/dev/null 2>&1 || true
   '';
 }
