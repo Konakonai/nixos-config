@@ -90,7 +90,7 @@
     "terminal_normal_yellow": "#df8e1d",
     "terminal_normal_blue": "#2563eb",
     "terminal_normal_magenta": "#c026d3",
-    "terminal_normal_cyan": "#0891b2",
+    "terminal_normal_cyan": "#0284c7",
     "terminal_normal_white": "#685d82",
     "terminal_bright_black": "#685d82",
     "terminal_bright_red": "#e5484d",
@@ -98,7 +98,7 @@
     "terminal_bright_yellow": "#df8e1d",
     "terminal_bright_blue": "#3b82f6",
     "terminal_bright_magenta": "#d946ef",
-    "terminal_bright_cyan": "#06b6d4",
+    "terminal_bright_cyan": "#38bdf8",
     "terminal_bright_white": "#2c243e",
     "terminal_foreground": "#2c243e",
     "terminal_background": "#faf8ff",
@@ -114,7 +114,7 @@
         "yellow": "#df8e1d",
         "blue": "#2563eb",
         "magenta": "#c026d3",
-        "cyan": "#0891b2",
+        "cyan": "#0284c7",
         "white": "#685d82"
       },
       "bright": {
@@ -124,7 +124,7 @@
         "yellow": "#df8e1d",
         "blue": "#3b82f6",
         "magenta": "#d946ef",
-        "cyan": "#06b6d4",
+        "cyan": "#38bdf8",
         "white": "#2c243e"
       },
       "foreground": "#2c243e",
