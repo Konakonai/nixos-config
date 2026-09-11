@@ -23,6 +23,7 @@ in
   programs.niri.settings = {
     includes = [
       { path = "gpu.kdl"; optional = true; }
+      { path = "noctalia.kdl"; optional = true; }
     ];
 
     prefer-no-csd = true;

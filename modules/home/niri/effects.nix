@@ -1,4 +1,4 @@
-{ config, hostProfile, lilyaTheme, pkgs, lib, ... }:
+{ config, hostProfile, lilyaTheme, pkgs, lib, inputs, ... }:
 
 let
   internalDisplay = hostProfile.display.internal;
@@ -22,8 +22,6 @@ let
 
   baseConfig = ''
     ${config.programs.niri.finalConfig}
-
-    include "noctalia.kdl"
 
     blur {
         off
@@ -75,5 +73,10 @@ let
   '';
 in
 {
-  xdg.configFile.niri-config.source = lib.mkForce (pkgs.writeText "niri-config.kdl" sessionConfig);
+  xdg.configFile.niri-config.source = lib.mkForce (
+    inputs.niri.lib.internal.validated-config-for
+      pkgs
+      config.programs.niri.package
+      sessionConfig
+  );
 }

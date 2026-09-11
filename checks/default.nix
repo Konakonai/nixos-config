@@ -27,6 +27,7 @@ assert !(flatpakTimer.Timer ? ConditionACPower);
         ../modules/system/mihomo
         ../modules/system/virtualization.nix
         ../modules/system/external-windows-domain-xml.nix
+        ../modules/home/niri
       ];
     };
   } ''
@@ -61,6 +62,37 @@ assert !(flatpakTimer.Timer ? ConditionACPower);
     })}"
     grep -F "<vcpu placement='static'>3</vcpu>" "$xml3"
     grep -F "cores='3'" "$xml3"
+    touch "$out"
+  '';
+
+  niri-config = pkgs.runCommand "niri-session-config" {
+    nativeBuildInputs = [ home.programs.niri.package ];
+    niriConfig = home.xdg.configFile.niri-config.source;
+  } ''
+    set -euo pipefail
+    grep -F 'include "noctalia.kdl" optional=true' "$niriConfig"
+    grep -F 'include "gpu.kdl" optional=true' "$niriConfig"
+
+    work="$(mktemp -d)"
+    cp "$niriConfig" "$work/config.kdl"
+
+    niri validate -c "$work/config.kdl"
+
+    cat > "$work/noctalia.kdl" <<'EOF'
+    layout {
+        focus-ring {
+            active-color "#7c5cfa"
+        }
+    }
+    EOF
+    niri validate -c "$work/config.kdl"
+
+    printf '%s\n' 'this is not valid kdl' > "$work/noctalia.kdl"
+    if niri validate -c "$work/config.kdl"; then
+      echo "corrupt noctalia.kdl was accepted" >&2
+      exit 1
+    fi
+
     touch "$out"
   '';
 }

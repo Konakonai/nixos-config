@@ -80,3 +80,11 @@ port = "9191"
             self.assertNotEqual(result.returncode, 0)
             self.assertEqual((cache / "plugin").read_text(), "user change")
             self.assertFalse(list(root.glob("cache.staging.*")))
+
+    def test_niri_color_include_is_optional(self):
+        core = (ROOT / "modules/home/niri/core.nix").read_text()
+        effects = (ROOT / "modules/home/niri/effects.nix").read_text()
+        self.assertIn('path = "noctalia.kdl"', core)
+        self.assertIn("optional = true", core)
+        self.assertNotIn('include "noctalia.kdl"', effects)
+        self.assertIn("validated-config-for", effects)
