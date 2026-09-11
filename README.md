@@ -2,7 +2,7 @@
 
 个人 ThinkBook 的 Nix Flakes + Home Manager 配置，同时提供 **Niri + Noctalia** 和 **Plasma Wayland**。当前默认登录会话为 `plasma-hdr`；这个名称本身不保证 HDR 已开启。
 
-自动化修改请先读 [AGENTS.md](AGENTS.md)。最新深入审计与实施记录见 [配置改进计划](docs/configuration-improvement-plan-2026-09-12.md)。P1 行为修复已落地；E/F 的所有权与缓存边界仍写在该计划中。较早的 [2026-09-11 审计](docs/configuration-audit-2026-09-11.md) 仅作历史记录。
+自动化修改请先读 [AGENTS.md](AGENTS.md)。待实施的后续工作见 [配置优化计划](docs/configuration-optimization-plan-2026-09-12.md)。已落地的 P1 修复与当时边界见 [2026-09-12 改进计划](docs/configuration-improvement-plan-2026-09-12.md)；[2026-09-11 审计](docs/configuration-audit-2026-09-11.md) 仅作历史记录。
 
 ## 入口与目录
 
