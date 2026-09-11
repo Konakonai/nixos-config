@@ -187,4 +187,5 @@ in
     lib.mkForce (lib.hm.dag.entryAnywhere "");
   systemd.user.services.flatpak-managed-install.Install.WantedBy =
     lib.mkForce [ ];
+  systemd.user.services.flatpak-managed-install.Unit.ConditionACPower = true;
 }

@@ -53,7 +53,9 @@ GPU boot paths. The SDDM display layout is managed separately by KWin.
 
 Charging thresholds and normal power profiles are controlled through Noctalia
 and UPower/power-profiles-daemon. There is no custom battery-saver boot profile.
-Automatic suspend remains disabled pending a separate resume test.
+In battery power-saver mode, a D-Bus driven service disables Intel turbo and
+restores the prior setting when leaving that mode. Screen brightness is not changed.
+Automatic suspend remains disabled by choice; it is not scheduled for further repair.
 
 The daily `codex-update` timer is retained. It checks releases first, updates
 sources in a temporary detached Git worktree, evaluates the configuration, and
@@ -61,6 +63,9 @@ builds only Codex Desktop and CLI. It fast-forwards the original branch only if
 that checkout is still clean and unchanged. It commits locally without applying
 the system or pushing; run `rebuild` to activate the update. The command can also
 be run manually. Logs are in `~/.local/state/codex-update/update.log`.
+The Codex and Flatpak scheduled update services only start on AC power. A run
+skipped on battery waits for the next scheduled activation; connecting AC does
+not immediately launch it. This does not interrupt an update already in progress.
 
 See [the configuration audit](docs/configuration-audit-2026-09-11.md) for removed
 workarounds, retained behavior, and the remaining hardware validation work.

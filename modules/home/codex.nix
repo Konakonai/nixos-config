@@ -12,6 +12,7 @@ in
     Unit = {
       Description = "Update Codex Desktop Linux and Codex CLI";
       After = [ "network-online.target" ];
+      ConditionACPower = true;
     };
     Service = {
       Type = "oneshot";
