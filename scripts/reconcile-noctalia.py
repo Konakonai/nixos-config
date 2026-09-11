@@ -1,7 +1,10 @@
 """Reconcile Nix-owned fields from the seed while preserving GUI-owned state."""
 
+import json
 import os
 from pathlib import Path
+import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -21,11 +24,23 @@ OWNED = {
     "plugins": ("auto_update",),
 }
 
+CAPSULE_KEYS = ("capsule_fill", "capsule_radius", "capsule_opacity", "capsule_border")
+THEME_KEYS = OWNED["theme"]
+
 
 def table(document, path):
     for key in path.split("."):
         document = document.setdefault(key, tomlkit.table())
     return document
+
+
+def lookup(document, path):
+    node = document
+    for key in path.split("."):
+        if key not in node:
+            return None
+        node = node[key]
+    return node
 
 
 def reconcile(seed, document):
@@ -34,7 +49,7 @@ def reconcile(seed, document):
         for key in keys:
             target[key] = source[key]
     bar = table(document, "bar.main")
-    for key in ("capsule_fill", "capsule_radius", "capsule_opacity", "capsule_border"):
+    for key in CAPSULE_KEYS:
         bar.pop(key, None)
     for section in ("dock", "lockscreen"):
         document[section].pop("monitors", None)
@@ -57,13 +72,72 @@ def reconcile(seed, document):
     return document
 
 
+def snapshot(document):
+    view = {}
+    for path, keys in OWNED.items():
+        node = lookup(document, path) or {}
+        view[path] = {key: node.get(key) for key in keys}
+    bar = lookup(document, "bar.main") or {}
+    view["capsule"] = [key for key in CAPSULE_KEYS if key in bar]
+    for section in ("dock", "lockscreen"):
+        node = lookup(document, section) or {}
+        view[f"{section}.monitors"] = "monitors" in node
+    plugins = lookup(document, "plugins") or {}
+    view["plugin_auto_update"] = [
+        "auto_update" in source for source in plugins.get("source", [])
+    ]
+    view["plugins.enabled"] = list(plugins.get("enabled", []))
+    return json.dumps(view, sort_keys=True, default=str)
+
+
+def needs_write(seed, document):
+    expected = reconcile(seed, tomlkit.parse(tomlkit.dumps(document)))
+    return snapshot(expected) != snapshot(document)
+
+
+def apply_theme_cli(seed):
+    noctalia = shutil.which("noctalia")
+    if noctalia is None:
+        return False
+    theme = seed.get("theme") or {}
+    commands = []
+    if "mode" in theme:
+        commands.append([noctalia, "msg", "theme-mode-set", str(theme["mode"])])
+    source = theme.get("source")
+    palette = theme.get("custom_palette")
+    if source is not None or palette is not None:
+        command = [noctalia, "msg", "color-scheme-set", str(source or "custom")]
+        if palette is not None:
+            command.append(str(palette))
+        commands.append(command)
+    if not commands:
+        return False
+    for command in commands:
+        result = subprocess.run(command, capture_output=True)
+        if result.returncode != 0:
+            return False
+    return True
+
+
 def update(seed_path, state_path):
     original = state_path.read_bytes()
     seed = tomlkit.parse(seed_path.read_text())
+    document = tomlkit.parse(original.decode())
+    if not needs_write(seed, document):
+        print("noctalia: skip", file=sys.stderr)
+        return
+
+    if apply_theme_cli(seed):
+        print("noctalia: cli", file=sys.stderr)
+        original = state_path.read_bytes()
+        document = tomlkit.parse(original.decode())
+        if not needs_write(seed, document):
+            return
+
+    print("noctalia: file", file=sys.stderr)
     updated = tomlkit.dumps(reconcile(seed, tomlkit.parse(original.decode()))).encode()
     if updated == original:
         return
-    # Stage in the same directory: failures never leave a truncated TOML file.
     fd, name = tempfile.mkstemp(prefix=".settings-", dir=state_path.parent)
     temporary = Path(name)
     try:

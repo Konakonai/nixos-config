@@ -1,8 +1,11 @@
 """Guard routing reachability and app-owned state during configuration updates."""
 
 import importlib.util
+import io
 import os
 from pathlib import Path
+import shutil
+import stat
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -57,6 +60,47 @@ port = "9191"
             self.assertEqual(target.read_text(), "# original\n")
             self.assertEqual(list(Path(directory).iterdir()), [target])
 
+    def test_noctalia_skip_does_not_touch_matching_state(self):
+        seed_path = Path(os.environ["NOCTALIA_SEED"])
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "settings.toml"
+            seed = tomlkit.parse(seed_path.read_text())
+            target.write_text(tomlkit.dumps(state.reconcile(seed, tomlkit.parse(seed_path.read_text()))))
+            before = target.stat()
+            with patch("sys.stderr", io.StringIO()) as err:
+                state.update(seed_path, target)
+            after = target.stat()
+            self.assertIn("noctalia: skip", err.getvalue())
+            self.assertEqual(before.st_mtime_ns, after.st_mtime_ns)
+            self.assertEqual(before.st_ino, after.st_ino)
+
+    def test_noctalia_uses_theme_cli_when_available(self):
+        seed_path = Path(os.environ["NOCTALIA_SEED"])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "settings.toml"
+            target.write_text(tomlkit.dumps(tomlkit.parse('''
+[bar.main]
+thickness = 57
+background_opacity = 0.5
+''')))
+            binary = root / "bin"
+            binary.mkdir()
+            log = root / "cli.log"
+            noctalia = binary / "noctalia"
+            noctalia.write_text(
+                f"#!{shutil.which('bash')}\n"
+                f"echo \"$*\" >> {log}\n"
+            )
+            noctalia.chmod(noctalia.stat().st_mode | stat.S_IEXEC)
+            env = os.environ | {"PATH": f"{binary}:{os.environ['PATH']}"}
+            with patch.dict(os.environ, env, clear=False), patch("sys.stderr", io.StringIO()) as err:
+                state.update(seed_path, target)
+            self.assertIn("noctalia: cli", err.getvalue())
+            self.assertTrue(log.exists())
+            self.assertIn("theme-mode-set", log.read_text())
+            self.assertIn("color-scheme-set", log.read_text())
+
     def test_niri_color_include_is_optional(self):
         core = (ROOT / "modules/home/niri/core.nix").read_text()
         effects = (ROOT / "modules/home/niri/effects.nix").read_text()
@@ -64,3 +108,12 @@ port = "9191"
         self.assertIn("optional = true", core)
         self.assertNotIn('include "noctalia.kdl"', effects)
         self.assertIn("validated-config-for", effects)
+
+    def test_kdeconnect_refresh_modes_are_wired(self):
+        hook = os.environ.get("KDECONNECT_NM_HOOK")
+        exec_start = os.environ.get("KDECONNECT_REFRESH_EXEC")
+        if not hook or not exec_start:
+            self.skipTest("generated KDE Connect units are supplied by the configuration check")
+        self.assertIn("always", Path(hook).read_text())
+        self.assertIn("runuser", Path(hook).read_text())
+        self.assertIn("if-unreachable", exec_start)
