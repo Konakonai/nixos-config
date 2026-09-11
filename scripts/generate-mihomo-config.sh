@@ -27,11 +27,23 @@ install -d -m 700 "$dir"
 
 tmp=$(mktemp "$dir/$(basename "$dest").tmp.XXXXXX")
 scratch=$(mktemp -d "$dir/validate.XXXXXX")
+marker="$dir/last-validation"
 cleanup() {
   rm -f "$tmp"
   rm -rf "$scratch"
 }
 trap cleanup EXIT
+
+record_validation() {
+  result=$1
+  kept=$2
+  {
+    printf 'time=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    printf 'result=%s\n' "$result"
+    printf 'kept_previous=%s\n' "$kept"
+  } > "$marker"
+  chmod 600 "$marker"
+}
 
 cat "$before" "$proxies" "$after" > "$tmp"
 chmod 600 "$tmp"
@@ -50,11 +62,14 @@ if ! timeout --signal=TERM --kill-after=2s "$validate_timeout" \
 then
   echo "Generated Mihomo configuration failed validation; keeping the last usable file." >&2
   if [ -s "$dest" ]; then
+    record_validation failed yes
     exit 0
   fi
+  record_validation failed no
   exit 1
 fi
 
 mv "$tmp" "$dest"
+record_validation ok no
 trap - EXIT
 rm -rf "$scratch"

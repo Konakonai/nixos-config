@@ -78,6 +78,7 @@ fi
             "mixed-port: 7890\nproxies: []\nrules:\n- MATCH,DIRECT\n",
         )
         self.assertEqual(self.dest.stat().st_mode & 0o777, 0o600)
+        self.assertIn("result=ok", self.marker().read_text())
         trace = self.trace.read_text()
         self.assertIn("validated:", trace)
         self.assertNotEqual(self.dest.as_posix(), trace.split("validated:")[-1].strip())
@@ -101,6 +102,13 @@ fi
         self.assertFalse(self.dest.exists())
         self.assertIn("keeping the last usable file", result.stderr)
         self.assertFalse(list(self.dest.parent.glob("config.yaml.tmp.*")) if self.dest.parent.exists() else [])
+        text = self.marker().read_text()
+        self.assertIn("result=failed", text)
+        self.assertIn("kept_previous=no", text)
+        self.assertNotIn("proxies", text)
+
+    def marker(self):
+        return self.dest.parent / "last-validation"
 
     def test_validation_failure_keeps_previous_file_without_failing_switch(self):
         self.assertEqual(self.generate().returncode, 0)
@@ -111,6 +119,11 @@ fi
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.dest.read_text(), previous)
         self.assertIn("keeping the last usable file", result.stderr)
+        text = self.marker().read_text()
+        self.assertIn("result=failed", text)
+        self.assertIn("kept_previous=yes", text)
+        self.assertNotIn("INVALID", text)
+        self.assertNotIn("proxies", text)
 
     def test_validator_timeout_keeps_previous_file(self):
         self.assertEqual(self.generate().returncode, 0)
