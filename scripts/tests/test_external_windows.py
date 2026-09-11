@@ -39,6 +39,9 @@ class ExternalWindowsTest(unittest.TestCase):
             "VM_RUNNING": "0",
             "UNMOUNT_FAIL": "0",
             "KEEP_MOUNTED": "0",
+            "LSBLK_COUNT": str(self.root / "lsblk.count"),
+            "INSERT_MOUNT_ON": "0",
+            "REMOUNT_ON_START": "0",
         }
         self._install_fakes()
 
@@ -50,6 +53,16 @@ class ExternalWindowsTest(unittest.TestCase):
             "lsblk",
             r'''
 echo "lsblk $*" >> "$TRACE"
+count_file="${LSBLK_COUNT:-/tmp/lsblk.count}"
+count=0
+if [ -f "$count_file" ]; then
+  count=$(cat "$count_file")
+fi
+count=$((count + 1))
+printf '%s\n' "$count" > "$count_file"
+if [ "${INSERT_MOUNT_ON:-0}" != 0 ] && [ "$count" = "${INSERT_MOUNT_ON:-0}" ]; then
+  printf '%s\n' "/dev/sdb1" >> "$MOUNTS"
+fi
 if [ "${LSBLK_FAIL:-0}" = 1 ]; then
   exit 1
 fi
@@ -107,6 +120,10 @@ while [ $# -gt 0 ]; do
       exit 0
       ;;
     start)
+      echo "START-ATTEMPT $2" >> "$TRACE"
+      if [ "${REMOUNT_ON_START:-0}" = 1 ]; then
+        printf '%s\n' "/dev/sdb1" >> "$MOUNTS"
+      fi
       if [ "${VIRSH_START_FAIL:-0}" = 1 ]; then
         exit 1
       fi
@@ -187,6 +204,19 @@ done
         self.assertTrue(self.viewed(trace))
         self.assertNotIn(" start ", trace)
         self.assertIn("virt-viewer --connect qemu:///system --wait --reconnect external-windows-11", trace)
+
+    def test_remount_between_probes_does_not_start_vm(self):
+        result, trace = self.run_launcher(INSERT_MOUNT_ON="3")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(self.started(trace))
+        self.assertNotIn("START-ATTEMPT", trace)
+
+    def test_start_failure_after_remount_does_not_retry_start(self):
+        result, trace = self.run_launcher(VIRSH_START_FAIL="1", REMOUNT_ON_START="1")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual(trace.count("START-ATTEMPT"), 1)
+        self.assertFalse(self.started(trace))
+        self.assertIn("still mounted", result.stderr + trace)
 
     def test_unmounted_idle_guest_starts_then_opens_viewer(self):
         result, trace = self.run_launcher()

@@ -7,6 +7,7 @@ disk=${EXTERNAL_WINDOWS_DISK:?}
 connection=${EXTERNAL_WINDOWS_CONNECTION:-qemu:///system}
 
 fail() {
+  echo "$1" >&2
   notify-send --urgency=critical "External Windows" "$1" || true
   zenity --error --title="External Windows" --text="$1" || true
   exit 1
@@ -60,7 +61,18 @@ if [[ -n "$mounted" ]]; then
   fail "A Windows disk partition is still mounted. The VM was not started."
 fi
 
-virsh --connect "$connection" start "$domain" ||
+# Probe again immediately before start: udisks can remount after the previous check.
+require_disk_state
+if [[ -n "$mounted" ]]; then
+  fail "A Windows disk partition is still mounted. The VM was not started."
+fi
+
+if ! virsh --connect "$connection" start "$domain"; then
+  require_disk_state
+  if [[ -n "$mounted" ]]; then
+    fail "A Windows disk partition is still mounted. The VM was not started."
+  fi
   fail "libvirt could not start $domain. Open Virtual Machine Manager for details."
+fi
 
 exec virt-viewer --connect "$connection" --wait --reconnect "$domain"
