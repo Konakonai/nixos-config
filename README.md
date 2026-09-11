@@ -1,94 +1,94 @@
 # lilya's NixOS configuration
 
-## Agent Notice
+个人 ThinkBook 的 Nix Flakes + Home Manager 配置，同时提供 **Niri + Noctalia** 和 **Plasma Wayland**。当前默认登录会话为 `plasma-hdr`；这个名称本身不保证 HDR 已开启。
 
-If you are an automated coding agent working in this repository, read
-`AGENTS.md` before making changes. It defines the required workflow,
-verification, commit, and push rules for this machine configuration.
+自动化修改请先读 [AGENTS.md](AGENTS.md)。最新深入审计与后续实施计划见 [配置改进计划](docs/configuration-improvement-plan-2026-09-12.md)。计划中的改动尚未实施；较早的 [2026-09-11 审计](docs/configuration-audit-2026-09-11.md) 仅作历史记录。
 
-Personal NixOS + Home Manager configuration for a light niri desktop.
+## 入口与目录
 
-## Layout
+```text
+flake.nix                         inputs、overlay、NixOS 与 checks 输出
+configuration.nix                 系统入口
+home.nix                          Home Manager 入口
+hardware-configuration.nix        文件系统与基础硬件配置
+hosts/lilya-thinkbook/             主机、用户、设备与路径事实
+modules/system/                   系统模块；user.nix 管理系统账号
+modules/home/                     应用、桌面和用户服务
+modules/shared/                   共享主题参数
+pkgs/                             本地包与兼容包装
+scripts/                          更新、状态迁移和缓存脚本
+scripts/tests/                    回归测试
+checks/                           Flake 检查定义
+assets/、patches/                 静态资源与上游补丁
+```
 
-- `configuration.nix`: thin NixOS entry point for the host hardware module and system state version.
-- `home.nix`: thin Home Manager entry point for the user identity and home state version.
-- `modules/system/default.nix`: explicit system-module aggregator.
-- `modules/home/default.nix`: explicit Home Manager module aggregator.
-- `modules/system/`: NixOS system modules.
-- `modules/home/`: Home Manager modules for applications, desktop tools, shells, and user services.
-- `modules/home/apps/`: browser, desktop-application, and messaging package groups.
-- `modules/system/services/`: system daemons, including the OpenList server.
-- `modules/home/services/`: user-session services and mounts, including OpenList WebDAV.
-- `modules/home/desktop/`: desktop entries, MIME defaults, Zed, media playback defaults, and font aliases.
-- `modules/system/display/`: Niri/Plasma login sessions, SDDM, console, portals, and desktop service glue.
-- `modules/system/power/`: base power services and device udev rules. Charging thresholds are controlled through Noctalia/UPower.
-- `modules/system/virtualization.nix`: libvirt/virt-manager and the external Windows whole-disk VM launcher.
-- `modules/home/theme/`: GTK, Qt, cursor, Xresources, dconf, Flatpak theme integration, and custom Fcitx/Rime icon wiring.
-- `modules/home/niri/`: niri core settings, visual effects, and focused keybinding groups.
-- `modules/shared/`: values shared by NixOS and Home Manager, currently the theme design tokens.
-- `modules/`: contains only the `system`, `home`, and `shared` layers.
-- `hosts/lilya-thinkbook/`: machine-specific display, GPU, power, user path, and service state locations.
-- `pkgs/default.nix`: the single local package-set entry point consumed through `pkgs.lilya`.
-- `pkgs/`: small local package definitions and wrappers; binary sources are fetched with pinned hashes.
+`modules/system/default.nix` 和 `modules/home/default.nix` 显式组织模块。当前是单机仓库，未设置自建 `lib/`；通用操作直接使用 Nixpkgs / Home Manager 的库，局部辅助函数就近定义。
 
-## Reproducing this machine
+## 使用与验证
 
-`main` is the exact ThinkBook profile. It expects the host facts declared in
-`hosts/lilya-thinkbook`, including NVIDIA/Intel bus IDs, display
-identities, and the external Windows USB disk.
+从仓库目录执行：
 
-The Nix store build is reproducible from the repository and `flake.lock`, but a
-fully working user session also needs these external state files restored:
+```bash
+# 求值，不更新 lock、不构建系统
+nix flake check --no-build --no-update-lock-file
 
-- `/home/lilya/.config/age/mihomo.txt`: agenix identity used to decrypt tracked machine secrets.
-- `/home/lilya/.config/antigravity/brave-search.env`: Brave Search API key used by the Antigravity MCP server.
-- `/home/lilya/.config/openlist/`: OpenList runtime config and database.
-- `/home/lilya/.config/rclone/rclone.conf`: WebDAV mount credentials.
+# 运行脚本回归与 portal 检查
+nix build .#checks.x86_64-linux.configuration .#checks.x86_64-linux.portal --no-link
 
-Display layout is applied in the login and niri sessions from stable monitor
-identity data rather than DRM connector names, which may change across hybrid
-GPU boot paths. The SDDM display layout is managed separately by KWin.
+# 示例：只构建一个本地包
+nix build .#nixosConfigurations.nixos.pkgs.lilya.qoder --no-link
 
-## Maintenance
+# 应用当前配置；由用户执行
+rebuild
+```
 
-Charging thresholds and normal power profiles are controlled through Noctalia
-and UPower/power-profiles-daemon. There is no custom battery-saver boot profile.
-In battery power-saver mode, a D-Bus driven service disables Intel turbo and
-restores the prior setting when leaving that mode. Screen brightness is not changed.
-Automatic suspend remains disabled by choice; it is not scheduled for further repair.
+还提供 `testbuild`（`nh os test`）。这会实际切换当前运行配置用于测试，不是只读检查。当前没有顶层 `packages` 输出，因此 `.#packages.x86_64-linux.<name>` 不是本仓库的包构建入口。
 
-The daily `codex-update` timer is retained. It checks releases first, updates
-sources in a temporary detached Git worktree, evaluates the configuration, and
-builds only Codex Desktop and CLI. It fast-forwards the original branch only if
-that checkout is still clean and unchanged. It commits locally without applying
-the system or pushing; run `rebuild` to activate the update. The command can also
-be run manually. Logs are in `~/.local/state/codex-update/update.log`.
-The Codex and Flatpak scheduled update services only start on AC power. A run
-skipped on battery waits for the next scheduled activation; connecting AC does
-not immediately launch it. This does not interrupt an update already in progress.
+`checks` 覆盖部分脚本行为和 portal 选项契约；不等于全系统构建、图形会话测试、真实磁盘测试或所有应用配置的验证。运行前应查看检查输出，确认实际执行的目标。
 
-See [the configuration audit](docs/configuration-audit-2026-09-11.md) for removed
-workarounds, retained behavior, and the remaining hardware validation work.
+## 配置与外部状态
 
-## External Windows VM
+`flake.lock` 固定 Nix 输入，本地下载包固定源哈希。完整用户会话仍依赖不在 Git 中的状态：
 
-The application menu entry **External Windows 11** starts the Windows
-installation on the aigo U397 through KVM/libvirt. The launcher identifies the
-disk by its USB serial, unmounts only that disk's mounted partitions, refuses
-to start if any remain mounted, and then opens a SPICE console.
+| 状态 | 用途 |
+|---|---|
+| `~/.config/age/mihomo.txt` | 解密仓库内 age 密文的身份文件 |
+| `~/.config/antigravity/brave-search.env` | Brave Search API 凭据 |
+| `~/.config/openlist/` | OpenList 配置与数据库 |
+| `~/.config/rclone/rclone.conf` | WebDAV 挂载凭据 |
+| 浏览器 profile、应用账号、用户数据 | 会话和数据恢复 |
+| libvirt NVRAM / TPM 状态、外接 Windows 磁盘 | 虚拟机持续身份与系统数据 |
 
-After first enabling this module, log out and back in (or reboot) so the user
-session receives membership in the `libvirtd` group. Shut Windows down inside
-the guest before unplugging the disk or booting it natively. Do not mount its
-NTFS partitions in Linux while the VM is running. Netflix 4K and HDCP still
-need native Windows boot and the physical NVIDIA/display path.
+这些文件应单独备份恢复，不要将明文凭据提交到仓库。Git 配置、已构建包和 `/run/current-system` 是不同状态，不能用提交成功推断已经生效。
 
-On the first virtual boot, open the `SPICE_TOOLS` CD in Windows and run
-`Install-Guest-Tools.cmd` as Administrator. Restart Windows afterward. The
-QXL driver and SPICE agent provide dynamic resolution, clipboard integration,
-and substantially smoother window resizing.
+### 用户配置由谁管理
 
-The windowed VM intentionally does not expose nested VMX. Hyper-V and WSL2
-remain available when Windows is booted natively, but cannot run inside this
-VM; exposing nested VMX makes this removable Windows installation hang while
-starting Windows Boot Manager.
+| 对象 | 当前管理方式 |
+|---|---|
+| Niri 主配置、主题资源、MIME | Nix 持续管理 |
+| Noctalia `config.toml` | 首次创建；已有文件保留 |
+| Noctalia `settings.toml` | GUI 覆盖；激活脚本同步部分 Nix 管理字段 |
+| Zed `settings.json` | 首次种子，后续由应用/用户修改 |
+| LibreOffice 工具栏 | 激活时补充未配置的初始值 |
+| Dolphin / Plasma 部分键 | 激活时重新写入指定值 |
+| Flatpak 应用和 Noctalia 插件 | 运行时安装/更新，不由 flake.lock 固定其实际版本 |
+
+`config-dump noctalia` 导出合并后的用户配置；`config-drift noctalia` 与仓库种子按解析后的值比较，返回码 1 表示存在差异，不必然是错误。Zed 的这两个工具当前使用 `jq`，只支持严格 JSON；带注释的用户设置支持待改进。
+
+`config-repair noctalia-templates` 请求应用模板。Niri 当前依赖 Noctalia 生成的 `noctalia.kdl`，干净目录缺少该文件时的启动问题已写入计划，尚未修复。
+
+## 更新与服务
+
+- `codex-update` 每日检查上游，使用临时 Git worktree 构建 Desktop/CLI，通过检查后仅在主工作区未变化时快进并本地提交。它不自动推送或执行 `rebuild`；日志位于 `~/.local/state/codex-update/update.log`。
+- Codex 定时服务有接电条件。Flatpak 每周定时器实际启动 `flatpak-managed-install-timer.service`；目前接电条件仅加在手动服务上，尚不能保证每周更新只在接电时运行。
+- Flatpak 已关闭激活/登录时的自动安装，因此声明新增应用后，`rebuild` 本身不负责立即下载安装。接电后可按需执行 `systemctl --user start flatpak-managed-install.service`，或等待每周任务。
+- Mihomo 使用 age 密文生成 `/run/mihomo/config.yaml`，再通过 systemd credential 提供给守护进程。规则变化到进程重启的传播契约仍需完善，不应仅凭 `rebuild` 成功认定新规则已加载。
+- 正常功耗策略由 power-profiles-daemon / UPower 管理；电池且省电模式时，单独服务禁用 Intel turbo，退出条件满足时恢复原值。自动休眠的既有规避配置保留。
+
+## 外接 Windows 虚拟机
+
+菜单中的 **External Windows 11** 使用指定 USB 磁盘运行 KVM/libvirt 来宾。当前启动器先检查磁盘、尝试卸载已挂载分区，再启动并打开 SPICE 窗口；检查命令失败时的处理尚不完善，详见计划，不能把它视为严格的磁盘互斥保证。
+
+首次启用 `libvirtd` 用户组后需重新登录。首次虚拟启动可在 Windows 内以管理员身份运行 `SPICE_TOOLS` 光盘中的 `Install-Guest-Tools.cmd`，随后重启来宾，以使用动态分辨率与剪贴板。
+
+先在来宾内关闭 Windows，再拔盘或原生启动；运行期间不要在宿主挂载该盘的文件系统。当前禁用来宾 VMX 暴露，虚拟机内不提供 Hyper-V/WSL2 的嵌套虚拟化路径。NVRAM、TPM 状态和 Windows 数据不应作为可随意删除的生成缓存处理。
