@@ -6,7 +6,14 @@ let
   python = pkgs.python3.withPackages (ps: [ ps.tomlkit ps.pyyaml ]);
   domainXml = builtins.head config.systemd.services.external-windows-libvirt-domain.restartTriggers;
   vcpus = toString hostProfile.virtualization.externalWindows.vcpus;
+  flatpakTimer = home.systemd.user.timers."flatpak-managed-install-timer";
+  flatpakTimerUnit = lib.removeSuffix ".service" flatpakTimer.Timer.Unit;
+  flatpakTimerService = home.systemd.user.services.${flatpakTimerUnit};
 in
+assert flatpakTimer.Timer.Unit == "flatpak-managed-install-timer.service";
+assert flatpakTimerService.Unit.ConditionACPower == true;
+assert home.systemd.user.services.flatpak-managed-install.Unit.ConditionACPower == true;
+assert !(flatpakTimer.Timer ? ConditionACPower);
 {
   configuration = pkgs.runCommand "configuration-regressions" {
     nativeBuildInputs = [ python pkgs.bash pkgs.coreutils pkgs.git pkgs.jq pkgs.util-linux ];

@@ -188,4 +188,5 @@ in
   systemd.user.services.flatpak-managed-install.Install.WantedBy =
     lib.mkForce [ ];
   systemd.user.services.flatpak-managed-install.Unit.ConditionACPower = true;
+  systemd.user.services.flatpak-managed-install-timer.Unit.ConditionACPower = true;
 }
