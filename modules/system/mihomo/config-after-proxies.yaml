@@ -48,6 +48,28 @@ proxy-groups:
   - TW-IPv6-P1-3
   - TW-IPv6-P1-4
   type: select
+- name: Grok
+  proxies:
+  - JP-Dedicated-B1-1
+  - JP-Dedicated-B1-2
+  - JP-Dedicated-B1-3
+  - JP-Dedicated-B1-4
+  - TW Fixed IP
+  - US Fixed IP
+  - US-Dedicated-B1-1
+  - US-Dedicated-B1-2
+  - US-Dedicated-B1-3
+  - US-Dedicated-B1-4
+  - TW-IPv6-P1-1
+  - TW-IPv6-P1-2
+  - TW-IPv6-P1-3
+  - TW-IPv6-P1-4
+  - IN-NexIP-Sticky
+  - IN-NexIP-Rotating
+  - Auto
+  - Express
+  - DIRECT
+  type: select
 - name: Streaming
   proxies:
   - Netflix
@@ -572,8 +594,9 @@ rules:
 - DOMAIN-SUFFIX,cohere.ai,Research + AI
 - DOMAIN-SUFFIX,cohere.com,Research + AI
 - DOMAIN-SUFFIX,groq.com,Research + AI
-- DOMAIN-SUFFIX,x.ai,Research + AI
-- DOMAIN-SUFFIX,grok.com,Research + AI
+- DOMAIN-SUFFIX,x.ai,Grok
+- DOMAIN-SUFFIX,grok.com,Grok
+- DOMAIN-SUFFIX,xai.com,Grok
 - DOMAIN-SUFFIX,cursor.com,Research + AI
 - DOMAIN-SUFFIX,cursor.sh,Research + AI
 - DOMAIN-SUFFIX,cursorapi.com,Research + AI
