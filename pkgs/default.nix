@@ -26,6 +26,7 @@ in
   codex-desktop = pkgs.callPackage ./codex-desktop.nix { inherit inputs; };
   eden = pkgs.callPackage ./eden.nix { };
   file-roller-wayland = fileRollerWayland;
+  grok = pkgs.callPackage ./grok.nix { };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
   localsend-no-csd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";

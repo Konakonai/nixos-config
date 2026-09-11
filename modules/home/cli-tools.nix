@@ -24,5 +24,7 @@
     wl-clipboard
     hyprsunset
     wlsunset
+
+    lilya.grok
   ];
 }
