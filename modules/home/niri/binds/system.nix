@@ -2,7 +2,7 @@
 
 let
   killFocusedWindow = pkgs.writeShellScript "niri-kill-focused-window" ''
-    pid="$(${pkgs.niri}/bin/niri msg -j focused-window | ${pkgs.jq}/bin/jq -r '.pid // empty')"
+    pid="$(${config.programs.niri.package}/bin/niri msg -j focused-window | ${pkgs.jq}/bin/jq -r '.pid // empty')"
 
     case "$pid" in
       ""|*[!0-9]*) exit 0 ;;

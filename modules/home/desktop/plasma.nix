@@ -193,13 +193,6 @@
     };
   };
 
-  home.packages = [
-    pkgs.klassy
-    pkgs.colloid-icon-theme
-    pkgs.catppuccin-cursors.frappeLavender
-    pkgs.adw-gtk3
-  ];
-
   # Both Dolphin and Plasma update KDE service metadata. Rebuild the shared
   # cache once after both activation steps instead of doing the same full scan
   # twice on every boot and rebuild.

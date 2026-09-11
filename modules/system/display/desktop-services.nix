@@ -33,7 +33,7 @@
         "org.freedesktop.udisks2.filesystem-unmount-others"
       ];
 
-      if (subject.isInGroup("wheel") && localStorageActions.indexOf(action.id) >= 0) {
+      if (subject.local && subject.active && subject.isInGroup("wheel") && localStorageActions.indexOf(action.id) >= 0) {
         return polkit.Result.YES;
       }
     });
@@ -58,7 +58,8 @@
         "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
       };
       niri = {
-        default = [ "gtk" ];
+        default = [ "gnome" "gtk" ];
+        "org.freedesktop.impl.portal.ScreenCast" = [ "gnome" ];
         "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
       };
       kde = {

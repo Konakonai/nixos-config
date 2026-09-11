@@ -127,7 +127,7 @@ let
         <smm state='on'/>
       </features>
       <cpu mode='host-passthrough' check='none' migratable='off'>
-        <topology sockets='1' dies='1' cores='8' threads='1'/>
+        <topology sockets='1' dies='1' cores='${toString cfg.vcpus}' threads='1'/>
         <!-- Windows Hyper-V/WSL2 deadlocks during boot when nested VMX is exposed
              through this removable whole-disk guest. Native boots are unaffected. -->
         <feature policy='disable' name='vmx'/>

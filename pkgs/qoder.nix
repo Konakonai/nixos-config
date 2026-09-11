@@ -9,6 +9,12 @@ let
     hash = "sha256-QAWpWI4TQKJm+a6hA2AOybYRSFzGYg2rgjk4Q7scylY=";
   };
 
+  seedBundleCache = pkgs.writeShellApplication {
+    name = "qoder-bundle-cache";
+    runtimeInputs = [ pkgs.coreutils pkgs.util-linux ];
+    text = builtins.readFile ../scripts/qoder-bundle-cache.sh;
+  };
+
   runtimeLibs = with pkgs; [
     alsa-lib
     atk
@@ -107,7 +113,7 @@ pkgs.stdenvNoCC.mkDerivation {
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath runtimeLibs}" \
       --set-default ELECTRON_OZONE_PLATFORM_HINT auto \
       --set-default NIXOS_OZONE_WL 1 \
-      --run 'bundle_cache="$HOME/.qoder/plugins/cache/qoder-bundler"; if [ ! -e "$bundle_cache" ]; then ${pkgs.coreutils}/bin/mkdir -p "$bundle_cache"; ${pkgs.coreutils}/bin/cp -R "${placeholder "out"}/share/qoder/resources/app/resources/plugins/bundle-plugins/." "$bundle_cache/"; fi; ${pkgs.coreutils}/bin/chmod -R u+w "$bundle_cache"' \
+      --run '${lib.getExe seedBundleCache} "${placeholder "out"}/share/qoder/resources/app/resources/plugins/bundle-plugins" "$HOME/.qoder/plugins/cache/qoder-bundler" || exit $?' \
       --add-flags "--no-sandbox"
 
     runHook postInstall

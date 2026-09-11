@@ -1,8 +1,6 @@
-{ pkgs, ... }:
+{ ... }:
 
 {
-  fonts.packages = [ pkgs.noto-fonts-cjk-sans ];
-
   services.kmscon = {
     enable = true;
     useXkbConfig = true;

@@ -34,7 +34,7 @@ in
     ${writeDolphinConfig "IconsMode" "IconSize" "48"}
     ${writeDolphinConfig "IconsMode" "PreviewSize" "64"}
     ${writeDolphinConfig "IconsMode" "UseSystemFont" "false"}
-    ${writeDolphinConfig "IconsMode" "ViewFont" "Noto Sans CJK SC,10,-1,5,50,0,0,0,0,0"}
+    ${writeDolphinConfig "IconsMode" "ViewFont" "${lilyaTheme.fonts.sans},${toString (lilyaTheme.fonts.size - 1)},-1,5,50,0,0,0,0,0"}
     ${writeDolphinConfig "IconsMode" "TextWidthIndex" "1"}
     ${writeDolphinConfig "IconsMode" "MaximumTextLines" "2"}
 

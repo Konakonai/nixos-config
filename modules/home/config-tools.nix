@@ -4,12 +4,26 @@ let
   defaultsDir = "${config.xdg.dataHome}/nixos-config/defaults";
   configDrift = pkgs.writeShellApplication {
     name = "config-drift";
-    runtimeInputs = [ pkgs.coreutils pkgs.diffutils pkgs.jq ];
+    runtimeInputs = [ pkgs.coreutils pkgs.diffutils pkgs.jq pkgs.python3 config.programs.noctalia.package ];
     text = ''
       case "''${1:-}" in
         noctalia)
-          diff -u "${defaultsDir}/noctalia-config.toml" \
-            "${config.xdg.configHome}/noctalia/config.toml"
+          current="$(mktemp)"
+          default="$(mktemp)"
+          trap 'rm -f "$current" "$default"' EXIT
+          noctalia config export merged > "$current"
+          # Compare parsed values: serialization order and comments are irrelevant.
+          python3 - "${defaultsDir}/noctalia-config.toml" "$current" "$default" <<'PYTHON'
+import json
+from pathlib import Path
+import sys
+import tomllib
+seed, current, default = map(Path, sys.argv[1:])
+for source, target in ((seed, default), (current, current)):
+    data = tomllib.loads(source.read_text())
+    target.write_text(json.dumps(data, sort_keys=True, indent=2, ensure_ascii=False) + "\n")
+PYTHON
+          diff -u "$default" "$current"
           ;;
         zed)
           current="$(mktemp)"
@@ -28,11 +42,11 @@ let
   };
   configDump = pkgs.writeShellApplication {
     name = "config-dump";
-    runtimeInputs = [ pkgs.coreutils pkgs.jq ];
+    runtimeInputs = [ pkgs.coreutils pkgs.jq config.programs.noctalia.package ];
     text = ''
       case "''${1:-}" in
         noctalia)
-          cat "${config.xdg.configHome}/noctalia/config.toml"
+          noctalia config export merged
           ;;
         zed)
           jq -S . "${config.xdg.configHome}/zed/settings.json"

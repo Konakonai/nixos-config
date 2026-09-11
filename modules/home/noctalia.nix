@@ -340,85 +340,8 @@ in
     state_file="''${XDG_STATE_HOME:-$HOME/.local/state}/noctalia/settings.toml"
 
     if [ -f "$state_file" ]; then
-      ${noctaliaConfigMigrationPython}/bin/python3 - "$state_file" <<'PY'
-import pathlib
-import sys
-
-import tomlkit
-
-path = pathlib.Path(sys.argv[1])
-document = tomlkit.parse(path.read_text())
-
-theme = document.setdefault("theme", tomlkit.table())
-theme["mode"] = "${lilyaTheme.theme.mode}"
-theme["source"] = "${lilyaTheme.theme.source}"
-theme["custom_palette"] = "${lilyaTheme.theme.paletteName}"
-
-bar = document.setdefault("bar", tomlkit.table()).setdefault("main", tomlkit.table())
-bar["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPanels}
-bar["reserve_space"] = False
-bar["capsule"] = False
-for key in ("capsule_fill", "capsule_radius", "capsule_opacity", "capsule_border"):
-    bar.pop(key, None)
-
-dock = document.setdefault("dock", tomlkit.table())
-dock["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaDock}
-dock["reserve_space"] = False
-dock.pop("monitors", None)
-
-notification = document.setdefault("notification", tomlkit.table())
-notification["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPopups}
-
-osd = document.setdefault("osd", tomlkit.table())
-osd["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPopups}
-
-shell = document.setdefault("shell", tomlkit.table())
-shell.setdefault("panel", tomlkit.table())["transparency_mode"] = "${lilyaTheme.noctalia.panelTransparencyMode}"
-shell.setdefault("shadow", tomlkit.table())["alpha"] = ${builtins.toString lilyaTheme.shadow.alpha}
-
-backdrop = document.setdefault("backdrop", tomlkit.table())
-backdrop["enabled"] = False
-backdrop["blur_intensity"] = ${builtins.toString lilyaTheme.effects.backdropBlur}
-backdrop["tint_intensity"] = ${builtins.toString lilyaTheme.effects.backdropTint}
-
-lockscreen = document.setdefault("lockscreen", tomlkit.table())
-lockscreen["blur_intensity"] = ${builtins.toString lilyaTheme.effects.lockscreenBlur}
-lockscreen["tint_intensity"] = ${builtins.toString lilyaTheme.effects.lockscreenTint}
-lockscreen.pop("monitors", None)
-
-lockscreen_widgets = document.get("lockscreen_widgets", {}).get("widget", {})
-for widget in lockscreen_widgets.values():
-    settings = widget.get("settings")
-    if settings is not None:
-        settings["background_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPopups}
-        settings["input_opacity"] = ${builtins.toString lilyaTheme.opacity.noctaliaPopups}
-
-plugins = document.setdefault("plugins", tomlkit.table())
-plugins["auto_update"] = "all"
-for source in plugins.get("source", []):
-    source.pop("auto_update", None)
-
-enabled = plugins.setdefault("enabled", tomlkit.array())
-if "mdj2812/mihomo-control" not in enabled:
-    enabled.append("mdj2812/mihomo-control")
-
-plugin_settings = document.setdefault("plugin_settings", tomlkit.table())
-mihomo = plugin_settings.setdefault("mdj2812/mihomo-control", tomlkit.table())
-defaults = {
-    "host": "127.0.0.1",
-    "port": "9090",
-    "secret": "",
-    "use_https": False,
-    "allow_insecure_tls": False,
-    "test_url": "https://www.gstatic.com/generate_204",
-    "refresh_interval": 2,
-    "panel_placement": "floating",
-}
-for key, value in defaults.items():
-    mihomo.setdefault(key, value)
-
-path.write_text(tomlkit.dumps(document))
-PY
+      ${noctaliaConfigMigrationPython}/bin/python3 ${../../scripts/reconcile-noctalia.py} \
+        ${noctaliaSeed} "$state_file"
     fi
   '';
 

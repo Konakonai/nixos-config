@@ -38,8 +38,6 @@ in
 
     adwaita-icon-theme
     tela-icon-theme
-    adw-gtk3
-    klassy
     lilya.mactahoe-kde
     qadwaitadecorations-qt6
     kdePackages.dolphin

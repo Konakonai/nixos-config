@@ -5,7 +5,6 @@
     aria2
     zip
     sshfs
-    jq
     python3Packages.ddgs
     nh
     nvd

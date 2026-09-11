@@ -30,7 +30,7 @@ in
 
     trusted-users = [
       "root"
-      "lilya"
+      hostProfile.user.userName
     ];
 
     trusted-public-keys = [

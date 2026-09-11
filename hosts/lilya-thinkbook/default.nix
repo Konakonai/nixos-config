@@ -35,7 +35,7 @@ in
   graphics.nvidia = {
     enable = true;
     intelBusId = "PCI:0:2:0";
-    nvidiaBusId = "PCI:1:0:0";
+    pci = { bus = 1; device = 0; function = 0; };
   };
 
   kernel.blacklistedModules = [

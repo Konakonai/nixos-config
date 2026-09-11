@@ -11,7 +11,7 @@ stdenvNoCC.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "vinceliuice";
     repo = "MacTahoe-kde";
-    rev = "main";
+    rev = "cbf6a1f71b591d143184855d62f6272ce533e7c3";
     hash = "sha256-atdHgr9pCfg/VE8GGWF+4MZu6nRmVCz9TiylVATAwzs=";
   };
 

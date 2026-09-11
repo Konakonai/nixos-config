@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, hostProfile, lib, ... }:
 
 let
   refreshOpenList = pkgs.writeShellScriptBin "refresh-openlist" ''
@@ -12,7 +12,7 @@ let
     systemctl="${pkgs.systemd}/bin/systemctl"
 
     path="''${1:-/quark}"
-    data_dir="$HOME/.config/openlist"
+    data_dir=${lib.escapeShellArg hostProfile.services.openlistDataDir}
 
     token="$("$openlist" admin token --data "$data_dir" 2>/dev/null | "$sed" -n 's/^Admin token: //p' | "$tail" -n 1)"
     if [ -z "$token" ]; then

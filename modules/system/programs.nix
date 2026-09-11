@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ lib, pkgs, hostProfile, ... }:
 
 let
   askPass = lib.getExe' pkgs.kdePackages.ksshaskpass "ksshaskpass";
@@ -8,7 +8,9 @@ in
 
   programs.steam = {
     enable = true;
-    package = pkgs.millennium-steam;
+    package = pkgs.millennium-steam.override {
+      extraEnv.FONTCONFIG_FILE = "${hostProfile.user.homeDirectory}/.config/fontconfig/steam.conf";
+    };
     extraPackages = with pkgs; [
       pulseaudio
     ];

@@ -28,7 +28,7 @@ in
         enableOffloadCmd = true;
       };
       intelBusId = nvidia.intelBusId;
-      nvidiaBusId = nvidia.nvidiaBusId;
+      nvidiaBusId = "PCI:${toString nvidia.pci.bus}:${toString nvidia.pci.device}:${toString nvidia.pci.function}";
     };
 
     package = nvidiaPackage;

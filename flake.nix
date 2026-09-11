@@ -59,7 +59,12 @@
     hostProfile = import ./hosts/lilya-thinkbook;
     lilyaTheme = import ./modules/shared/theme-settings.nix;
   in
-  {
+  rec {
+    checks.x86_64-linux = import ./checks {
+      inherit (nixosConfigurations.nixos) pkgs config;
+      inherit hostProfile;
+    };
+
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
 
