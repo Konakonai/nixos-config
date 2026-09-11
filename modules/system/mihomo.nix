@@ -33,6 +33,7 @@ in
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
+      TimeoutStartSec = "30s";
       UMask = "0077";
     };
     script = ''

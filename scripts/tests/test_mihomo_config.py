@@ -102,12 +102,28 @@ fi
         self.assertIn("keeping the last usable file", result.stderr)
         self.assertFalse(list(self.dest.parent.glob("config.yaml.tmp.*")) if self.dest.parent.exists() else [])
 
-    def test_validation_failure_keeps_previous_file(self):
+    def test_validation_failure_keeps_previous_file_without_failing_switch(self):
         self.assertEqual(self.generate().returncode, 0)
         previous = self.dest.read_text()
         self.after.write_text("INVALID\n")
         result = self.generate()
-        self.assertNotEqual(result.returncode, 0)
+        # Exit 0 so NixOS switch does not stop the running mihomo unit.
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.dest.read_text(), previous)
+        self.assertIn("keeping the last usable file", result.stderr)
+
+    def test_validator_timeout_keeps_previous_file(self):
+        self.assertEqual(self.generate().returncode, 0)
+        previous = self.dest.read_text()
+        hanging = self.bin / "mihomo"
+        hanging.write_text(
+            f"#!{shutil.which('bash')}\n"
+            'echo "mihomo $*" >> "$TRACE"\n'
+            "sleep 30\n"
+        )
+        hanging.chmod(0o755)
+        result = self.generate(MIHOMO_VALIDATE_TIMEOUT="1")
+        self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.dest.read_text(), previous)
         self.assertIn("keeping the last usable file", result.stderr)
 
