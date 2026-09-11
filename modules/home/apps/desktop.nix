@@ -1,4 +1,4 @@
-{ fcitxCompatEnv, inputs, lib, pkgs, ... }:
+{ inputs, lib, pkgs, ... }:
 
 let
   inherit (pkgs.lilya)
@@ -7,10 +7,8 @@ let
     file-roller-wayland
     localsend-no-csd
     nemo-with-extensions-wayland
-    qoder
     splayer
     ;
-  classin = pkgs.lilya.classin.override { inherit fcitxCompatEnv; };
   claude-desktop =
     inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs;
   fontMimeTypes = [
@@ -59,7 +57,6 @@ in
     bitwarden-desktop
     cc-switch
     claude-desktop
-    classin
     file-roller-wayland
     foliate
     gnome-font-viewer
@@ -74,7 +71,6 @@ in
     pavucontrol
     pear-desktop
     pwvucontrol
-    qoder
     resources
     splayer
     spotube

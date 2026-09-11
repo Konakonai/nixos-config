@@ -36,7 +36,7 @@ nix flake check --no-build --no-update-lock-file
 nix build .#checks.x86_64-linux.configuration .#checks.x86_64-linux.portal .#checks.x86_64-linux.niri-config .#checks.x86_64-linux.external-windows-cpu --no-link
 
 # 示例：只构建一个本地包
-nix build .#nixosConfigurations.nixos.pkgs.lilya.qoder --no-link
+nix build .#nixosConfigurations.nixos.pkgs.lilya.grok --no-link
 
 # 应用当前配置；由用户执行
 rebuild

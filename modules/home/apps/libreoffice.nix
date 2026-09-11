@@ -1,34 +1,21 @@
 { lib, pkgs, ... }:
 
 let
-  libreofficeGtkWayland = pkgs.symlinkJoin {
-    name = "libreoffice-gtk-wayland-${pkgs.libreoffice.version}";
-    paths = [ pkgs.libreoffice ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-
-    postBuild = ''
-      for program in libreoffice sbase scalc sdraw simpress smath soffice swriter; do
-        rm "$out/bin/$program"
-        makeWrapper "${pkgs.libreoffice}/bin/$program" "$out/bin/$program" \
-          --set GDK_BACKEND wayland \
-          --set SAL_USE_VCLPLUGIN gtk3
-      done
-    '';
-
-    meta = pkgs.libreoffice.meta;
-  };
-
   seedTabbedMode = app: ''
     if ! grep -Fq 'oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/${app}"' "$registry"; then
-      ${pkgs.perl}/bin/perl -0pi -e 's|</oor:items>|<item oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/${app}"><prop oor:name="Active" oor:op="fuse"><value>notebookbar.ui</value></prop></item>\n</oor:items>|' "$registry"
+      tmp="$(${pkgs.coreutils}/bin/mktemp "$registry.XXXXXX")"
+      ${pkgs.coreutils}/bin/cp "$registry" "$tmp"
+      ${pkgs.perl}/bin/perl -0pi -e 's|</oor:items>|<item oor:path="/org.openoffice.Office.UI.ToolbarMode/Applications/${app}"><prop oor:name="Active" oor:op="fuse"><value>notebookbar.ui</value></prop></item>\n</oor:items>|' "$tmp"
+      ${pkgs.coreutils}/bin/mv "$tmp" "$registry"
     fi
   '';
 in
 {
-  home.packages = [ libreofficeGtkWayland ];
+  home.packages = [ pkgs.lilya.libreoffice-gtk-wayland ];
 
   # Seed the Office-like tabbed interface once, while leaving later UI changes
-  # under LibreOffice's ownership.
+  # under LibreOffice's ownership. Edit a temp copy, then replace the registry
+  # so a crashed perl -i cannot leave a truncated file.
   home.activation.seedLibreOfficeTabbedUi = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     registry="$HOME/.config/libreoffice/4/user/registrymodifications.xcu"
     mkdir -p "$(dirname "$registry")"

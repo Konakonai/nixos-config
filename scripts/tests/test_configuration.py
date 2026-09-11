@@ -3,7 +3,6 @@
 import importlib.util
 import os
 from pathlib import Path
-import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -57,29 +56,6 @@ port = "9191"
                     state.update(Path(os.environ["NOCTALIA_SEED"]), target)
             self.assertEqual(target.read_text(), "# original\n")
             self.assertEqual(list(Path(directory).iterdir()), [target])
-
-    def test_qoder_refresh_preserves_previous_cache(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            cache = root / "cache"
-            script = ROOT / "scripts/qoder-bundle-cache.sh"
-            for version in ("v1", "v2"):
-                source = root / version
-                source.mkdir()
-                (source / "plugin").write_text(version)
-                subprocess.run(["bash", str(script), str(source), str(cache)], check=True)
-            self.assertEqual((cache / "plugin").read_text(), "v2")
-            self.assertEqual(len(list(root.glob("cache.previous.*"))), 1)
-            self.assertEqual(next(root.glob("cache.previous.*/plugin")).read_text(), "v1")
-            # A completed version must not replace application edits or rescan permissions.
-            (cache / "plugin").write_text("user change")
-            subprocess.run(["bash", str(script), str(root / "v2"), str(cache)], check=True)
-            self.assertEqual((cache / "plugin").read_text(), "user change")
-            # A failed upgrade leaves the usable cache intact.
-            result = subprocess.run(["bash", str(script), str(root / "missing"), str(cache)], stderr=subprocess.DEVNULL)
-            self.assertNotEqual(result.returncode, 0)
-            self.assertEqual((cache / "plugin").read_text(), "user change")
-            self.assertFalse(list(root.glob("cache.staging.*")))
 
     def test_niri_color_include_is_optional(self):
         core = (ROOT / "modules/home/niri/core.nix").read_text()

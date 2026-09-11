@@ -6,59 +6,6 @@ let
   memoryKiB = cfg.memoryGiB * 1024 * 1024;
   ovmf = pkgs.OVMFFull.fd;
 
-  guestToolsPowerShell = pkgs.writeText "Install-Guest-Tools.ps1" ''
-    #Requires -RunAsAdministrator
-    $ErrorActionPreference = "Stop"
-
-    function Install-Driver {
-        param([string]$Path)
-        Write-Host "Installing driver: $Path" -ForegroundColor Cyan
-        & pnputil.exe /add-driver $Path /install
-        if ($LASTEXITCODE -notin @(0, 3010)) {
-            throw "pnputil failed for $Path with exit code $LASTEXITCODE"
-        }
-    }
-
-    Install-Driver (Join-Path $PSScriptRoot "amd64\vioserial\vioser.inf")
-    Install-Driver (Join-Path $PSScriptRoot "amd64\qxl\qxldod.inf")
-
-    $installDir = Join-Path $env:ProgramFiles "SPICE Guest Tools"
-    $existingService = Get-Service -Name "vdservice" -ErrorAction SilentlyContinue
-    if ($existingService) {
-        Stop-Service -Name "vdservice" -Force -ErrorAction SilentlyContinue
-    }
-
-    New-Item -ItemType Directory -Force -Path $installDir | Out-Null
-    Copy-Item -Force (Join-Path $PSScriptRoot "amd64\vdagent\*") $installDir
-
-    if (-not $existingService) {
-        & (Join-Path $installDir "vdservice.exe") install
-        if ($LASTEXITCODE -ne 0) {
-            throw "SPICE guest agent service installation failed with exit code $LASTEXITCODE"
-        }
-    }
-
-    Start-Service -Name "vdservice"
-    Write-Host ""
-    Write-Host "SPICE display driver and guest agent installed." -ForegroundColor Green
-    Write-Host "Restart Windows, then resize or maximize the VM window."
-  '';
-
-  guestToolsCmd = pkgs.writeText "Install-Guest-Tools.cmd" ''
-    @echo off
-    powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0Install-Guest-Tools.ps1"
-    echo.
-    pause
-  '';
-
-  guestToolsReadme = pkgs.writeText "README.txt" ''
-    Run Install-Guest-Tools.cmd as Administrator inside Windows.
-
-    It installs the QXL display driver, VirtIO serial driver and SPICE guest
-    agent needed for dynamic resolution, clipboard integration and smoother
-    windowed display.
-  '';
-
   guestToolsIso = pkgs.runCommand "external-windows-guest-tools.iso" {
     nativeBuildInputs = [ pkgs.xorriso ];
   } ''
@@ -67,9 +14,9 @@ let
     cp -R ${pkgs.win-spice}/amd64/qxl "$iso_root/amd64/"
     cp -R ${pkgs.win-spice}/amd64/vdagent "$iso_root/amd64/"
     cp -R ${pkgs.win-spice}/amd64/vioserial "$iso_root/amd64/"
-    cp ${guestToolsPowerShell} "$iso_root/Install-Guest-Tools.ps1"
-    cp ${guestToolsCmd} "$iso_root/Install-Guest-Tools.cmd"
-    cp ${guestToolsReadme} "$iso_root/README.txt"
+    cp ${../../assets/virtualization/Install-Guest-Tools.ps1} "$iso_root/Install-Guest-Tools.ps1"
+    cp ${../../assets/virtualization/Install-Guest-Tools.cmd} "$iso_root/Install-Guest-Tools.cmd"
+    cp ${../../assets/virtualization/README.txt} "$iso_root/README.txt"
 
     xorriso -as mkisofs \
       -iso-level 3 \

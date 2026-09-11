@@ -120,7 +120,7 @@
 
 **回退**：恢复脚本即可；保留的旧缓存不能随代码 revert 自动清空。
 
-**实施结果（2026-09-12）**：当前 `~/.qoder/plugins/cache/qoder-bundler` 约 3.4M，没有 `cache.previous.*`。未证明体积增长，因此不改成内容哈希标记，也不增加自动清理。独立 launcher 的 flock 仍只串行化初始化。
+**实施结果（2026-09-12）**：用户确认卸载 Qoder 与 ClassIn。包、启动包装和 `qoder-bundle-cache.sh` 已从仓库移除。未删除 `~/.qoder` 用户数据。
 
 ### G. P2：把有效检查接入 checks，补齐跨模块契约
 
@@ -154,7 +154,7 @@
 
 | 项目 | 当前判断 | 决策需要的证据 |
 |---|---|---|
-| Qoder/ClassIn `--no-sandbox` | 兼容与权限取舍 | 当前版本去掉参数后的可恢复 A/B 测试；不能只看包能构建 |
+| Qoder/ClassIn `--no-sandbox` | 已卸载，不再适用 | 用户于 2026-09-12 确认移除包装与 `--no-sandbox` 入口 |
 | 全局 `QT_PLUGIN_PATH = mkForce ...` | 作用域偏大，可能干扰其他 Qt 程序 | 两个桌面中的实际环境、插件加载和输入法验证 |
 | Zed `trust_all_worktrees = true` | 当前是首次种子，不等于当前 GUI 状态 | 明确所需信任策略；只改 seed 无法迁移已有文件 |
 | KDE Connect 两分钟刷新 | 可能是低收益轮询 | 发现故障复现与停用后的对照；不能凭有 timer 就删除 |

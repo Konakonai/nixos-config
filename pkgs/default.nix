@@ -21,7 +21,11 @@ in
     '';
     meta = pkgs.cc-switch.meta;
   };
-  classin = pkgs.callPackage ./classin.nix { };
+  celluloid-gl = pkgs.celluloid.overrideAttrs (previous: {
+    preFixup = (previous.preFixup or "") + ''
+      gappsWrapperArgs+=(--set GSK_RENDERER gl)
+    '';
+  });
   codex = pkgs.callPackage ./codex.nix { };
   codex-desktop = pkgs.callPackage ./codex-desktop.nix { inherit inputs; };
   eden = pkgs.callPackage ./eden.nix { };
@@ -49,7 +53,7 @@ in
       file-roller = fileRollerWayland;
     };
   };
-  qoder = pkgs.callPackage ./qoder.nix { };
+  libreoffice-gtk-wayland = pkgs.callPackage ./libreoffice-gtk-wayland.nix { };
   splayer = pkgs.callPackage ./splayer.nix { };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };

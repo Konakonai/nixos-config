@@ -12,25 +12,7 @@ in
 {
   home.activation.flatpakThemeIntegration = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     copy_theme_dir() {
-      local src="$1"
-      local dst="$2"
-      local marker="$dst/.nix-source"
-      if [ -L "$dst" ]; then
-        return
-      fi
-      if [ -d "$src" ]; then
-        if [ -f "$marker" ] && [ "$(< "$marker")" = "$src" ]; then
-          return
-        fi
-        if [ -e "$dst" ]; then
-          chmod -R u+w "$dst" 2>/dev/null || true
-        fi
-        rm -rf "$dst"
-        mkdir -p "$(dirname "$dst")"
-        cp -aL "$src" "$dst"
-        chmod -R u+w "$dst"
-        printf '%s\n' "$src" > "$marker"
-      fi
+      ${pkgs.bash}/bin/bash ${../../../scripts/copy-theme-dir.sh} "$1" "$2"
     }
 
     copy_theme_dir "${gtkThemePackage}/share/themes/${gtkThemeName}" "$HOME/.local/share/themes/${gtkThemeName}"

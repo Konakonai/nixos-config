@@ -1,19 +1,12 @@
 { pkgs, ... }:
 
-let
-  celluloidOpenGL = pkgs.celluloid.overrideAttrs (previous: {
-    preFixup = (previous.preFixup or "") + ''
-      gappsWrapperArgs+=(--set GSK_RENDERER gl)
-    '';
-  });
-in
 {
   environment.systemPackages = with pkgs; [
     vim
     wget
     curl
     openlist
-    celluloidOpenGL
+    lilya.celluloid-gl
     rclone
     git
     pciutils

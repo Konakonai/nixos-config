@@ -51,6 +51,10 @@ in
     };
   };
 
-  environment.variables.QT_PLUGIN_PATH =
-    lib.mkForce [ "${fcitx5Package}/${pkgs.qt6.qtbase.qtPluginPrefix}" ];
+  # Prepend the patched Fcitx plugin dir. Do not mkForce the whole
+  # QT_PLUGIN_PATH: NixOS already adds the unpatched fcitx5-with-addons path,
+  # and other modules/wrappers still need their own plugin entries.
+  environment.variables.QT_PLUGIN_PATH = lib.mkBefore [
+    "${fcitx5Package}/${pkgs.qt6.qtbase.qtPluginPrefix}"
+  ];
 }
