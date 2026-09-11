@@ -9,11 +9,19 @@ let
   flatpakTimer = home.systemd.user.timers."flatpak-managed-install-timer";
   flatpakTimerUnit = lib.removeSuffix ".service" flatpakTimer.Timer.Unit;
   flatpakTimerService = home.systemd.user.services.${flatpakTimerUnit};
+  mihomoTriggerNames = map (item: baseNameOf (toString item)) config.systemd.services.mihomo.restartTriggers;
 in
 assert flatpakTimer.Timer.Unit == "flatpak-managed-install-timer.service";
 assert flatpakTimerService.Unit.ConditionACPower == true;
 assert home.systemd.user.services.flatpak-managed-install.Unit.ConditionACPower == true;
 assert !(flatpakTimer.Timer ? ConditionACPower);
+assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.requires;
+assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.after;
+assert config.systemd.services.mihomo.restartTriggers == config.systemd.services.mihomo-config.restartTriggers;
+assert lib.elem "config-before-proxies.yaml" mihomoTriggerNames;
+assert lib.elem "config-after-proxies.yaml" mihomoTriggerNames;
+assert lib.elem "mihomo-proxies.yaml.age" mihomoTriggerNames;
+assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
 {
   configuration = pkgs.runCommand "configuration-regressions" {
     nativeBuildInputs = [ python pkgs.bash pkgs.coreutils pkgs.git pkgs.jq pkgs.util-linux ];

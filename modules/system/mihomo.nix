@@ -20,36 +20,27 @@ in
     description = "Generate Mihomo runtime configuration";
     before = [ "mihomo.service" ];
     requiredBy = [ "mihomo.service" ];
-    path = [ pkgs.coreutils ];
+    path = [
+      pkgs.bash
+      pkgs.coreutils
+      pkgs.mihomo
+    ];
+    restartTriggers = [
+      configBeforeProxies
+      configAfterProxies
+      encryptedProxies
+    ];
     serviceConfig = {
       Type = "oneshot";
+      RemainAfterExit = true;
       UMask = "0077";
     };
     script = ''
-      set -eu
-
-      if [ ! -r ${proxiesFile} ]; then
-        echo "Missing decrypted Mihomo proxy secret: ${proxiesFile}" >&2
-        exit 1
-      fi
-
-      install -d -m 700 ${runtimeDir}
-
-      tmp="$(mktemp ${runtimeDir}/config.yaml.tmp.XXXXXX)"
-      cleanup() {
-        rm -f "$tmp"
-      }
-      trap cleanup EXIT
-
-      {
-        cat ${configBeforeProxies}
-        cat ${proxiesFile}
-        cat ${configAfterProxies}
-      } > "$tmp"
-
-      chmod 600 "$tmp"
-      mv "$tmp" ${configFile}
-      trap - EXIT
+      bash ${../../scripts/generate-mihomo-config.sh} \
+        ${configBeforeProxies} \
+        ${proxiesFile} \
+        ${configAfterProxies} \
+        ${configFile}
     '';
   };
 
@@ -62,10 +53,19 @@ in
 
   # The proxy can establish listeners before the uplink is ready and reconnect
   # on its own. Do not hold graphical.target behind NetworkManager's online
-  # heuristic.
+  # heuristic. LoadCredential copies config.yaml at start, so fragment changes
+  # must restart this unit after a successful generator run.
   systemd.services.mihomo = {
-    requires = lib.mkForce [ ];
-    after = lib.mkForce [ "network.target" ];
+    requires = lib.mkForce [ "mihomo-config.service" ];
+    after = lib.mkForce [
+      "network.target"
+      "mihomo-config.service"
+    ];
+    restartTriggers = [
+      configBeforeProxies
+      configAfterProxies
+      encryptedProxies
+    ];
     serviceConfig = {
       Restart = "on-failure";
       RestartSec = "2s";
