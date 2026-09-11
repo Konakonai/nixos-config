@@ -2,9 +2,10 @@
 
 let
   defaultsDir = "${config.xdg.dataHome}/nixos-config/defaults";
+  jsonc = ../../scripts/jsonc.py;
   configDrift = pkgs.writeShellApplication {
     name = "config-drift";
-    runtimeInputs = [ pkgs.coreutils pkgs.diffutils pkgs.jq pkgs.python3 config.programs.noctalia.package ];
+    runtimeInputs = [ pkgs.coreutils pkgs.diffutils pkgs.python3 config.programs.noctalia.package ];
     text = ''
       case "''${1:-}" in
         noctalia)
@@ -29,8 +30,8 @@ PYTHON
           current="$(mktemp)"
           default="$(mktemp)"
           trap 'rm -f "$current" "$default"' EXIT
-          jq -S . "${config.xdg.configHome}/zed/settings.json" > "$current"
-          jq -S . "${defaultsDir}/zed-settings.json" > "$default"
+          python3 ${jsonc} canonicalize "${config.xdg.configHome}/zed/settings.json" > "$current"
+          python3 ${jsonc} canonicalize "${defaultsDir}/zed-settings.json" > "$default"
           diff -u "$default" "$current"
           ;;
         *)
@@ -42,14 +43,14 @@ PYTHON
   };
   configDump = pkgs.writeShellApplication {
     name = "config-dump";
-    runtimeInputs = [ pkgs.coreutils pkgs.jq config.programs.noctalia.package ];
+    runtimeInputs = [ pkgs.coreutils pkgs.python3 config.programs.noctalia.package ];
     text = ''
       case "''${1:-}" in
         noctalia)
           noctalia config export merged
           ;;
         zed)
-          jq -S . "${config.xdg.configHome}/zed/settings.json"
+          python3 ${jsonc} canonicalize "${config.xdg.configHome}/zed/settings.json"
           ;;
         *)
           echo "usage: config-dump <noctalia|zed>" >&2
