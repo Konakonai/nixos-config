@@ -50,25 +50,19 @@ proxy-groups:
   type: select
 - name: Grok
   proxies:
-  - JP-Dedicated-B1-1
-  - JP-Dedicated-B1-2
-  - JP-Dedicated-B1-3
-  - JP-Dedicated-B1-4
+  - TW-IPv6-P1-1
+  - TW-IPv6-P1-2
+  - TW-IPv6-P1-3
+  - TW-IPv6-P1-4
   - TW Fixed IP
+  type: select
+- name: Antigravity
+  proxies:
   - US Fixed IP
   - US-Dedicated-B1-1
   - US-Dedicated-B1-2
   - US-Dedicated-B1-3
   - US-Dedicated-B1-4
-  - TW-IPv6-P1-1
-  - TW-IPv6-P1-2
-  - TW-IPv6-P1-3
-  - TW-IPv6-P1-4
-  - IN-NexIP-Sticky
-  - IN-NexIP-Rotating
-  - Auto
-  - Express
-  - DIRECT
   type: select
 - name: Streaming
   proxies:
@@ -571,24 +565,27 @@ rules:
 - DOMAIN-SUFFIX,oaiusercontent.com,Research + AI
 - DOMAIN-SUFFIX,anthropic.com,Research + AI
 - DOMAIN-SUFFIX,claude.ai,Research + AI
-- DOMAIN-SUFFIX,gemini.google.com,Research + AI
-- DOMAIN-SUFFIX,bard.google.com,Research + AI
-- DOMAIN-SUFFIX,deepmind.com,Research + AI
-- DOMAIN-SUFFIX,deepmind.google,Research + AI
-- DOMAIN-SUFFIX,aistudio.google.com,Research + AI
-- DOMAIN-SUFFIX,makersuite.google.com,Research + AI
-- DOMAIN-SUFFIX,gemini.google,Research + AI
-- DOMAIN-SUFFIX,chat.google.com,Research + AI
-- DOMAIN-SUFFIX,generativelanguage.googleapis.com,Research + AI
-- DOMAIN-SUFFIX,ai.google.dev,Research + AI
-- DOMAIN-SUFFIX,aiplatform.googleapis.com,Research + AI
-- DOMAIN-SUFFIX,ai.google,Research + AI
-- DOMAIN-SUFFIX,ai.google.com,Research + AI
-- DOMAIN-SUFFIX,labs.google.com,Research + AI
-- DOMAIN-SUFFIX,labs.google,Research + AI
-- DOMAIN-SUFFIX,cloud.google.com,Research + AI
-- DOMAIN-SUFFIX,notebooklm.google.com,Research + AI
-- DOMAIN-SUFFIX,notebooklm.google,Research + AI
+- DOMAIN-SUFFIX,gemini.google.com,Antigravity
+- DOMAIN-SUFFIX,bard.google.com,Antigravity
+- DOMAIN-SUFFIX,deepmind.com,Antigravity
+- DOMAIN-SUFFIX,deepmind.google,Antigravity
+- DOMAIN-SUFFIX,aistudio.google.com,Antigravity
+- DOMAIN-SUFFIX,makersuite.google.com,Antigravity
+- DOMAIN-SUFFIX,gemini.google,Antigravity
+- DOMAIN-SUFFIX,chat.google.com,Antigravity
+- DOMAIN-SUFFIX,generativelanguage.googleapis.com,Antigravity
+- DOMAIN-SUFFIX,ai.google.dev,Antigravity
+- DOMAIN-SUFFIX,aiplatform.googleapis.com,Antigravity
+- DOMAIN-SUFFIX,ai.google,Antigravity
+- DOMAIN-SUFFIX,ai.google.com,Antigravity
+- DOMAIN-SUFFIX,labs.google.com,Antigravity
+- DOMAIN-SUFFIX,labs.google,Antigravity
+- DOMAIN-SUFFIX,cloud.google.com,Antigravity
+- DOMAIN-SUFFIX,notebooklm.google.com,Antigravity
+- DOMAIN-SUFFIX,notebooklm.google,Antigravity
+- DOMAIN-SUFFIX,jetski-webchannel.googleapis.com,Antigravity
+- DOMAIN-SUFFIX,daily-cloudcode-pa.googleapis.com,Antigravity
+- DOMAIN-SUFFIX,cloudcode-pa.googleapis.com,Antigravity
 - DOMAIN-SUFFIX,perplexity.ai,Research + AI
 - DOMAIN-SUFFIX,mistral.ai,Research + AI
 - DOMAIN-SUFFIX,cohere.ai,Research + AI
@@ -611,8 +608,10 @@ rules:
 - DOMAIN-KEYWORD,openai,Research + AI
 - DOMAIN-KEYWORD,claude,Research + AI
 - DOMAIN-KEYWORD,anthropic,Research + AI
-- DOMAIN-KEYWORD,gemini.google,Research + AI
-- DOMAIN-KEYWORD,generativelanguage,Research + AI
+- DOMAIN-KEYWORD,gemini.google,Antigravity
+- DOMAIN-KEYWORD,generativelanguage,Antigravity
+- DOMAIN-KEYWORD,jetski,Antigravity
+- DOMAIN-KEYWORD,antigravity,Antigravity
 - DOMAIN-KEYWORD,cursor,Research + AI
 - DOMAIN-SUFFIX,youtube.com,Streaming
 - DOMAIN-SUFFIX,ytimg.com,Streaming
