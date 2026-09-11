@@ -1,8 +1,8 @@
 # 配置深入审计与实施计划
 
-状态：**待其他模型实施**。本次只更新本计划、AGENTS.md、README.md，没有修改配置或运行时。
+状态：**P1（A–D）已实施**；E/F 只核对了接口与缓存体积，未伪称并发/增长问题已解决。第三阶段结构拆分只做了启动器脚本与域 XML 模板这两处测试所需提取。
 
-基线：`18c61b8`（2026-09-12 审计时的 HEAD）。后续模型必须先检查新 HEAD 和工作区；若基线变化，逐项确认问题是否仍存在，不重复实施已经完成的修复。
+实施基线：`9718e74`（执行时 HEAD；审计基线 `18c61b8` 之后已有 Mihomo 路由提交）。A–D 在该 HEAD 上仍可复现，已按项修复。
 
 ## 1. 对 Grok 三点意见的判断
 
@@ -45,6 +45,8 @@
 
 **回退**：独立提交，保留原来宾身份和持久状态；代码回退不删除 NVRAM/TPM，不重定义正在运行的来宾作为测试手段。
 
+**实施结果（2026-09-12）**：启动器抽出为 `scripts/external-windows.sh`，PATH 可注入假命令。磁盘/`virsh`/`jq` 失败、卸载失败或仍挂载时不调用 `virsh start`。域 XML 用同一 `vcpus` 参数生成 `<vcpu>` 与 topology；检查用生产值与 vcpus=3 对照。未引入 flock 或 udev 忽略规则。
+
 ### B. P1：Flatpak 接电条件加在了错误的定时服务上
 
 **证据**：`modules/home/flatpak.nix:183-190` 与锁定 nix-flatpak 的 `modules/home-manager.nix:19-43`。
@@ -56,6 +58,8 @@
 **验收**：从定时器的 `Timer.Unit` 获取实际目标，断言其接电条件存在；不能只按猜测服务名检查。确认不会把条件写到 Timer 段。无需拔掉电源或发起实际在线更新。
 
 **回退**：独立小提交；只影响下次任务是否启动，不中止正在进行的 Flatpak 更新。
+
+**实施结果（2026-09-12）**：`flatpak-managed-install` 与定时器 `Timer.Unit` 指向的 `flatpak-managed-install-timer` 均设置 `Unit.ConditionACPower`。检查从 Timer.Unit 解析目标，并断言条件不在 Timer 段。
 
 ### C. P1：Niri 干净配置启动失败，最终配置绕过验证
 
@@ -70,6 +74,8 @@
 **验收**：干净目录缺少两个运行时 include 时通过；合法生成 include 存在时通过；损坏的已存在 include 应报错，不能通过忽略所有解析错误隐藏故障。明确颜色生成前后的合理默认效果。不启动/替换当前 compositor。
 
 **回退**：独立提交，保持已有会话入口、显示器位置/缩放和快捷键；不要删除用户实际生成的 Noctalia 文件。
+
+**实施结果（2026-09-12）**：`noctalia.kdl` 改为与 `gpu.kdl` 一样的 optional include。缺少文件时使用 `programs.niri.settings` 里的 focus-ring 等默认颜色；Noctalia 生成后覆盖 layout 颜色。最终会话 KDL 经 niri-flake `validated-config-for` 校验。检查覆盖干净目录、合法 include、损坏 include。
 
 ### D. P1：Mihomo 配置更新缺少向消费者传播的契约
 
@@ -86,6 +92,8 @@
 
 **回退**：独立提交。在线代理重启可能中断当前连接，应在实际应用阶段说明；本计划的离线测试不重启真实代理。
 
+**实施结果（2026-09-12）**：生成器抽出为 `scripts/generate-mihomo-config.sh`，`mihomo -t` 通过后才发布；失败保留旧文件。`mihomo.service` 显式 Requires/After 生成器，并对前片段、后片段、加密源设置 restartTriggers。离线测试使用假凭据，未重启真实代理。应用本配置会导致 Mihomo 重启。
+
 ## 4. 第二阶段：配置所有权与可测试性
 
 ### E. P2：Noctalia 和其他 GUI 状态的并发写入边界
@@ -100,6 +108,8 @@
 
 **回退**：迁移前按文件备份；若实际所有权迁移会覆盖用户选择，先列出具体字段和变化，不能静默以种子替换整个目录。
 
+**实施结果（2026-09-12）**：锁定 Noctalia CLI 提供 `config export/validate`、`msg theme-mode-set`、`msg color-scheme-set` 和 `msg config-reload`，没有按键写入 bar/dock/backdrop 等 Nix-owned 字段的配置层。继续文件协调会与 GUI 竞争，因此未加文件锁、也未改 Home Manager 相对 `systemd-user-sessions` 的顺序。`flatpak-assets.nix` 仍是先删后复制；LibreOffice registry 仍是原地补种。剩余边界：比较后到 replace 前的窗口、GUI 稍后写回、登录时并发。
+
 ### F. P2：Qoder 缓存更新的成本与生命周期
 
 **证据**：`scripts/qoder-bundle-cache.sh` 使用包含整个 Qoder 输出路径的 source 标记，变化就重新复制并留下 `cache.previous.*`；没有保留数量或大小策略。独立 launcher 的 flock 只能串行化初始化，不能协调已经运行的 Qoder。
@@ -109,6 +119,8 @@
 **验收**：同内容不同包装输出不必重新复制（若选择内容标记）；失败保留可用旧目录；应用正在运行的升级行为可解释；清理策略先 dry-run，用户修改和最近可用版本可恢复。
 
 **回退**：恢复脚本即可；保留的旧缓存不能随代码 revert 自动清空。
+
+**实施结果（2026-09-12）**：当前 `~/.qoder/plugins/cache/qoder-bundler` 约 3.4M，没有 `cache.previous.*`。未证明体积增长，因此不改成内容哈希标记，也不增加自动清理。独立 launcher 的 flock 仍只串行化初始化。
 
 ### G. P2：把有效检查接入 checks，补齐跨模块契约
 
@@ -166,7 +178,7 @@
 
 ```bash
 nix flake check --no-build --no-update-lock-file
-nix build .#checks.x86_64-linux.configuration .#checks.x86_64-linux.portal --no-link
+nix build .#checks.x86_64-linux.configuration .#checks.x86_64-linux.portal .#checks.x86_64-linux.niri-config .#checks.x86_64-linux.external-windows-cpu --no-link
 nix build .#nixosConfigurations.nixos.pkgs.lilya.<受影响包> --no-link
 git diff --check
 ```
@@ -179,3 +191,5 @@ nix eval --impure --raw --expr '(builtins.getFlake (toString ./.)).inputs.niri.o
 ```
 
 交付完成的标准是：A–D 的原失败路径都有能检出回归的证据；E/F 的所有权与恢复边界清晰；结构整理不改变未授权行为；README 与实际状态一致。新增文件数、删除行数和抽象层数不是完成指标。
+
+当前对照：A–D 已有脚本/单元/flake 检查；E/F 边界已写入本节与 README；结构上只提取了启动器脚本和域 XML 模板。第三阶段其余拆分未做，因为没有新的稳定复用点。Zed dump/drift 已支持 JSONC。

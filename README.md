@@ -2,7 +2,7 @@
 
 个人 ThinkBook 的 Nix Flakes + Home Manager 配置，同时提供 **Niri + Noctalia** 和 **Plasma Wayland**。当前默认登录会话为 `plasma-hdr`；这个名称本身不保证 HDR 已开启。
 
-自动化修改请先读 [AGENTS.md](AGENTS.md)。最新深入审计与后续实施计划见 [配置改进计划](docs/configuration-improvement-plan-2026-09-12.md)。计划中的改动尚未实施；较早的 [2026-09-11 审计](docs/configuration-audit-2026-09-11.md) 仅作历史记录。
+自动化修改请先读 [AGENTS.md](AGENTS.md)。最新深入审计与实施记录见 [配置改进计划](docs/configuration-improvement-plan-2026-09-12.md)。P1 行为修复已落地；E/F 的所有权与缓存边界仍写在该计划中。较早的 [2026-09-11 审计](docs/configuration-audit-2026-09-11.md) 仅作历史记录。
 
 ## 入口与目录
 
@@ -32,8 +32,8 @@ assets/、patches/                 静态资源与上游补丁
 # 求值，不更新 lock、不构建系统
 nix flake check --no-build --no-update-lock-file
 
-# 运行脚本回归与 portal 检查
-nix build .#checks.x86_64-linux.configuration .#checks.x86_64-linux.portal --no-link
+# 运行脚本回归、portal、Niri KDL 与虚拟机 CPU XML 检查
+nix build .#checks.x86_64-linux.configuration .#checks.x86_64-linux.portal .#checks.x86_64-linux.niri-config .#checks.x86_64-linux.external-windows-cpu --no-link
 
 # 示例：只构建一个本地包
 nix build .#nixosConfigurations.nixos.pkgs.lilya.qoder --no-link
@@ -44,7 +44,7 @@ rebuild
 
 还提供 `testbuild`（`nh os test`）。这会实际切换当前运行配置用于测试，不是只读检查。当前没有顶层 `packages` 输出，因此 `.#packages.x86_64-linux.<name>` 不是本仓库的包构建入口。
 
-`checks` 覆盖部分脚本行为和 portal 选项契约；不等于全系统构建、图形会话测试、真实磁盘测试或所有应用配置的验证。运行前应查看检查输出，确认实际执行的目标。
+`checks` 覆盖脚本失败路径、portal 选项、最终 Niri KDL、虚拟机 CPU 拓扑，以及 Flatpak/Mihomo 的部分 systemd 契约；不等于全系统构建、图形会话测试、真实磁盘测试或所有应用配置的验证。运行前应查看检查输出，确认实际执行的目标。
 
 ## 配置与外部状态
 
@@ -67,27 +67,27 @@ rebuild
 |---|---|
 | Niri 主配置、主题资源、MIME | Nix 持续管理 |
 | Noctalia `config.toml` | 首次创建；已有文件保留 |
-| Noctalia `settings.toml` | GUI 覆盖；激活脚本同步部分 Nix 管理字段 |
+| Noctalia `settings.toml` | GUI 覆盖；激活脚本同步部分 Nix 管理字段。当前 Noctalia CLI 没有这些键的通用配置层，文件协调仍有与 GUI 的竞争窗口 |
 | Zed `settings.json` | 首次种子，后续由应用/用户修改 |
 | LibreOffice 工具栏 | 激活时补充未配置的初始值 |
 | Dolphin / Plasma 部分键 | 激活时重新写入指定值 |
 | Flatpak 应用和 Noctalia 插件 | 运行时安装/更新，不由 flake.lock 固定其实际版本 |
 
-`config-dump noctalia` 导出合并后的用户配置；`config-drift noctalia` 与仓库种子按解析后的值比较，返回码 1 表示存在差异，不必然是错误。Zed 的这两个工具当前使用 `jq`，只支持严格 JSON；带注释的用户设置支持待改进。
+`config-dump noctalia` 导出合并后的用户配置；`config-drift noctalia` 与仓库种子按解析后的值比较，返回码 1 表示存在差异，不必然是错误。Zed 的这两个工具解析 JSONC（行/块注释），比较的是去掉注释后的值。
 
-`config-repair noctalia-templates` 请求应用模板。Niri 当前依赖 Noctalia 生成的 `noctalia.kdl`，干净目录缺少该文件时的启动问题已写入计划，尚未修复。
+`config-repair noctalia-templates` 请求应用模板。Niri 把 `noctalia.kdl` 和 `gpu.kdl` 都标为 optional include：干净目录缺少颜色文件时可以启动，使用 `layout.focus-ring` 等声明式默认；Noctalia 生成颜色后覆盖这些键。损坏的已存在 include 仍会使 `niri validate` 失败。最终会话 KDL（含手写效果块和显示器段）在构建时用锁定 Niri 校验。
 
 ## 更新与服务
 
 - `codex-update` 每日检查上游，使用临时 Git worktree 构建 Desktop/CLI，通过检查后仅在主工作区未变化时快进并本地提交。它不自动推送或执行 `rebuild`；日志位于 `~/.local/state/codex-update/update.log`。
-- Codex 定时服务有接电条件。Flatpak 每周定时器实际启动 `flatpak-managed-install-timer.service`；目前接电条件仅加在手动服务上，尚不能保证每周更新只在接电时运行。
+- Codex 定时服务有接电条件。Flatpak 的手动服务和每周定时器实际目标 `flatpak-managed-install-timer.service` 都有接电条件；条件写在对应 Service 的 Unit 段，不写在 Timer 段。
 - Flatpak 已关闭激活/登录时的自动安装，因此声明新增应用后，`rebuild` 本身不负责立即下载安装。接电后可按需执行 `systemctl --user start flatpak-managed-install.service`，或等待每周任务。
-- Mihomo 使用 age 密文生成 `/run/mihomo/config.yaml`，再通过 systemd credential 提供给守护进程。规则变化到进程重启的传播契约仍需完善，不应仅凭 `rebuild` 成功认定新规则已加载。
+- Mihomo 使用 age 密文生成 `/run/mihomo/config.yaml`，校验通过后发布，再通过 systemd credential 提供给守护进程。前/后片段或密文源变化会进入 `mihomo` 与 `mihomo-config` 的 restartTriggers；生成失败时保留上一份可用文件。应用配置后代理会重启，可能中断当前连接。
 - 正常功耗策略由 power-profiles-daemon / UPower 管理；电池且省电模式时，单独服务禁用 Intel turbo，退出条件满足时恢复原值。自动休眠的既有规避配置保留。
 
 ## 外接 Windows 虚拟机
 
-菜单中的 **External Windows 11** 使用指定 USB 磁盘运行 KVM/libvirt 来宾。当前启动器先检查磁盘、尝试卸载已挂载分区，再启动并打开 SPICE 窗口；检查命令失败时的处理尚不完善，详见计划，不能把它视为严格的磁盘互斥保证。
+菜单中的 **External Windows 11** 使用指定 USB 磁盘运行 KVM/libvirt 来宾。启动器先成功采集磁盘拓扑和来宾状态，再决定卸载或启动：`virsh`/`lsblk`/`jq` 失败、磁盘消失或卸载失败时不会调用 `virsh start`。已启动来宾只打开 viewer。检查通过到启动之间仍可能被其他进程重新挂载，这不是对所有挂载工具的互斥。
 
 首次启用 `libvirtd` 用户组后需重新登录。首次虚拟启动可在 Windows 内以管理员身份运行 `SPICE_TOOLS` 光盘中的 `Install-Guest-Tools.cmd`，随后重启来宾，以使用动态分辨率与剪贴板。
 
