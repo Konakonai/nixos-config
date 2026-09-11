@@ -157,7 +157,7 @@
 | Qoder/ClassIn `--no-sandbox` | 已卸载，不再适用 | 用户于 2026-09-12 确认移除包装与 `--no-sandbox` 入口 |
 | 全局 `QT_PLUGIN_PATH = mkForce ...` | 作用域偏大，可能干扰其他 Qt 程序 | 两个桌面中的实际环境、插件加载和输入法验证 |
 | Zed `trust_all_worktrees = true` | 当前是首次种子，不等于当前 GUI 状态 | 明确所需信任策略；只改 seed 无法迁移已有文件 |
-| KDE Connect 两分钟刷新 | 可能是低收益轮询 | 发现故障复现与停用后的对照；不能凭有 timer 就删除 |
+| KDE Connect 两分钟刷新 | 手机切网时电脑侧 QNetworkInformation 不会触发；`--refresh` 即 `forceOnNetworkChange` | 已改为：电脑 NetworkManager 事件立即刷新；定时器仅在没有可达设备时广播。未删除恢复路径 |
 | 多套音量、监控、浏览器/音乐工具 | 使用偏好，不是确定冗余 | 用户实际用途；不按包数量评分或批量卸载 |
 | GRUB/Plymouth、Fcitx 等外观补丁 | 有成本但也有明确视觉收益 | 定位源补丁大小与升级频率；只移除确认不用/已修复的补丁 |
 | 强制关闭休眠和设备工作区设置 | 既有设备规避方案 | 硬件对照测试；不作为“清理默认值”顺手恢复 |
