@@ -1,6 +1,6 @@
 # 配置优化计划（85 分之后）
 
-状态：**待实施**。本次只新增本计划并更新 README 指向；没有修改配置或运行时。
+状态：**P2 已实施**（A 无差异跳过 + 主题 CLI 回退到文件；C 二次探测；D 校验标记；E 检查；B 只更新 README）。P3 仍待观察或用户决策。没有改 `trusted-users`、Zed 种子、Home Manager 相对登录的顺序或 flake inputs。
 
 基线：`4cb41f6`（KDE Connect 事件刷新）。上一轮 [改进计划](configuration-improvement-plan-2026-09-12.md) 的 P1（A–D）已在 generation 594 核对；Qoder/ClassIn 已卸载；主题目录与 LibreOffice 种子改为原子替换；`QT_PLUGIN_PATH` 改为 prepend。那些工作不要重做。
 

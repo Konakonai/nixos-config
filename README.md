@@ -67,7 +67,7 @@ rebuild
 |---|---|
 | Niri 主配置、主题资源、MIME | Nix 持续管理 |
 | Noctalia `config.toml` | 首次创建；已有文件保留 |
-| Noctalia `settings.toml` | GUI 覆盖；激活脚本同步部分 Nix 管理字段。当前 Noctalia CLI 没有这些键的通用配置层，文件协调仍有与 GUI 的竞争窗口 |
+| Noctalia `settings.toml` | GUI 覆盖；激活时仅当 Nix-owned 字段与种子不同才写。主题模式/色板在 Noctalia 已运行时走 CLI，其余字段仍改文件。激活后 GUI 再写回无法消除 |
 | Zed `settings.json` | 首次种子，后续由应用/用户修改 |
 | LibreOffice 工具栏 | 激活时补充未配置的初始值 |
 | Dolphin / Plasma 部分键 | 激活时重新写入指定值 |
@@ -82,12 +82,14 @@ rebuild
 - `codex-update` 每日检查上游，使用临时 Git worktree 构建 Desktop/CLI，通过检查后仅在主工作区未变化时快进并本地提交。它不自动推送或执行 `rebuild`；日志位于 `~/.local/state/codex-update/update.log`。
 - Codex 定时服务有接电条件。Flatpak 的手动服务和每周定时器实际目标 `flatpak-managed-install-timer.service` 都有接电条件；条件写在对应 Service 的 Unit 段，不写在 Timer 段。
 - Flatpak 已关闭激活/登录时的自动安装，因此声明新增应用后，`rebuild` 本身不负责立即下载安装。接电后可按需执行 `systemctl --user start flatpak-managed-install.service`，或等待每周任务。
-- Mihomo 使用 age 密文生成 `/run/mihomo/config.yaml`，校验通过后发布，再通过 systemd credential 提供给守护进程。前/后片段或密文源变化会进入 `mihomo` 与 `mihomo-config` 的 restartTriggers；生成失败时保留上一份可用文件。应用配置后代理会重启，可能中断当前连接。
+- Mihomo 使用 age 密文生成 `/run/mihomo/config.yaml`，校验通过后发布，再通过 systemd credential 提供给守护进程。前/后片段或密文源变化会进入 `mihomo` 与 `mihomo-config` 的 restartTriggers；生成失败时保留上一份可用文件并写入 `/run/mihomo/last-validation`（无密文）。`rebuild` 成功不等于新规则已加载，应看 `journalctl -u mihomo-config` 或该标记。应用配置后代理会重启，可能中断当前连接。
 - 正常功耗策略由 power-profiles-daemon / UPower 管理；电池且省电模式时，单独服务禁用 Intel turbo，退出条件满足时恢复原值。自动休眠的既有规避配置保留。
+- Home Manager 在用户会话启用之后才激活，以免拖住登录界面。冷启动后若主题或快捷键尚未写完，注销再进入一次即可。
+- KDE Connect：电脑网络变化由 NetworkManager dispatcher 立刻 `--refresh`；两分钟定时器仅在没有可达设备时广播，用于手机自己切网。
 
 ## 外接 Windows 虚拟机
 
-菜单中的 **External Windows 11** 使用指定 USB 磁盘运行 KVM/libvirt 来宾。启动器先成功采集磁盘拓扑和来宾状态，再决定卸载或启动：`virsh`/`lsblk`/`jq` 失败、磁盘消失或卸载失败时不会调用 `virsh start`。已启动来宾只打开 viewer。检查通过到启动之间仍可能被其他进程重新挂载，这不是对所有挂载工具的互斥。
+菜单中的 **External Windows 11** 使用指定 USB 磁盘运行 KVM/libvirt 来宾。启动器先成功采集磁盘拓扑和来宾状态，再决定卸载或启动：`virsh`/`lsblk`/`jq` 失败、磁盘消失或卸载失败时不会调用 `virsh start`。已启动来宾只打开 viewer。`virsh start` 前会再探测一次挂载；启动失败且磁盘又被挂上时不会重试 start。两次探测之间仍可能被其他进程重新挂载，这不是对所有挂载工具的互斥。
 
 首次启用 `libvirtd` 用户组后需重新登录。首次虚拟启动可在 Windows 内以管理员身份运行 `SPICE_TOOLS` 光盘中的 `Install-Guest-Tools.cmd`，随后重启来宾，以使用动态分辨率与剪贴板。
 

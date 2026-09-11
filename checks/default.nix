@@ -10,7 +10,14 @@ let
   flatpakTimerUnit = lib.removeSuffix ".service" flatpakTimer.Timer.Unit;
   flatpakTimerService = home.systemd.user.services.${flatpakTimerUnit};
   mihomoTriggerNames = map (item: baseNameOf (toString item)) config.systemd.services.mihomo.restartTriggers;
+  kdeconnectRefreshExec = toString home.systemd.user.services.kdeconnect-refresh.Service.ExecStart;
+  kdeconnectNmHook = (builtins.head config.networking.networkmanager.dispatcherScripts).source;
+  qtPluginPath = config.environment.variables.QT_PLUGIN_PATH;
+  qtPluginList = if builtins.isList qtPluginPath then qtPluginPath else lib.splitString ":" qtPluginPath;
 in
+assert lib.hasInfix "if-unreachable" kdeconnectRefreshExec;
+assert lib.hasInfix "fcitx5" (toString qtPluginPath);
+assert builtins.length qtPluginList > 1;
 assert flatpakTimer.Timer.Unit == "flatpak-managed-install-timer.service";
 assert flatpakTimerService.Unit.ConditionACPower == true;
 assert home.systemd.user.services.flatpak-managed-install.Unit.ConditionACPower == true;
@@ -28,6 +35,8 @@ assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
     NOCTALIA_SEED = home.xdg.dataFile."nixos-config/defaults/noctalia-config.toml".source;
     DOMAIN_XML = domainXml;
     EXPECTED_VCPUS = vcpus;
+    KDECONNECT_NM_HOOK = kdeconnectNmHook;
+    KDECONNECT_REFRESH_EXEC = kdeconnectRefreshExec;
     src = pkgs.lib.fileset.toSource {
       root = ../.;
       fileset = pkgs.lib.fileset.unions [
