@@ -68,6 +68,11 @@ let
       com.tencent.WeChat @@u "$@" @@
   '';
 
+  sanitizeFlatpakOverrides = pkgs.writeShellScript "sanitize-flatpak-overrides" ''
+    exec ${pkgs.python3}/bin/python3 ${../../scripts/sanitize-flatpak-overrides.py} \
+      ${lib.escapeShellArg "${config.home.homeDirectory}/.local/share/flatpak/overrides"}
+  '';
+
 in
 {
   home.packages = [ qqLauncher wechatLauncher ];
@@ -185,8 +190,16 @@ in
   # remote Flatpak work.
   home.activation.flatpak-managed-install =
     lib.mkForce (lib.hm.dag.entryAnywhere "");
+  # nix-flatpak merges leftover override tokens such as a leading empty
+  # socket/filesystem entry. Flatpak 1.18 crashes on those empty strings.
+  home.activation.sanitizeFlatpakOverrides =
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      ${sanitizeFlatpakOverrides}
+    '';
   systemd.user.services.flatpak-managed-install.Install.WantedBy =
     lib.mkForce [ ];
   systemd.user.services.flatpak-managed-install.Unit.ConditionACPower = true;
+  systemd.user.services.flatpak-managed-install.Service.ExecStartPost =
+    "${sanitizeFlatpakOverrides}";
   systemd.user.services.flatpak-managed-install-timer.Unit.ConditionACPower = true;
 }

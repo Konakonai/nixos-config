@@ -9,6 +9,8 @@ let
   flatpakTimer = home.systemd.user.timers."flatpak-managed-install-timer";
   flatpakTimerUnit = lib.removeSuffix ".service" flatpakTimer.Timer.Unit;
   flatpakTimerService = home.systemd.user.services.${flatpakTimerUnit};
+  flatpakInstall = home.systemd.user.services.flatpak-managed-install;
+  flatpakSanitize = toString flatpakInstall.Service.ExecStartPost;
   mihomoTriggerNames = map (item: baseNameOf (toString item)) config.systemd.services.mihomo.restartTriggers;
   kdeconnectRefreshExec = toString home.systemd.user.services.kdeconnect-refresh.Service.ExecStart;
   kdeconnectNmHook = (builtins.head config.networking.networkmanager.dispatcherScripts).source;
@@ -20,7 +22,8 @@ assert lib.hasInfix "fcitx5" (toString qtPluginPath);
 assert builtins.length qtPluginList > 1;
 assert flatpakTimer.Timer.Unit == "flatpak-managed-install-timer.service";
 assert flatpakTimerService.Unit.ConditionACPower == true;
-assert home.systemd.user.services.flatpak-managed-install.Unit.ConditionACPower == true;
+assert flatpakInstall.Unit.ConditionACPower == true;
+assert lib.hasInfix "sanitize-flatpak-overrides" flatpakSanitize;
 assert !(flatpakTimer.Timer ? ConditionACPower);
 assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.requires;
 assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.after;
