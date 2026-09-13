@@ -10,17 +10,7 @@ in
   brave-netflix-opera = pkgs.callPackage ./brave-netflix-opera.nix {
     inherit braveOrigin;
   };
-  cc-switch = pkgs.symlinkJoin {
-    name = "${pkgs.cc-switch.name}-session-backend";
-    paths = [ pkgs.cc-switch ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      rm "$out/bin/cc-switch"
-      makeWrapper ${lib.getExe pkgs.cc-switch} "$out/bin/cc-switch" \
-        --run 'case "''${XDG_CURRENT_DESKTOP:-}" in *KDE*) export CC_SWITCH_GDK_BACKEND=wayland ;; esac'
-    '';
-    meta = pkgs.cc-switch.meta;
-  };
+  cc-switch = pkgs.callPackage ./cc-switch.nix { };
   celluloid-gl = pkgs.celluloid.overrideAttrs (previous: {
     preFixup = (previous.preFixup or "") + ''
       gappsWrapperArgs+=(--set GSK_RENDERER gl)

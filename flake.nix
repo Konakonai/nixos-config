@@ -90,6 +90,7 @@
                 inherit inputs;
                 lib = final.lib;
               };
+              cc-switch = final.lilya.cc-switch;
             })
           ];
         }
