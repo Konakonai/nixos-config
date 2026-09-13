@@ -2,6 +2,6 @@
   imports = [
     ./base.nix
     ./device-rules.nix
-    ./turbo.nix
+    ./cpu-policy.nix
   ];
 }

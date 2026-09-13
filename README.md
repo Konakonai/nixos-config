@@ -83,7 +83,7 @@ rebuild
 - Codex 定时服务有接电条件。Flatpak 的手动服务和每周定时器实际目标 `flatpak-managed-install-timer.service` 都有接电条件；条件写在对应 Service 的 Unit 段，不写在 Timer 段。
 - Flatpak 已关闭激活/登录时的自动安装，因此声明新增应用后，`rebuild` 本身不负责立即下载安装。接电后可按需执行 `systemctl --user start flatpak-managed-install.service`，或等待每周任务。
 - Mihomo 使用 age 密文生成 `/run/mihomo/config.yaml`，校验通过后发布，再通过 systemd credential 提供给守护进程。前/后片段或密文源变化会进入 `mihomo` 与 `mihomo-config` 的 restartTriggers；生成失败时保留上一份可用文件并写入 `/run/mihomo/last-validation`（无密文）。`rebuild` 成功不等于新规则已加载，应看 `journalctl -u mihomo-config` 或该标记。应用配置后代理会重启，可能中断当前连接。
-- 正常功耗策略由 power-profiles-daemon / UPower 管理；电池且省电模式时，单独服务禁用 Intel turbo，退出条件满足时恢复原值。自动休眠的既有规避配置保留。
+- 正常功耗策略由 power-profiles-daemon / UPower 管理；电池且省电模式时，单独服务禁用 Intel turbo，并将 CPU 频率限制为 400–1800 MHz；离开该状态或服务停止时恢复原值。自动休眠的既有规避配置保留。
 - Home Manager 在用户会话启用之后才激活，以免拖住登录界面。冷启动后若主题或快捷键尚未写完，注销再进入一次即可。
 - KDE Connect：电脑网络变化由 NetworkManager dispatcher 立刻 `--refresh`；两分钟定时器仅在没有可达设备时广播，用于手机自己切网。
 
