@@ -57,6 +57,7 @@ in
     bitwarden-desktop
     cc-switch
     claude-desktop
+    code-cursor
     file-roller-wayland
     foliate
     gnome-font-viewer
