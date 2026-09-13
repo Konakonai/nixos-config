@@ -60,7 +60,5 @@ in
 
   secrets.identityFile = ageIdentityFile;
 
-  mcp.braveSearch.envFile = "${homeDirectory}/.config/antigravity/brave-search.env";
-
   zen.profilePath = "i41yvfec.Default Profile";
 }

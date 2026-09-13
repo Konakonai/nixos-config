@@ -53,7 +53,6 @@ rebuild
 | 状态 | 用途 |
 |---|---|
 | `~/.config/age/mihomo.txt` | 解密仓库内 age 密文的身份文件 |
-| `~/.config/antigravity/brave-search.env` | Brave Search API 凭据 |
 | `~/.config/openlist/` | OpenList 配置与数据库 |
 | `~/.config/rclone/rclone.conf` | WebDAV 挂载凭据 |
 | 浏览器 profile、应用账号、用户数据 | 会话和数据恢复 |
