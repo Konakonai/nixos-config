@@ -90,3 +90,66 @@ class SanitizeFlatpakOverridesTest(unittest.TestCase):
         dirty.write_text(WECHAT_OVERRIDE)
         self.assertEqual(sanitize.main([str(self.directory)]), 0)
         self.assertEqual(dirty.read_text(), CLEAN_OVERRIDE)
+
+    def test_drop_env_removes_dpi_leftovers_and_conflicting_unsets(self):
+        leftover = """[Context]
+filesystems=xdg-config/gtk-3.0:ro
+sockets=wayland;x11
+unset-environment=GLFW_IM_MODULE;INPUT_METHOD;SDL_IM_MODULE
+
+[Environment]
+FCITX_QT_USE_SYNC=1
+GLFW_IM_MODULE=fcitx
+INPUT_METHOD=
+QT_AUTO_SCREEN_SCALE_FACTOR=1
+QT_ENABLE_HIGHDPI_SCALING=1
+QT_QPA_PLATFORM=xcb
+QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough
+SDL_IM_MODULE=fcitx
+"""
+        cleaned = sanitize.sanitize_text(
+            leftover,
+            drop_env=(
+                "QT_ENABLE_HIGHDPI_SCALING",
+                "QT_SCALE_FACTOR_ROUNDING_POLICY",
+                "FCITX_QT_USE_SYNC",
+                "INPUT_METHOD",
+            ),
+            drop_unset=("GLFW_IM_MODULE", "SDL_IM_MODULE", "INPUT_METHOD"),
+        )
+        self.assertEqual(
+            cleaned,
+            """[Context]
+filesystems=xdg-config/gtk-3.0:ro
+sockets=wayland;x11
+
+[Environment]
+GLFW_IM_MODULE=fcitx
+QT_AUTO_SCREEN_SCALE_FACTOR=1
+QT_QPA_PLATFORM=xcb
+SDL_IM_MODULE=fcitx
+""",
+        )
+
+    def test_cli_drop_flags_leave_unrelated_overrides_alone(self):
+        wechat = self.directory / "com.tencent.WeChat"
+        qq = self.directory / "com.qq.QQ"
+        wechat.write_text(
+            "[Environment]\nQT_ENABLE_HIGHDPI_SCALING=1\nQT_QPA_PLATFORM=xcb\n"
+        )
+        qq.write_text("[Environment]\nQT_QPA_PLATFORM=wayland\n")
+        before = qq.stat()
+        self.assertEqual(
+            sanitize.main(
+                [
+                    "--drop-env",
+                    "QT_ENABLE_HIGHDPI_SCALING",
+                    str(self.directory),
+                ]
+            ),
+            0,
+        )
+        self.assertEqual(wechat.read_text(), "[Environment]\nQT_QPA_PLATFORM=xcb\n")
+        after = qq.stat()
+        self.assertEqual(before.st_mtime_ns, after.st_mtime_ns)
+        self.assertEqual(before.st_ino, after.st_ino)

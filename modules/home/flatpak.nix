@@ -70,6 +70,13 @@ let
 
   sanitizeFlatpakOverrides = pkgs.writeShellScript "sanitize-flatpak-overrides" ''
     exec ${pkgs.python3}/bin/python3 ${../../scripts/sanitize-flatpak-overrides.py} \
+      --drop-env QT_ENABLE_HIGHDPI_SCALING \
+      --drop-env QT_SCALE_FACTOR_ROUNDING_POLICY \
+      --drop-env FCITX_QT_USE_SYNC \
+      --drop-env INPUT_METHOD \
+      --drop-unset GLFW_IM_MODULE \
+      --drop-unset SDL_IM_MODULE \
+      --drop-unset INPUT_METHOD \
       ${lib.escapeShellArg "${config.home.homeDirectory}/.local/share/flatpak/overrides"}
   '';
 
@@ -172,8 +179,11 @@ in
           "x11"
         ];
         Context.filesystems = themeFilesystems;
-        # WeChat's bundled Qt5 embeds a static fcitx platform input context
-        # plugin. Direct it to Fcitx via DBus and X11 to eliminate candidate drift.
+        # Stay on X11: Flathub enabled native Wayland for 4.1.13.9 and
+        # reverted it the same day. Do not set QT_ENABLE_HIGHDPI_SCALING or
+        # QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough on this xcb path;
+        # those leftovers double-scale under niri 1.5 and offset the UI.
+        # The bundled Qt5 fcitx plugin still needs X11 to avoid candidate drift.
         Environment = themeEnv // fcitxCompatEnv // {
           QT_QPA_PLATFORM = "xcb";
           QT_AUTO_SCREEN_SCALE_FACTOR = "1";
@@ -190,8 +200,9 @@ in
   # remote Flatpak work.
   home.activation.flatpak-managed-install =
     lib.mkForce (lib.hm.dag.entryAnywhere "");
-  # nix-flatpak merges leftover override tokens such as a leading empty
-  # socket/filesystem entry. Flatpak 1.18 crashes on those empty strings.
+  # nix-flatpak merges leftover override tokens: leading empty permission
+  # entries crash Flatpak 1.18, and stale Wayland DPI env vars offset the
+  # X11 WeChat UI under niri fractional scale.
   home.activation.sanitizeFlatpakOverrides =
     lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       ${sanitizeFlatpakOverrides}

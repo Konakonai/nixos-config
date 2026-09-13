@@ -11,6 +11,7 @@ let
   flatpakTimerService = home.systemd.user.services.${flatpakTimerUnit};
   flatpakInstall = home.systemd.user.services.flatpak-managed-install;
   flatpakSanitize = toString flatpakInstall.Service.ExecStartPost;
+  wechatEnv = home.services.flatpak.overrides."com.tencent.WeChat".Environment;
   mihomoTriggerNames = map (item: baseNameOf (toString item)) config.systemd.services.mihomo.restartTriggers;
   kdeconnectRefreshExec = toString home.systemd.user.services.kdeconnect-refresh.Service.ExecStart;
   kdeconnectNmHook = (builtins.head config.networking.networkmanager.dispatcherScripts).source;
@@ -24,6 +25,9 @@ assert flatpakTimer.Timer.Unit == "flatpak-managed-install-timer.service";
 assert flatpakTimerService.Unit.ConditionACPower == true;
 assert flatpakInstall.Unit.ConditionACPower == true;
 assert lib.hasInfix "sanitize-flatpak-overrides" flatpakSanitize;
+assert wechatEnv.QT_QPA_PLATFORM == "xcb";
+assert !(wechatEnv ? QT_ENABLE_HIGHDPI_SCALING);
+assert !(wechatEnv ? QT_SCALE_FACTOR_ROUNDING_POLICY);
 assert !(flatpakTimer.Timer ? ConditionACPower);
 assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.requires;
 assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.after;
