@@ -1,6 +1,13 @@
 { config, pkgs, ... }:
 
 let
+  steamFollow = pkgs.writeShellApplication {
+    name = "steam-follow";
+    runtimeInputs = [ pkgs.python3 config.programs.niri.package ];
+    text = ''
+      exec python3 ${../../scripts/steam-follow.py} "$@"
+    '';
+  };
   gameStatus = pkgs.writeShellScriptBin "game-status" ''
     set -euo pipefail
 
@@ -67,6 +74,7 @@ in
     evtest
     gamescope
     gameStatus
+    steamFollow
     heroic
     linuxConsoleTools
     mangohud
