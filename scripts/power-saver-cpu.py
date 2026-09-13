@@ -3,12 +3,14 @@
 import asyncio
 import json
 from pathlib import Path
+import re
 import sys
 
 CPU_ROOT = Path("/sys/devices/system/cpu")
 TURBO = CPU_ROOT / "intel_pstate/no_turbo"
 POLICY_ROOT = CPU_ROOT / "cpufreq"
 SAVED = Path("/run/power-saver-cpu/previous.json")
+PCIE_ASPM = Path("/sys/module/pcie_aspm/parameters/policy")
 MAX_FREQUENCY_KHZ = 1_800_000
 UPOWER = "org.freedesktop.UPower"
 PPD = "org.freedesktop.UPower.PowerProfiles"
@@ -23,11 +25,17 @@ def write(path, value):
     path.write_text(f"{value}\n")
 
 
+def selected_choice(path):
+    value = read(path)
+    match = re.search(r"\[([^]]+)]", value)
+    return match.group(1) if match else value
+
+
 def policies(policy_root=POLICY_ROOT):
     return sorted(policy_root.glob("policy*"), key=lambda path: int(path.name.removeprefix("policy")))
 
 
-def restore(turbo=TURBO, policy_root=POLICY_ROOT, saved=SAVED):
+def restore(turbo=TURBO, policy_root=POLICY_ROOT, saved=SAVED, pcie_aspm=PCIE_ASPM):
     if not saved.exists():
         return
 
@@ -44,13 +52,22 @@ def restore(turbo=TURBO, policy_root=POLICY_ROOT, saved=SAVED):
         write(policy / "scaling_max_freq", maximum)
         write(policy / "scaling_min_freq", minimum)
     write(turbo, previous["turbo"])
+    if previous.get("pcie_aspm") is not None and pcie_aspm.exists():
+        write(pcie_aspm, previous["pcie_aspm"])
     saved.unlink()
-    print("Restored the previous CPU policy", flush=True)
+    print("Restored the previous CPU and PCIe policy", flush=True)
 
 
-def apply(on_battery, profile, turbo=TURBO, policy_root=POLICY_ROOT, saved=SAVED):
+def apply(
+    on_battery,
+    profile,
+    turbo=TURBO,
+    policy_root=POLICY_ROOT,
+    saved=SAVED,
+    pcie_aspm=PCIE_ASPM,
+):
     if not (on_battery and profile == "power-saver"):
-        restore(turbo, policy_root, saved)
+        restore(turbo, policy_root, saved, pcie_aspm)
         return
 
     current_policies = policies(policy_root)
@@ -67,6 +84,7 @@ def apply(on_battery, profile, turbo=TURBO, policy_root=POLICY_ROOT, saved=SAVED
                 ]
                 for policy in current_policies
             },
+            "pcie_aspm": selected_choice(pcie_aspm) if pcie_aspm.exists() else None,
         }
         if previous["turbo"] not in ("0", "1"):
             raise ValueError("Invalid current turbo state")
@@ -82,9 +100,11 @@ def apply(on_battery, profile, turbo=TURBO, policy_root=POLICY_ROOT, saved=SAVED
             target_maximum = min(MAX_FREQUENCY_KHZ, current_maximum)
             write(policy / "scaling_min_freq", min(hardware_minimum, target_maximum))
             write(policy / "scaling_max_freq", target_maximum)
-        print("Applied 400-1800 MHz CPU limit and disabled turbo", flush=True)
+        if pcie_aspm.exists():
+            write(pcie_aspm, "powersupersave")
+        print("Applied 400-1800 MHz CPU limit, disabled turbo, and enabled PCIe power saving", flush=True)
     except BaseException:
-        restore(turbo, policy_root, saved)
+        restore(turbo, policy_root, saved, pcie_aspm)
         raise
 
 

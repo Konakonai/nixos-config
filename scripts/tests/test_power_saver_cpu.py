@@ -23,6 +23,8 @@ class CpuPolicyTest(unittest.TestCase):
         self.policy_root = root / "cpufreq"
         self.policy_root.mkdir()
         self.saved = root / "previous.json"
+        self.pcie_aspm = root / "pcie_aspm_policy"
+        self.pcie_aspm.write_text("[default] performance powersave powersupersave\n")
         self.make_policy(0, 400_000, 2_600_000)
         self.make_policy(12, 400_000, 1_900_000)
 
@@ -34,7 +36,14 @@ class CpuPolicyTest(unittest.TestCase):
         (policy / "scaling_max_freq").write_text(f"{maximum}\n")
 
     def apply(self, battery, profile):
-        cpu_policy.apply(battery, profile, self.turbo, self.policy_root, self.saved)
+        cpu_policy.apply(
+            battery,
+            profile,
+            self.turbo,
+            self.policy_root,
+            self.saved,
+            self.pcie_aspm,
+        )
 
     def limits(self, number):
         policy = self.policy_root / f"policy{number}"
@@ -45,10 +54,12 @@ class CpuPolicyTest(unittest.TestCase):
         self.assertEqual(self.turbo.read_text().strip(), "1")
         self.assertEqual(self.limits(0), (400_000, 1_800_000))
         self.assertEqual(self.limits(12), (400_000, 1_800_000))
+        self.assertEqual(self.pcie_aspm.read_text().strip(), "powersupersave")
         self.apply(False, "power-saver")
         self.assertEqual(self.turbo.read_text().strip(), "0")
         self.assertEqual(self.limits(0), (400_000, 2_600_000))
         self.assertEqual(self.limits(12), (400_000, 1_900_000))
+        self.assertEqual(self.pcie_aspm.read_text().strip(), "default")
         self.assertFalse(self.saved.exists())
 
     def test_mode_change_restores(self):
@@ -79,7 +90,7 @@ class CpuPolicyTest(unittest.TestCase):
 
     def test_service_stop_restores(self):
         self.apply(True, "power-saver")
-        cpu_policy.restore(self.turbo, self.policy_root, self.saved)
+        cpu_policy.restore(self.turbo, self.policy_root, self.saved, self.pcie_aspm)
         self.assertEqual(self.turbo.read_text().strip(), "0")
         self.assertEqual(self.limits(0), (400_000, 2_600_000))
 

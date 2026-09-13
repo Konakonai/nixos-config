@@ -6,7 +6,7 @@ let
 in
 {
   systemd.services.power-saver-cpu = {
-    description = "Apply the Intel CPU policy on battery in power-saver mode";
+    description = "Apply CPU and PCIe policy on battery in power-saver mode";
     wantedBy = [ "multi-user.target" ];
     wants = [ "upower.service" "power-profiles-daemon.service" ];
     after = [ "upower.service" "power-profiles-daemon.service" ];
