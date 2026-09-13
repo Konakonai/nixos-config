@@ -16,6 +16,8 @@ in
     defaultApplications = {
       "x-scheme-handler/antigravity" = "antigravity.desktop";
       "x-scheme-handler/ccswitch" = "CC Switch.desktop";
+      "x-scheme-handler/grokbot" = "grok-bot.desktop";
+      "x-scheme-handler/sand" = "grok-bot.desktop";
       "x-scheme-handler/kdeconnect" = "kdeconnect-browser.desktop";
       "x-scheme-handler/http" = "zen-beta.desktop";
       "x-scheme-handler/https" = "zen-beta.desktop";

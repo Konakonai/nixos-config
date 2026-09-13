@@ -5,6 +5,7 @@ let
     antigravity
     cc-switch
     file-roller-wayland
+    grok-bot
     localsend-no-csd
     nemo-with-extensions-wayland
     splayer
@@ -61,6 +62,7 @@ in
     file-roller-wayland
     foliate
     gnome-font-viewer
+    grok-bot
     hyprpicker
     kdePackages.okular
     localsend-no-csd

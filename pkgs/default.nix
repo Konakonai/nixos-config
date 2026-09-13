@@ -18,9 +18,11 @@ in
   });
   codex = pkgs.callPackage ./codex.nix { };
   codex-desktop = pkgs.callPackage ./codex-desktop.nix { inherit inputs; };
+  cursor = pkgs.code-cursor;
   eden = pkgs.callPackage ./eden.nix { };
   file-roller-wayland = fileRollerWayland;
   grok = pkgs.callPackage ./grok.nix { };
+  grok-bot = pkgs.callPackage ./grok-bot.nix { };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
   localsend-no-csd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";
