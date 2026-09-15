@@ -63,8 +63,8 @@ deactivate_alt_modes() {
 }
 
 try_host_role() {
-  if [ -e "$typec/data_role" ]; then
-    printf 'host\n' > "$typec/data_role" 2>/dev/null || true
+  if [ -w "$typec/data_role" ]; then
+    printf 'host\n' > "$typec/data_role" || true
   fi
 }
 
