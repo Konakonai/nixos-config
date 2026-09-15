@@ -11,10 +11,11 @@ let
 in
 {
   # The 10 Gbps Type-C port is PCH xHCI SS01 (usb4-port1) / HS02, UCSI port1.
-  # The Thunderbolt Type-C port is USB4 xHCI 0000:00:0d.0 / UCSI port0.
+  # The Thunderbolt Type-C port is USB4 xHCI 0000:00:0d.0 SuperSpeed plus PCH
+  # HS01 USB2 (Intel USB4: USB2 is sourced from the PCH). UCSI port0.
   # PD sinks can leave either mux charging-only; bounce the matching xHCI
-  # ports after a partner event. USB4 runtime PM also parks 00:0d.0, so keep
-  # that controller on.
+  # ports after a partner or connector-change event. USB4 runtime PM also
+  # parks 00:0d.0, so keep that controller on.
   services.hardware.bolt.enable = true;
 
   systemd.services.pch-usbc-reset = {
@@ -54,5 +55,6 @@ in
     ACTION=="add", SUBSYSTEM=="pci", KERNEL=="0000:00:07.0", ATTR{power/control}="on"
     ACTION=="add|remove", SUBSYSTEM=="typec", KERNEL=="port1-partner", TAG+="systemd", ENV{SYSTEMD_WANTS}="pch-usbc-reset.service"
     ACTION=="add|remove", SUBSYSTEM=="typec", KERNEL=="port0-partner", TAG+="systemd", ENV{SYSTEMD_WANTS}="tb-usbc-reset.service"
+    ACTION=="change", SUBSYSTEM=="typec", KERNEL=="port0", TAG+="systemd", ENV{SYSTEMD_WANTS}="tb-usbc-reset.service"
   '';
 }

@@ -19,6 +19,8 @@ fi
 ss=${sysroot}/sys/devices/pci0000:00/0000:00:0d.0/usb2/2-0:1.0/usb2-port1
 ss2=${sysroot}/sys/devices/pci0000:00/0000:00:0d.0/usb2/2-0:1.0/usb2-port2
 hs=${sysroot}/sys/devices/pci0000:00/0000:00:0d.0/usb1/1-0:1.0/usb1-port1
+# Intel USB4: USB2 on the Type-C connector is sourced from PCH, not TXHC.
+pch_hs=${sysroot}/sys/devices/pci0000:00/0000:00:14.0/usb3/3-0:1.0/usb3-port1
 typec=${sysroot}/sys/class/typec/port0
 ucsi_drv=${sysroot}/sys/bus/platform/drivers/ucsi_acpi
 ucsi_dev=USBC000:00
@@ -38,7 +40,7 @@ port_state() {
 }
 
 attached() {
-  case "$(port_state "$ss") $(port_state "$ss2") $(port_state "$hs")" in
+  case "$(port_state "$ss") $(port_state "$ss2") $(port_state "$hs") $(port_state "$pch_hs")" in
     *configured* | *suspended*)
       return 0
       ;;
@@ -104,7 +106,7 @@ if [ "$mode" = prepare ]; then
 fi
 
 if attached; then
-  log "SS=$(port_state "$ss") HS=$(port_state "$hs"); already has a device, skip"
+  log "SS=$(port_state "$ss") HS=$(port_state "$hs") PCH_HS01=$(port_state "$pch_hs"); already has a device, skip"
   exit 0
 fi
 
