@@ -41,5 +41,6 @@
     kdePackages.kservice
     qt6Packages.qt6ct
     opencode
+    pi-coding-agent
   ];
 }
