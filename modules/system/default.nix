@@ -17,6 +17,7 @@
     ./programs.nix
     ./secrets.nix
     ./services
+    ./usb-c.nix
     ./user.nix
     ./virtualization.nix
   ];
