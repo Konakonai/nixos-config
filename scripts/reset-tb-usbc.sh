@@ -77,9 +77,7 @@ deactivate_alt_modes() {
 }
 
 try_host_role() {
-  if [ -w "$typec/data_role" ]; then
-    printf 'host\n' > "$typec/data_role" || true
-  fi
+  { printf 'host\n' > "$typec/data_role"; } 2>/dev/null || true
 }
 
 reload_ucsi() {
@@ -118,14 +116,25 @@ if [ -d "$typec/port0-partner" ]; then
   fi
 fi
 
-log "idle SS=$(port_state "$ss") HS=$(port_state "$hs"); bounce Thunderbolt USB"
+if [ "$mode" = rearm ]; then
+  log "rearm bounce PCH_HS01=$(port_state "$pch_hs") SS=$(port_state "$ss")"
+  bounce "$pch_hs"
+  bounce "$hs"
+  bounce "$ss"
+  bounce "$ss2"
+  log "rearm done PCH_HS01=$(port_state "$pch_hs")"
+  exit 0
+fi
+
+log "idle SS=$(port_state "$ss") HS=$(port_state "$hs") PCH_HS01=$(port_state "$pch_hs"); bounce Thunderbolt USB"
+bounce "$pch_hs"
 bounce "$hs"
 bounce "$ss"
 bounce "$ss2"
 sleep "$ucsi_wait"
 
 if attached; then
-  log "attached after bounce SS=$(port_state "$ss") HS=$(port_state "$hs")"
+  log "attached after bounce SS=$(port_state "$ss") HS=$(port_state "$hs") PCH_HS01=$(port_state "$pch_hs")"
   exit 0
 fi
 
@@ -134,6 +143,7 @@ reload_ucsi
 sleep "$ucsi_wait"
 deactivate_alt_modes
 try_host_role
+bounce "$pch_hs"
 bounce "$hs"
 bounce "$ss"
 bounce "$ss2"

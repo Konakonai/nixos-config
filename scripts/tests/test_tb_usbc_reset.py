@@ -81,6 +81,13 @@ class TbUsbcResetTest(unittest.TestCase):
         self.assertEqual((self.pci / "control").read_text(), "on\n")
         self.assertNotIn("device appeared while waiting", result.stderr)
 
+    def test_rearm_bounces_pch_hs_without_ucsi(self):
+        result = self.run_script("rearm")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((self.pch_hs / "disable").read_text(), "0\n")
+        self.assertEqual((self.ucsi / "unbind").read_text(), "")
+        self.assertIn("rearm", result.stderr)
+
     def test_prepare_does_not_reload_ucsi(self):
         result = self.run_script("prepare")
         self.assertEqual(result.returncode, 0, result.stderr)

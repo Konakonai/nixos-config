@@ -36,6 +36,15 @@ in
     };
   };
 
+  systemd.services.tb-usbc-rearm = {
+    description = "Rearm Thunderbolt USB2 (PCH HS01) after unplug";
+    path = resetPath;
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash ${tbReset} rearm";
+    };
+  };
+
   systemd.services.tb-usbc-prepare = {
     description = "Wake USB4 and clear idle Thunderbolt Type-C alt-modes";
     wantedBy = [ "multi-user.target" ];
@@ -56,5 +65,6 @@ in
     ACTION=="add|remove", SUBSYSTEM=="typec", KERNEL=="port1-partner", TAG+="systemd", ENV{SYSTEMD_WANTS}="pch-usbc-reset.service"
     ACTION=="add|remove", SUBSYSTEM=="typec", KERNEL=="port0-partner", TAG+="systemd", ENV{SYSTEMD_WANTS}="tb-usbc-reset.service"
     ACTION=="change", SUBSYSTEM=="typec", KERNEL=="port0", TAG+="systemd", ENV{SYSTEMD_WANTS}="tb-usbc-reset.service"
+    ACTION=="remove", SUBSYSTEM=="usb", KERNEL=="3-1", TAG+="systemd", ENV{SYSTEMD_WANTS}="tb-usbc-rearm.service"
   '';
 }
