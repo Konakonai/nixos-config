@@ -23,7 +23,6 @@ in
     path = [
       pkgs.bash
       pkgs.coreutils
-      pkgs.mihomo
     ];
     restartTriggers = [
       configBeforeProxies
@@ -33,7 +32,6 @@ in
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      TimeoutStartSec = "30s";
       UMask = "0077";
     };
     script = ''
