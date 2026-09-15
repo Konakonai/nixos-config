@@ -94,6 +94,27 @@ reload_ucsi() {
 
 mkdir -p "$(dirname "$lock")"
 exec 9>"$lock"
+
+if [ "$mode" = watch ]; then
+  interval=${WATCH_INTERVAL:-4}
+  while true; do
+    flock 9
+    if ! attached; then
+      bounce "$pch_hs"
+      bounce "$hs"
+      bounce "$ss"
+      bounce "$ss2"
+      sleep "$ucsi_wait"
+      if attached; then
+        log "watch recovered PCH_HS01=$(port_state "$pch_hs") SS=$(port_state "$ss")"
+      fi
+    fi
+    flock -u 9
+    [ -n "${WATCH_ONCE:-}" ] && exit 0
+    sleep "$interval"
+  done
+fi
+
 flock 9
 
 wake_pci

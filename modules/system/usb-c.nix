@@ -47,6 +47,19 @@ in
     };
   };
 
+  systemd.services.tb-usbc-watch = {
+    description = "Poll-bounce Thunderbolt USB2 when UCSI omits the partner";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "tb-usbc-prepare.service" ];
+    path = resetPath;
+    serviceConfig = {
+      Type = "simple";
+      Restart = "always";
+      RestartSec = "2s";
+      ExecStart = "${pkgs.bash}/bin/bash ${tbReset} watch";
+    };
+  };
+
   systemd.services.tb-usbc-prepare = {
     description = "Wake USB4 and clear idle Thunderbolt Type-C alt-modes";
     wantedBy = [ "multi-user.target" ];

@@ -81,6 +81,18 @@ class TbUsbcResetTest(unittest.TestCase):
         self.assertEqual((self.pci / "control").read_text(), "on\n")
         self.assertNotIn("device appeared while waiting", result.stderr)
 
+    def test_watch_once_bounces_when_idle(self):
+        env = os.environ | {"SYSROOT": str(self.root), "WATCH_ONCE": "1", "WATCH_INTERVAL": "0"}
+        result = subprocess.run(
+            ["bash", str(SCRIPT), "watch"],
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((self.pch_hs / "disable").read_text(), "0\n")
+        self.assertEqual((self.ucsi / "unbind").read_text(), "")
+
     def test_rearm_bounces_pch_hs_without_ucsi(self):
         result = self.run_script("rearm")
         self.assertEqual(result.returncode, 0, result.stderr)
