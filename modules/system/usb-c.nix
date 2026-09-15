@@ -13,9 +13,11 @@ in
   # The 10 Gbps Type-C port is PCH xHCI SS01 (usb4-port1) / HS02, UCSI port1.
   # The Thunderbolt Type-C port is USB4 xHCI 0000:00:0d.0 SuperSpeed plus PCH
   # HS01 USB2 (Intel USB4: USB2 is sourced from the PCH). UCSI port0.
+  # Native USB-C devices on that port often never appear as a typec partner
+  # (UCSI stays UFP with no partner sysfs); USB2 still enumerates on HS01.
   # PD sinks can leave either mux charging-only; bounce the matching xHCI
-  # ports after a partner or connector-change event. USB4 runtime PM also
-  # parks 00:0d.0, so keep that controller on.
+  # ports after a partner, connector-change, or HS01 unplug. USB4 runtime PM
+  # also parks 00:0d.0, so keep that controller on.
   services.hardware.bolt.enable = true;
 
   systemd.services.pch-usbc-reset = {

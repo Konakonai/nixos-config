@@ -1,7 +1,9 @@
 # Recover USB data on the ThinkBook 16p Thunderbolt Type-C port (UCSI port0).
 # The USB4 xHCI is 0000:00:0d.0. Firmware leaves port0 in UFP with bogus DP
-# alt-modes active; PD then sources VBUS without SuperSpeed. Keep the NHI
-# awake, drop those alt-modes, bounce the TB xHCI ports, and only then
+# alt-modes active, and often never registers a typec partner even for a
+# native USB-C device. USB2 is sourced from PCH HS01; SuperSpeed should
+# hit TXHC but frequently stays in RxDetect. Keep the NHI awake, drop
+# those alt-modes, bounce HS01 plus the TB xHCI ports, and only then
 # reload UCSI if still idle.
 # SYSROOT overrides sysfs for tests.
 set -euo pipefail
