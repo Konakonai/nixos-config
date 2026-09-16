@@ -326,7 +326,8 @@ dns:
   fake-ip-filter:
   - '*.lan'
   - '*.local'
-  - +.miwifi.com
+  - router.miwifi.com
+  - miwifi.com
   - +.docker.io
   - +.market.xiaomi.com
   - +.push.apple.com
@@ -375,6 +376,13 @@ geox-url:
 sniffer:
   enable: false
 rules:
+# CN STUN servers (bilibili/miwifi/qq) are otherwise DIRECT and reflect the
+# real WAN IP into WebRTC srflx candidates.
+- DOMAIN-KEYWORD,stun,Default Proxy
+- DST-PORT,3478,Default Proxy
+- DST-PORT,19302,Default Proxy
+- DST-PORT,19305,Default Proxy
+- DST-PORT,5349,Default Proxy
 - DOMAIN-SUFFIX,quark.cn,DIRECT
 - DOMAIN-SUFFIX,uc.cn,DIRECT
 - DOMAIN-SUFFIX,ucweb.com,DIRECT
