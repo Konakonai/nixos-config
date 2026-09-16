@@ -232,15 +232,18 @@ class ShapeSession:
             self.target = 0
             self.rect = None
             return False
-        if not force and rect == self.rect:
-            return True
-        rx, ry, rw, rh = rect
+        self.rect = rect
+        return self.restamp()
+
+    def restamp(self):
+        if self.dpy is None or not self.target or self.rect is None:
+            return False
+        rx, ry, rw, rh = self.rect
         shape = XRectangle(rx, ry, rw, rh)
         self.xext.XShapeCombineRectangles(
             self.dpy, self.target, SHAPE_INPUT, 0, 0, byref(shape), 1, SHAPE_SET, UNSORTED,
         )
         self.x11.XFlush(self.dpy)
-        self.rect = rect
         return True
 
 
@@ -254,7 +257,7 @@ def apply_input_shape(session=None, force=False):
     return session.apply(force=force)
 
 
-def tick(last_float, session, last_shape):
+def tick(last_float, session):
     overlay_open = False
     for window in niri("windows"):
         if matches(window):
@@ -264,28 +267,29 @@ def tick(last_float, session, last_shape):
     if not overlay_open:
         session.target = 0
         session.rect = None
-        last_shape[0] = 0
-        return
-    now = time.monotonic()
-    if last_shape[0] and now - last_shape[0] < 2.0:
-        return
-    if session.apply():
-        last_shape[0] = now
+        return False
+    session.apply()
+    return True
 
 
 def main():
     if not os.environ.get("NIRI_SOCKET"):
         return 0
     last_float = {}
-    last_shape = [0]
     session = ShapeSession()
+    last_niri = 0
     try:
         while True:
+            now = time.monotonic()
             try:
-                tick(last_float, session, last_shape)
+                if now - last_niri >= 0.4:
+                    tick(last_float, session)
+                    last_niri = now
+                elif session.target:
+                    session.restamp()
             except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
                 print(f"niri-float-overlay: tick failed: {error}", file=sys.stderr)
-            time.sleep(0.4)
+            time.sleep(0.02)
     finally:
         session.close()
 
