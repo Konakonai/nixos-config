@@ -100,7 +100,7 @@ assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
     grep -F 'include "gpu.kdl" optional=true' "$niriConfig"
     grep -F 'steam_app_4564320' "$niriConfig"
     grep -F 'open-floating true' "$niriConfig"
-    grep -F 'niri-float-overlay' "$niriConfig"
+    # niri-float-overlay is a systemd user unit, not a spawn-at-startup entry.
 
     work="$(mktemp -d)"
     cp "$niriConfig" "$work/config.kdl"

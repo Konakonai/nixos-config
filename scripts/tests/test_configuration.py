@@ -118,12 +118,14 @@ background_opacity = 0.5
         self.assertIn("opacity = 0.99", core)
         self.assertIn("../../../scripts/niri-float-overlay.py", core)
         self.assertIn("niri-float-overlay", core)
-        self.assertIn("pkgs.libx11", core)
-        self.assertIn("pkgs.libxext", core)
-        self.assertNotIn("xorg.libX11", core)
-        self.assertNotIn("xorg.libXext", core)
         self.assertTrue((ROOT / "scripts/niri-float-overlay.py").is_file())
         self.assertIn("systemd.user.services.niri-float-overlay", core)
+        # The helper is launched once, from the unit; a second spawn-at-startup
+        # copy only ever hit the singleton lock and died.
+        self.assertEqual(core.count("lib.getExe niriFloatOverlay"), 1)
+        # Click-through is Proton's ALPHA input shape, not a stamped rectangle.
+        helper = (ROOT / "scripts/niri-float-overlay.py").read_text()
+        self.assertNotIn("XShapeCombineRectangles", helper)
 
     def test_kdeconnect_refresh_modes_are_wired(self):
         hook = os.environ.get("KDECONNECT_NM_HOOK")

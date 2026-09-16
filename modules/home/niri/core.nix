@@ -5,8 +5,6 @@ let
     name = "niri-float-overlay";
     runtimeInputs = [ pkgs.python3 config.programs.niri.package ];
     text = ''
-      export NIRI_FLOAT_OVERLAY_LIBX11="${pkgs.libx11}/lib/libX11.so.6"
-      export NIRI_FLOAT_OVERLAY_LIBXEXT="${pkgs.libxext}/lib/libXext.so.6"
       exec python3 ${../../../scripts/niri-float-overlay.py} "$@"
     '';
   };
@@ -33,13 +31,13 @@ in
 
   systemd.user.services.niri-float-overlay = {
     Unit = {
-      Description = "Float Steam overlay pets and keep their click region";
+      Description = "Float Steam desktop-overlay windows that niri tiled";
       After = [ "graphical-session.target" ];
       PartOf = [ "graphical-session.target" ];
     };
     Service = {
       ExecStart = lib.getExe niriFloatOverlay;
-      Restart = "on-failure";
+      Restart = "always";
       RestartSec = "2s";
     };
     Install.WantedBy = [ "graphical-session.target" ];
@@ -57,7 +55,6 @@ in
       { command = [ "noctalia" ]; }
       { command = [ "${xwaylandCoreFonts}" ]; }
       { command = [ "xrdb" "-merge" "${config.home.homeDirectory}/.Xresources" ]; }
-      { command = [ (lib.getExe niriFloatOverlay) ]; }
     ];
 
     hotkey-overlay.skip-at-startup = true;
@@ -151,6 +148,7 @@ in
       }
       {
         # Steam 4564320 / Your Coworker is a per-pixel desktop overlay.
+        # Proton owns its click region; see niri-float-overlay.py.
         matches = [
           { app-id = "^steam_app_4564320$"; }
           { app-id = "^YourCoworker[.]exe$"; }

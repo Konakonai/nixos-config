@@ -38,16 +38,22 @@ class NiriFloatOverlayTests(unittest.TestCase):
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(overlay.niri_socket(), str(newer))
 
-    def test_clickable_rect_covers_center(self):
-        x, y, w, h = overlay.clickable_rect(3840, 2160)
-        self.assertGreater(x, 0)
-        self.assertGreater(y, 0)
-        self.assertLess(x + w, 3840)
-        self.assertLess(y + h, 2160)
-        self.assertTrue(x < 1920 < x + w)
-        self.assertTrue(y < 1080 < y + h)
-        self.assertGreater(w, 3840 * 0.8)
-        self.assertTrue(x < 384 < x + w)
+    def test_helper_does_not_touch_the_input_shape(self):
+        # Proton rebuilds the ShapeInput region from the rendered alpha every
+        # 32ms; anything stamped here just fights it and eats desktop clicks.
+        self.assertFalse(hasattr(overlay, "clickable_rect"))
+        self.assertFalse(hasattr(overlay, "ShapeSession"))
+
+    def test_a_vanished_window_does_not_stop_the_watcher(self):
+        events = [
+            {"WindowOpenedOrChanged": {"window": window(3, app_id="steam_app_4564320")}},
+            {"WindowOpenedOrChanged": {"window": window(4, app_id="YourCoworker.exe")}},
+        ]
+        stream = io.StringIO("\n".join(map(json.dumps, events)))
+        with patch.object(overlay.subprocess, "run") as run:
+            overlay.watch(stream, {})
+        self.assertEqual([call.args[0][-1] for call in run.call_args_list], ["3", "4"])
+        self.assertTrue(all(call.kwargs["check"] is False for call in run.call_args_list))
 
     def test_late_app_id_floats_once(self):
         events = [
