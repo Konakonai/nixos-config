@@ -29,6 +29,8 @@ assert wechatEnv.QT_QPA_PLATFORM == "xcb";
 assert !(wechatEnv ? QT_ENABLE_HIGHDPI_SCALING);
 assert !(wechatEnv ? QT_SCALE_FACTOR_ROUNDING_POLICY);
 assert !(flatpakTimer.Timer ? ConditionACPower);
+assert !config.networking.enableIPv6;
+assert config.networking.networkmanager.connectionConfig."ipv6.method" == "disabled";
 assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.requires;
 assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.after;
 assert config.systemd.services.mihomo.restartTriggers == config.systemd.services.mihomo-config.restartTriggers;

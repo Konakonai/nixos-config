@@ -37,6 +37,11 @@ in
         "browser.startup.page" = 1;
         "browser.sessionstore.resume_from_crash" = false;
         "browser.sessionstore.resume_session_once" = false;
+
+        # Do not gather host ICE candidates (LAN IPv4 / leftover IPv6 GUAs).
+        "network.dns.disableIPv6" = true;
+        "media.peerconnection.ice.default_address_only" = true;
+        "media.peerconnection.ice.no_host" = true;
       };
     };
   };

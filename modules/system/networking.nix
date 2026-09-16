@@ -4,6 +4,13 @@
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
 
+  # Campus Wi-Fi assigns a CERNET GUA. WebRTC advertises it as a host
+  # candidate and bypasses the mihomo TUN. Keep host IPv6 off.
+  networking.enableIPv6 = false;
+  networking.networkmanager.connectionConfig = {
+    "ipv6.method" = "disabled";
+  };
+
   networking.firewall = {
     enable = true;
     trustedInterfaces = [ "mihomo" ];
