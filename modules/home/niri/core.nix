@@ -5,6 +5,8 @@ let
     name = "niri-float-overlay";
     runtimeInputs = [ pkgs.python3 config.programs.niri.package ];
     text = ''
+      export NIRI_FLOAT_OVERLAY_LIBX11="${pkgs.xorg.libX11}/lib/libX11.so.6"
+      export NIRI_FLOAT_OVERLAY_LIBXEXT="${pkgs.xorg.libXext}/lib/libXext.so.6"
       exec python3 ${../../scripts/niri-float-overlay.py} "$@"
     '';
   };
@@ -144,6 +146,9 @@ in
         open-fullscreen = false;
         open-focused = false;
         clip-to-geometry = false;
+        # Keep the compositor on the blending path so unfocused ARGB is not flattened.
+        opacity = 0.99;
+        draw-border-with-background = false;
         focus-ring.enable = false;
         shadow.enable = false;
       }

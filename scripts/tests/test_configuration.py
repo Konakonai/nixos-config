@@ -115,6 +115,7 @@ background_opacity = 0.5
         self.assertIn("open-floating = true", core)
         self.assertIn("open-fullscreen = false", core)
         self.assertIn("clip-to-geometry = false", core)
+        self.assertIn("opacity = 0.99", core)
         self.assertIn("niri-float-overlay.py", core)
         self.assertIn("niri-float-overlay", core)
 
