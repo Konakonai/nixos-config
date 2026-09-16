@@ -7,6 +7,7 @@ let
     text = ''
       export NIRI_FLOAT_OVERLAY_LIBX11="${pkgs.libx11}/lib/libX11.so.6"
       export NIRI_FLOAT_OVERLAY_LIBXEXT="${pkgs.libxext}/lib/libXext.so.6"
+      export NIRI_FLOAT_OVERLAY_LIBXRENDER="${pkgs.libxrender}/lib/libXrender.so.1"
       exec python3 ${../../../scripts/niri-float-overlay.py} "$@"
     '';
   };

@@ -120,6 +120,7 @@ background_opacity = 0.5
         self.assertIn("niri-float-overlay", core)
         self.assertIn("pkgs.libx11", core)
         self.assertIn("pkgs.libxext", core)
+        self.assertIn("pkgs.libxrender", core)
         self.assertNotIn("xorg.libX11", core)
         self.assertNotIn("xorg.libXext", core)
         self.assertTrue((ROOT / "scripts/niri-float-overlay.py").is_file())
