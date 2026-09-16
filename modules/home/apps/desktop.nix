@@ -11,7 +11,12 @@ let
     splayer
     ;
   claude-desktop =
-    inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop;
+    inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.overrideAttrs (oldAttrs: {
+      postFixup = (oldAttrs.postFixup or "") + ''
+        wrapProgram $out/bin/claude-desktop \
+          --set CHROME_DEVEL_SANDBOX "$out/lib/claude-desktop/chrome-sandbox"
+      '';
+    });
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
