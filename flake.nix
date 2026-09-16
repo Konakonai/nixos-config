@@ -16,8 +16,13 @@
       flake = false;
     };
 
+    # Unofficial repackage. Unlike aaddrick's, the Nix path consumes a prebuilt
+    # tarball from the maintainer's releases rather than patching Anthropic's
+    # .deb locally — release assets are immutable, so a pinned tag stays
+    # byte-identical. Chosen for its Linux Computer Use bridges (wlroots-bridge
+    # covers niri).
     claude-desktop = {
-      url = "github:aaddrick/claude-desktop-debian/v3.2.1+claude1.24012.0";
+      url = "github:patrickjaja/claude-desktop-extra/v2.110.0-2";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

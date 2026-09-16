@@ -11,7 +11,7 @@ let
     splayer
     ;
   claude-desktop =
-    inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop-fhs;
+    inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop;
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
