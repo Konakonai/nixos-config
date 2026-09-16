@@ -1,10 +1,11 @@
+import ctypes
 import importlib.util
 import io
 import json
 import os
 from pathlib import Path
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 SCRIPT = Path(__file__).resolve().parents[1] / "niri-float-overlay.py"
 spec = importlib.util.spec_from_file_location("niri_float_overlay", SCRIPT)
@@ -48,6 +49,44 @@ class NiriFloatOverlayTests(unittest.TestCase):
         self.assertTrue(y < 1080 < y + h)
         self.assertGreater(w, 3840 * 0.8)
         self.assertTrue(x < 384 < x + w)
+
+    def shape_event_session(self, events):
+        session = overlay.ShapeSession()
+        session.dpy = 1
+        session.target = 42
+        session.shape_event = 99
+        session.rect = (100, 100, 500, 500)
+        session.x11 = Mock()
+        session.x11.XPending.side_effect = lambda dpy: len(events)
+        def next_event(dpy, pointer):
+            event = events.pop(0)
+            ctypes.memmove(pointer, ctypes.byref(event), ctypes.sizeof(event))
+        session.x11.XNextEvent.side_effect = next_event
+        session.restamp = Mock(return_value=True)
+        return session
+
+    def test_wine_clearing_input_is_repaired_without_waiting_for_frame(self):
+        event = overlay.XShapeEvent(type=99, window=42, kind=2,
+                                    serial=10, shaped=1, width=0, height=0)
+        session = self.shape_event_session([event])
+        session.wait(0)
+        session.restamp.assert_called_once()
+
+    def test_transparent_frame_does_not_trigger_shape_feedback_loop(self):
+        event = overlay.XShapeEvent(type=99, window=42, kind=2,
+                                    serial=10, shaped=1, width=0, height=0)
+        session = self.shape_event_session([event])
+        session.own_shapes.add(10)
+        session.wait(0)
+        session.restamp.assert_not_called()
+        self.assertEqual(session.own_shapes, set())
+
+    def test_unrelated_windows_do_not_trigger_repair(self):
+        event = overlay.XShapeEvent(type=99, window=43, kind=2,
+                                    serial=10, shaped=0)
+        session = self.shape_event_session([event])
+        session.wait(0)
+        session.restamp.assert_not_called()
 
     def test_a_vanished_window_does_not_stop_the_watcher(self):
         events = [

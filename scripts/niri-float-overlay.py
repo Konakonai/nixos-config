@@ -11,6 +11,7 @@ import ctypes
 import fcntl
 import json
 import os
+import select
 import subprocess
 import sys
 import time
@@ -49,6 +50,23 @@ class XRectangle(Structure):
         ("y", c_short),
         ("width", c_ushort),
         ("height", c_ushort),
+    ]
+
+
+class XShapeEvent(Structure):
+    _fields_ = [
+        ("type", c_int),
+        ("serial", c_ulong),
+        ("send_event", c_int),
+        ("display", c_void_p),
+        ("window", c_ulong),
+        ("kind", c_int),
+        ("x", c_int),
+        ("y", c_int),
+        ("width", c_uint),
+        ("height", c_uint),
+        ("time", c_ulong),
+        ("shaped", c_int),
     ]
 
 
@@ -156,6 +174,18 @@ def _load_x11():
     x11.XFree.argtypes = [c_void_p]
     x11.XCloseDisplay.argtypes = [c_void_p]
     x11.XFlush.argtypes = [c_void_p]
+    x11.XConnectionNumber.restype = c_int
+    x11.XConnectionNumber.argtypes = [c_void_p]
+    x11.XPending.restype = c_int
+    x11.XPending.argtypes = [c_void_p]
+    x11.XNextEvent.restype = c_int
+    x11.XNextEvent.argtypes = [c_void_p, c_void_p]
+    x11.XNextRequest.restype = c_ulong
+    x11.XNextRequest.argtypes = [c_void_p]
+    xext.XShapeQueryExtension.restype = c_int
+    xext.XShapeQueryExtension.argtypes = [c_void_p, POINTER(c_int), POINTER(c_int)]
+    xext.XShapeSelectInput.restype = c_int
+    xext.XShapeSelectInput.argtypes = [c_void_p, c_ulong, c_ulong]
     xext.XShapeCombineRectangles.argtypes = [
         c_void_p, c_ulong, c_int, c_int, c_int,
         POINTER(XRectangle), c_int, c_int, c_int,
@@ -194,19 +224,25 @@ class ShapeSession:
         self.target = 0
         self.rect = None
         self.failed = False
+        self.shape_event = 0
+        self.own_shapes = set()
         self.error_handler = ctypes.CFUNCTYPE(c_int, c_void_p, c_void_p)(self._on_x_error)
 
     def _on_x_error(self, _display, _event):
         self.failed = True
         return 0
 
+    def reset(self):
+        self.target = 0
+        self.rect = None
+        self.failed = False
+        self.own_shapes.clear()
+
     def close(self):
         if self.dpy is not None and self.x11 is not None:
             self.x11.XCloseDisplay(self.dpy)
         self.dpy = None
-        self.target = 0
-        self.rect = None
-        self.failed = False
+        self.reset()
 
     def _ensure_display(self):
         if self.dpy is not None:
@@ -220,7 +256,16 @@ class ShapeSession:
             print(f"niri-float-overlay: X11 libraries unavailable: {error}", file=sys.stderr)
             return False
         self.dpy = self.x11.XOpenDisplay(os.environ.get("DISPLAY", ":0").encode())
-        return bool(self.dpy)
+        if not self.dpy:
+            return False
+        event = c_int()
+        error = c_int()
+        if not self.xext.XShapeQueryExtension(self.dpy, byref(event), byref(error)):
+            self.close()
+            print("niri-float-overlay: X Shape extension unavailable", file=sys.stderr)
+            return False
+        self.shape_event = event.value
+        return True
 
     def _find_target(self):
         stack = _children(self.x11, self.dpy, self.x11.XDefaultRootWindow(self.dpy))
@@ -254,33 +299,58 @@ class ShapeSession:
         if not self._ensure_display():
             return False
         if self.failed:
-            self.target = 0
-            self.rect = None
-            self.failed = False
+            self.reset()
         if not self.target:
             self.target = self._find_target()
             self.rect = None
+            if self.target:
+                self.xext.XShapeSelectInput(self.dpy, self.target, 1)
         if not self.target:
             return False
         rect = self._geometry(self.target)
         if rect is None or self.failed:
-            self.target = 0
-            self.rect = None
-            self.failed = False
+            self.reset()
             return False
+        if not force and rect == self.rect:
+            return True
         self.rect = rect
         return self.restamp()
 
     def restamp(self):
-        if self.dpy is None or not self.target or self.rect is None:
+        if not self.dpy or not self.target or not self.rect or self.failed:
             return False
         rx, ry, rw, rh = self.rect
         shape = XRectangle(rx, ry, rw, rh)
+        self.own_shapes.add(self.x11.XNextRequest(self.dpy))
         self.xext.XShapeCombineRectangles(
             self.dpy, self.target, SHAPE_INPUT, 0, 0, byref(shape), 1, SHAPE_SET, UNSORTED,
         )
         self.x11.XFlush(self.dpy)
         return not self.failed
+
+    def wait(self, timeout):
+        if not self.dpy:
+            time.sleep(timeout)
+            return False
+        # React to Wine clearing/resetting ShapeInput instead of racing a 20ms timer.
+        if not self.x11.XPending(self.dpy):
+            select.select([self.x11.XConnectionNumber(self.dpy)], [], [], timeout)
+        repair = False
+        while self.x11.XPending(self.dpy):
+            event = (c_ulong * 24)()  # sizeof(XEvent)
+            self.x11.XNextEvent(self.dpy, byref(event))
+            shape = ctypes.cast(byref(event), POINTER(XShapeEvent)).contents
+            if shape.type == self.shape_event and shape.serial in self.own_shapes:
+                self.own_shapes.discard(shape.serial)
+                continue
+            if (shape.type == self.shape_event and shape.window == self.target
+                    and shape.kind == SHAPE_INPUT
+                    and (not shape.shaped or not shape.width or not shape.height)):
+                repair = True
+        # Own ShapeNotify serials are ignored, including all-transparent frames.
+        if repair and self.target:
+            return self.restamp()
+        return False
 
 
 def apply_input_shape(session=None, force=False):
@@ -301,8 +371,7 @@ def tick(last_float, session):
             if should_float(window, last_float):
                 float_window(window["id"])
     if not overlay_open:
-        session.target = 0
-        session.rect = None
+        session.reset()
         return False
     session.apply()
     return True
@@ -333,11 +402,9 @@ def run_loop():
                 if now - last_niri >= 0.4:
                     tick(last_float, session)
                     last_niri = now
-                elif session.target:
-                    session.restamp()
             except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
                 print(f"niri-float-overlay: tick failed: {error}", file=sys.stderr)
-            time.sleep(0.02)
+            session.wait(0.005 if session.target else 0.2)
     finally:
         session.close()
 
