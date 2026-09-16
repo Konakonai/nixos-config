@@ -5,6 +5,8 @@ let
     name = "niri-float-overlay";
     runtimeInputs = [ pkgs.python3 config.programs.niri.package ];
     text = ''
+      export NIRI_FLOAT_OVERLAY_LIBX11="${pkgs.libx11}/lib/libX11.so.6"
+      export NIRI_FLOAT_OVERLAY_LIBXEXT="${pkgs.libxext}/lib/libXext.so.6"
       exec python3 ${../../../scripts/niri-float-overlay.py} "$@"
     '';
   };
@@ -31,7 +33,7 @@ in
 
   systemd.user.services.niri-float-overlay = {
     Unit = {
-      Description = "Float the Steam desktop pet window";
+      Description = "Float Steam overlay pets and keep their click region";
       After = [ "graphical-session.target" ];
       PartOf = [ "graphical-session.target" ];
     };

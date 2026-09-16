@@ -38,10 +38,16 @@ class NiriFloatOverlayTests(unittest.TestCase):
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(overlay.niri_socket(), str(newer))
 
-    def test_helper_leaves_input_shape_to_wine(self):
-        source = SCRIPT.read_text()
-        self.assertNotIn("XShape", source)
-        self.assertNotIn("XRender", source)
+    def test_clickable_rect_covers_center(self):
+        x, y, w, h = overlay.clickable_rect(3840, 2160)
+        self.assertGreater(x, 0)
+        self.assertGreater(y, 0)
+        self.assertLess(x + w, 3840)
+        self.assertLess(y + h, 2160)
+        self.assertTrue(x < 1920 < x + w)
+        self.assertTrue(y < 1080 < y + h)
+        self.assertGreater(w, 3840 * 0.8)
+        self.assertTrue(x < 384 < x + w)
 
     def test_late_app_id_floats_once(self):
         events = [
