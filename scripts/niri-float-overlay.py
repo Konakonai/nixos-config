@@ -134,7 +134,7 @@ def _load_x11():
     ]
     x11.XFree.argtypes = [c_void_p]
     x11.XCloseDisplay.argtypes = [c_void_p]
-    x11.XSync.argtypes = [c_void_p, c_int]
+    x11.XFlush.argtypes = [c_void_p]
     xext.XShapeCombineRectangles.argtypes = [
         c_void_p, c_ulong, c_int, c_int, c_int,
         POINTER(XRectangle), c_int, c_int, c_int,
@@ -165,31 +165,46 @@ def _children(x11, dpy, window):
     return found
 
 
-def apply_input_shape():
-    display = os.environ.get("DISPLAY", ":0").encode()
-    try:
-        x11, xext = _load_x11()
-    except OSError as error:
-        print(f"niri-float-overlay: X11 libraries unavailable: {error}", file=sys.stderr)
-        return False
-    dpy = x11.XOpenDisplay(display)
-    if not dpy:
-        return False
-    try:
-        stack = _children(x11, dpy, x11.XDefaultRootWindow(dpy))
+class ShapeSession:
+    def __init__(self):
+        self.x11 = None
+        self.xext = None
+        self.dpy = None
+        self.target = 0
+        self.rect = None
+
+    def close(self):
+        if self.dpy is not None and self.x11 is not None:
+            self.x11.XCloseDisplay(self.dpy)
+        self.dpy = None
+        self.target = 0
+        self.rect = None
+
+    def _ensure_display(self):
+        if self.dpy is not None:
+            return True
+        try:
+            self.x11, self.xext = _load_x11()
+        except OSError as error:
+            print(f"niri-float-overlay: X11 libraries unavailable: {error}", file=sys.stderr)
+            return False
+        self.dpy = self.x11.XOpenDisplay(os.environ.get("DISPLAY", ":0").encode())
+        return bool(self.dpy)
+
+    def _find_target(self):
+        stack = _children(self.x11, self.dpy, self.x11.XDefaultRootWindow(self.dpy))
         seen = set()
-        target = 0
         while stack:
             window = stack.pop()
             if window in seen:
                 continue
             seen.add(window)
-            if _window_name(x11, dpy, window) in X_TITLES:
-                target = window
-                break
-            stack.extend(_children(x11, dpy, window))
-        if not target:
-            return False
+            if _window_name(self.x11, self.dpy, window) in X_TITLES:
+                return window
+            stack.extend(_children(self.x11, self.dpy, window))
+        return 0
+
+    def _geometry(self, window):
         root = c_ulong()
         x = c_int()
         y = c_int()
@@ -197,39 +212,82 @@ def apply_input_shape():
         height = c_uint()
         border = c_uint()
         depth = c_uint()
-        if not x11.XGetGeometry(
-            dpy, target, byref(root), byref(x), byref(y),
+        if not self.x11.XGetGeometry(
+            self.dpy, window, byref(root), byref(x), byref(y),
             byref(width), byref(height), byref(border), byref(depth),
         ):
+            return None
+        return clickable_rect(width.value, height.value)
+
+    def apply(self, force=False):
+        if not self._ensure_display():
             return False
-        rx, ry, rw, rh = clickable_rect(width.value, height.value)
-        rect = XRectangle(rx, ry, rw, rh)
-        xext.XShapeCombineRectangles(
-            dpy, target, SHAPE_INPUT, 0, 0, byref(rect), 1, SHAPE_SET, UNSORTED,
+        if not self.target:
+            self.target = self._find_target()
+            self.rect = None
+        if not self.target:
+            return False
+        rect = self._geometry(self.target)
+        if rect is None:
+            self.target = 0
+            self.rect = None
+            return False
+        if not force and rect == self.rect:
+            return True
+        rx, ry, rw, rh = rect
+        shape = XRectangle(rx, ry, rw, rh)
+        self.xext.XShapeCombineRectangles(
+            self.dpy, self.target, SHAPE_INPUT, 0, 0, byref(shape), 1, SHAPE_SET, UNSORTED,
         )
-        x11.XSync(dpy, 0)
+        self.x11.XFlush(self.dpy)
+        self.rect = rect
         return True
-    finally:
-        x11.XCloseDisplay(dpy)
 
 
-def tick(last_float):
+def apply_input_shape(session=None, force=False):
+    if session is None:
+        session = ShapeSession()
+        try:
+            return session.apply(force=True)
+        finally:
+            session.close()
+    return session.apply(force=force)
+
+
+def tick(last_float, session, last_shape):
+    overlay_open = False
     for window in niri("windows"):
-        if should_float(window, last_float):
-            float_window(window["id"])
-    apply_input_shape()
+        if matches(window):
+            overlay_open = True
+            if should_float(window, last_float):
+                float_window(window["id"])
+    if not overlay_open:
+        session.target = 0
+        session.rect = None
+        last_shape[0] = 0
+        return
+    now = time.monotonic()
+    if last_shape[0] and now - last_shape[0] < 2.0:
+        return
+    if session.apply():
+        last_shape[0] = now
 
 
 def main():
     if not os.environ.get("NIRI_SOCKET"):
         return 0
     last_float = {}
-    while True:
-        try:
-            tick(last_float)
-        except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
-            print(f"niri-float-overlay: tick failed: {error}", file=sys.stderr)
-        time.sleep(0.4)
+    last_shape = [0]
+    session = ShapeSession()
+    try:
+        while True:
+            try:
+                tick(last_float, session, last_shape)
+            except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
+                print(f"niri-float-overlay: tick failed: {error}", file=sys.stderr)
+            time.sleep(0.4)
+    finally:
+        session.close()
 
 
 if __name__ == "__main__":
