@@ -1,11 +1,10 @@
 import importlib.util
 import io
-import ctypes
 import json
 import os
 from pathlib import Path
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch
 
 SCRIPT = Path(__file__).resolve().parents[1] / "niri-float-overlay.py"
 spec = importlib.util.spec_from_file_location("niri_float_overlay", SCRIPT)
@@ -39,56 +38,10 @@ class NiriFloatOverlayTests(unittest.TestCase):
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(overlay.niri_socket(), str(newer))
 
-    def shape_event_session(self, events):
-        session = overlay.ShapeSession()
-        session.dpy = 1
-        session.target = 42
-        session.mask = 7
-        session.shape_event = 99
-        session.x11 = Mock()
-        session.x11.XPending.side_effect = lambda dpy: len(events)
-        def next_event(dpy, pointer):
-            event = events.pop(0)
-            ctypes.memmove(pointer, ctypes.byref(event), ctypes.sizeof(event))
-        session.x11.XNextEvent.side_effect = next_event
-        session.restamp = Mock(return_value=True)
-        return session
-
-    def test_wine_clearing_input_is_repaired_without_waiting_for_frame(self):
-        event = overlay.XShapeEvent(type=99, window=42, kind=2,
-                                    serial=10, shaped=1, width=0, height=0)
-        session = self.shape_event_session([event])
-        session.wait(0)
-        session.restamp.assert_called_once()
-
-    def test_transparent_frame_does_not_trigger_shape_feedback_loop(self):
-        event = overlay.XShapeEvent(type=99, window=42, kind=2,
-                                    serial=10, shaped=1, width=0, height=0)
-        session = self.shape_event_session([event])
-        session.own_shapes.add(10)
-        session.wait(0)
-        session.restamp.assert_not_called()
-        self.assertEqual(session.own_shapes, set())
-
-    def test_unrelated_windows_do_not_trigger_repair(self):
-        event = overlay.XShapeEvent(type=99, window=43, kind=2,
-                                    serial=10, shaped=0)
-        session = self.shape_event_session([event])
-        session.wait(0)
-        session.restamp.assert_not_called()
-
-    def test_x_error_invalidates_resources_and_allows_rediscovery(self):
-        session = overlay.ShapeSession()
-        session.dpy = 1
-        session.target, session.mask, session.picture = 42, 7, 8
-        session.x11, session.render = Mock(), Mock()
-        session._error(None, None)
-        self.assertFalse(session.restamp())
-        session.reset()
-        session.render.XRenderFreePicture.assert_called_once_with(1, 8)
-        session.x11.XFreePixmap.assert_called_once_with(1, 7)
-        self.assertEqual(session.target, 0)
-        self.assertFalse(session.failed)
+    def test_helper_leaves_input_shape_to_wine(self):
+        source = SCRIPT.read_text()
+        self.assertNotIn("XShape", source)
+        self.assertNotIn("XRender", source)
 
     def test_late_app_id_floats_once(self):
         events = [

@@ -118,11 +118,7 @@ background_opacity = 0.5
         self.assertIn("opacity = 0.99", core)
         self.assertIn("../../../scripts/niri-float-overlay.py", core)
         self.assertIn("niri-float-overlay", core)
-        self.assertIn("pkgs.libx11", core)
-        self.assertIn("pkgs.libxext", core)
-        self.assertIn("pkgs.libxrender", core)
-        self.assertNotIn("xorg.libX11", core)
-        self.assertNotIn("xorg.libXext", core)
+        self.assertIn("Float the Steam desktop pet window", core)
         self.assertTrue((ROOT / "scripts/niri-float-overlay.py").is_file())
         self.assertIn("systemd.user.services.niri-float-overlay", core)
 
