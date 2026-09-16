@@ -98,6 +98,8 @@ assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
     set -euo pipefail
     grep -F 'include "noctalia.kdl" optional=true' "$niriConfig"
     grep -F 'include "gpu.kdl" optional=true' "$niriConfig"
+    grep -F 'steam_app_4564320' "$niriConfig"
+    grep -F 'open-floating true' "$niriConfig"
 
     work="$(mktemp -d)"
     cp "$niriConfig" "$work/config.kdl"

@@ -123,6 +123,19 @@ in
         draw-border-with-background = false;
         clip-to-geometry = true;
       }
+      {
+        # Steam 4564320 / Your Coworker is a per-pixel desktop overlay.
+        matches = [
+          { app-id = "^steam_app_4564320$"; }
+          { app-id = "^YourCoworker[.]exe$"; }
+          { title = "YourCoworker|Your Coworker|With Your Coworker"; }
+        ];
+        open-floating = true;
+        open-fullscreen = false;
+        clip-to-geometry = false;
+        focus-ring.enable = false;
+        shadow.enable = false;
+      }
     ];
 
     animations.enable = true;

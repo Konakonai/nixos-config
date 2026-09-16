@@ -109,6 +109,13 @@ background_opacity = 0.5
         self.assertNotIn('include "noctalia.kdl"', effects)
         self.assertIn("validated-config-for", effects)
 
+    def test_niri_coworker_overlay_floats(self):
+        core = (ROOT / "modules/home/niri/core.nix").read_text()
+        self.assertIn("steam_app_4564320", core)
+        self.assertIn("open-floating = true", core)
+        self.assertIn("open-fullscreen = false", core)
+        self.assertIn("clip-to-geometry = false", core)
+
     def test_kdeconnect_refresh_modes_are_wired(self):
         hook = os.environ.get("KDECONNECT_NM_HOOK")
         exec_start = os.environ.get("KDECONNECT_REFRESH_EXEC")
