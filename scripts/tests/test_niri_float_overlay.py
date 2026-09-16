@@ -38,11 +38,21 @@ class NiriFloatOverlayTests(unittest.TestCase):
         with patch.dict(os.environ, env, clear=True):
             self.assertEqual(overlay.niri_socket(), str(newer))
 
-    def test_helper_does_not_touch_the_input_shape(self):
-        # Proton rebuilds the ShapeInput region from the rendered alpha every
-        # 32ms; anything stamped here just fights it and eats desktop clicks.
-        self.assertFalse(hasattr(overlay, "clickable_rect"))
-        self.assertFalse(hasattr(overlay, "ShapeSession"))
+    def test_clickable_rect_is_a_small_box_around_the_pet(self):
+        # Measured pet+HUD extent on a 3840x2160 overlay was x 2440..3212,
+        # y 732..1500. The rect must contain that and stay far away from the
+        # near-fullscreen box this used to stamp.
+        x, y, w, h = overlay.clickable_rect(3840, 2160)
+        self.assertLessEqual(x, 2440)
+        self.assertLessEqual(y, 732)
+        self.assertGreaterEqual(x + w, 3212)
+        self.assertGreaterEqual(y + h, 1500)
+        self.assertLess((w * h) / (3840 * 2160), 0.20)
+
+    def test_clickable_rect_scales_with_the_window(self):
+        x, y, w, h = overlay.clickable_rect(1920, 1080)
+        self.assertLess(x + w, 1920)
+        self.assertLess(y + h, 1080)
 
     def test_a_vanished_window_does_not_stop_the_watcher(self):
         events = [

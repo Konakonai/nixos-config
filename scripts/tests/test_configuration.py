@@ -123,9 +123,14 @@ background_opacity = 0.5
         # The helper is launched once, from the unit; a second spawn-at-startup
         # copy only ever hit the singleton lock and died.
         self.assertEqual(core.count("lib.getExe niriFloatOverlay"), 1)
-        # Click-through is Proton's ALPHA input shape, not a stamped rectangle.
+        self.assertIn("pkgs.libx11", core)
+        self.assertIn("pkgs.libxext", core)
+        self.assertNotIn("xorg.libX11", core)
+        # The stamped region only decides whether the pet reacts; niri cannot
+        # do click-through at all, so the rect stays small instead of covering
+        # the screen. See README.
         helper = (ROOT / "scripts/niri-float-overlay.py").read_text()
-        self.assertNotIn("XShapeCombineRectangles", helper)
+        self.assertIn("XShapeCombineRectangles", helper)
 
     def test_kdeconnect_refresh_modes_are_wired(self):
         hook = os.environ.get("KDECONNECT_NM_HOOK")
