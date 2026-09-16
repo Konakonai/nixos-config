@@ -109,27 +109,6 @@ background_opacity = 0.5
         self.assertNotIn('include "noctalia.kdl"', effects)
         self.assertIn("validated-config-for", effects)
 
-    def test_niri_coworker_overlay_floats(self):
-        core = (ROOT / "modules/home/niri/core.nix").read_text()
-        self.assertIn("steam_app_4564320", core)
-        self.assertIn("open-floating = true", core)
-        self.assertIn("open-fullscreen = false", core)
-        self.assertIn("clip-to-geometry = false", core)
-        self.assertIn("opacity = 0.99", core)
-        self.assertIn("../../../scripts/niri-float-overlay.py", core)
-        self.assertIn("niri-float-overlay", core)
-        self.assertIn("pkgs.libx11", core)
-        self.assertIn("pkgs.libxext", core)
-        self.assertNotIn("xorg.libX11", core)
-        self.assertNotIn("xorg.libXext", core)
-        self.assertTrue((ROOT / "scripts/niri-float-overlay.py").is_file())
-        self.assertIn("systemd.user.services.niri-float-overlay", core)
-        # The helper is launched once, from the unit; a second spawn-at-startup
-        # copy only ever hit the singleton lock and died.
-        self.assertEqual(core.count("lib.getExe niriFloatOverlay"), 1)
-        helper = (ROOT / "scripts/niri-float-overlay.py").read_text()
-        self.assertIn("XShapeCombineRectangles", helper)
-
     def test_kdeconnect_refresh_modes_are_wired(self):
         hook = os.environ.get("KDECONNECT_NM_HOOK")
         exec_start = os.environ.get("KDECONNECT_REFRESH_EXEC")

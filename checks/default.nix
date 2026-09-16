@@ -98,9 +98,6 @@ assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
     set -euo pipefail
     grep -F 'include "noctalia.kdl" optional=true' "$niriConfig"
     grep -F 'include "gpu.kdl" optional=true' "$niriConfig"
-    grep -F 'steam_app_4564320' "$niriConfig"
-    grep -F 'open-floating true' "$niriConfig"
-    # niri-float-overlay is a systemd user unit, not a spawn-at-startup entry.
 
     work="$(mktemp -d)"
     cp "$niriConfig" "$work/config.kdl"

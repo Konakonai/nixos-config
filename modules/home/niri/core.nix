@@ -1,15 +1,6 @@
-{ config, lib, lilyaTheme, pkgs, ... }:
+{ config, lilyaTheme, pkgs, ... }:
 
 let
-  niriFloatOverlay = pkgs.writeShellApplication {
-    name = "niri-float-overlay";
-    runtimeInputs = [ pkgs.python3 config.programs.niri.package pkgs.libx11 pkgs.libxext ];
-    text = ''
-      export NIRI_FLOAT_OVERLAY_LIBX11="${pkgs.libx11}/lib/libX11.so.6"
-      export NIRI_FLOAT_OVERLAY_LIBXEXT="${pkgs.libxext}/lib/libXext.so.6"
-      exec python3 ${../../../scripts/niri-float-overlay.py} "$@"
-    '';
-  };
   xwaylandCoreFonts = pkgs.writeShellScript "xwayland-core-fonts" ''
     set -euo pipefail
 
@@ -29,22 +20,6 @@ let
   '';
 in
 {
-  home.packages = [ niriFloatOverlay ];
-
-  systemd.user.services.niri-float-overlay = {
-    Unit = {
-      Description = "Float Steam overlay pets and keep their click region";
-      After = [ "graphical-session.target" ];
-      PartOf = [ "graphical-session.target" ];
-    };
-    Service = {
-      ExecStart = lib.getExe niriFloatOverlay;
-      Restart = "always";
-      RestartSec = "2s";
-    };
-    Install.WantedBy = [ "graphical-session.target" ];
-  };
-
   programs.niri.settings = {
     includes = [
       { path = "gpu.kdl"; optional = true; }
@@ -147,23 +122,6 @@ in
         };
         draw-border-with-background = false;
         clip-to-geometry = true;
-      }
-      {
-        # Steam 4564320 / Your Coworker is a per-pixel desktop overlay.
-        matches = [
-          { app-id = "^steam_app_4564320$"; }
-          { app-id = "^YourCoworker[.]exe$"; }
-          { title = "YourCoworker|Your Coworker|With Your Coworker"; }
-        ];
-        open-floating = true;
-        open-fullscreen = false;
-        open-focused = false;
-        clip-to-geometry = false;
-        # Keep the compositor on the blending path so unfocused ARGB is not flattened.
-        opacity = 0.99;
-        draw-border-with-background = false;
-        focus-ring.enable = false;
-        shadow.enable = false;
       }
     ];
 
