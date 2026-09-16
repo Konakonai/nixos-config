@@ -118,17 +118,17 @@ background_opacity = 0.5
         self.assertIn("opacity = 0.99", core)
         self.assertIn("../../../scripts/niri-float-overlay.py", core)
         self.assertIn("niri-float-overlay", core)
+        self.assertIn("pkgs.libx11", core)
+        self.assertIn("pkgs.libxext", core)
+        self.assertNotIn("xorg.libX11", core)
+        self.assertNotIn("xorg.libXext", core)
         self.assertTrue((ROOT / "scripts/niri-float-overlay.py").is_file())
         self.assertIn("systemd.user.services.niri-float-overlay", core)
         # The helper is launched once, from the unit; a second spawn-at-startup
         # copy only ever hit the singleton lock and died.
         self.assertEqual(core.count("lib.getExe niriFloatOverlay"), 1)
-        self.assertNotIn("xorg.libX11", core)
         helper = (ROOT / "scripts/niri-float-overlay.py").read_text()
-        self.assertNotIn("XShapeCombineRectangles", helper)
-        satellite = (ROOT / "pkgs/xwayland-satellite.nix").read_text()
-        self.assertIn("xwayland-satellite-scale-input-region.patch", satellite)
-        self.assertTrue((ROOT / "patches/xwayland-satellite-scale-input-region.patch").is_file())
+        self.assertIn("XShapeCombineRectangles", helper)
 
     def test_kdeconnect_refresh_modes_are_wired(self):
         hook = os.environ.get("KDECONNECT_NM_HOOK")

@@ -8,6 +8,8 @@ result-*
 *.swp
 *.swo
 *~
+__pycache__/
+*.pyc
 
 # Logs and temporary files.
 *.log
