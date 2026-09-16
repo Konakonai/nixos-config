@@ -48,7 +48,9 @@ rebuild
 
 Niri 下可在 Steam 的游戏属性 → 启动选项中填写 `steam-follow %command%`。启动器会把本次游戏新建的 `steam_app_<AppID>` 窗口移到启动时 Steam 所在屏幕，之后不干预手动移动；窗口首次出现时可能短暂位于另一屏。全屏游戏跨屏使用 `Super+Ctrl+Shift+←/→`，鼠标拖动仍遵循 Niri 的退出全屏行为。目标尺寸由 Niri 通知游戏，游戏内部渲染分辨率是否同步仍取决于游戏本身。Plasma 或无法取得 Steam 所在屏幕时直接启动原命令。删除该启动选项即可停用。
 
-Steam《With Your Coworker》（AppID 4564320）是逐像素桌面挂件，启动选项为 `WINE_LAYERED_OVERLAY_ALPHA=1 %command%`。点击区由 GE-Proton 的 winex11 按渲染后的 alpha 每 32ms 重建 X11 ShapeInput，Xwayland 把该区域转给 Niri，`niri-float-overlay` 只负责把窗口移到浮动层。`WINE_LAYERED_OVERLAY_INPUT_SHAPE` 默认即为 1，不要在 Proton 的 `user_settings.py` 或启动选项里设成 0——该窗口带 `WS_EX_TRANSPARENT`，置 0 会让 winex11 直接写入空输入区，挂件整体点击穿透。
+Steam《With Your Coworker》（AppID 4564320）是逐像素桌面挂件，启动选项为 `WINE_LAYERED_OVERLAY_ALPHA=1 %command%`；`niri-float-overlay` 只负责把窗口移到浮动层。
+
+**Niri 下点击穿透无法实现**，这是合成器栈的限制，不是本仓库能配置出来的。实测（uinput 虚拟指针 + 一个输入区为空的最小 X11 探针窗口）：X11 ShapeInput 区域对 Niri 完全没有作用，空输入区的窗口照样吃掉全屏点击。Niri 内置 `xwayland-satellite`（`src/utils/xwayland/satellite.rs`），而 xwayland-satellite 没有把 X11 ShapeInput 翻译成 `wl_surface.set_input_region`。因此游戏运行时该全屏窗口会吞掉桌面上所有点击，改 `WINE_LAYERED_OVERLAY_INPUT_SHAPE` 或在脚本里盖输入区都改变不了这一点——那些只影响 Xwayland 内部把事件交给哪个 X 客户端，即挂件本身响不响应点击。
 
 ## 配置与外部状态
 

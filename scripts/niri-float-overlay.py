@@ -3,11 +3,12 @@
 X11/Proton windows often receive their app-id after niri has already applied
 open-floating rules, so a fullscreen overlay lands in the tiling layout.
 
-Click-through is not this helper's job. `WINE_LAYERED_OVERLAY_ALPHA=1` makes
-GE-Proton's winex11 rebuild the X11 ShapeInput region from the rendered alpha
-every `WINE_LAYERED_OVERLAY_SHAPE_INTERVAL` ms (32 by default), and Xwayland
-forwards that region to niri. Overwriting it from here only replaces per-pixel
-click-through with a rectangle that swallows the desktop.
+Click-through is not this helper's job, and on niri it is not achievable at all:
+xwayland-satellite does not translate X11 ShapeInput into
+`wl_surface.set_input_region`, so an X11 window swallows every click over its
+whole rectangle even with an empty input shape (measured, see README). Stamping
+an input region from here changes only which X client Xwayland hands the event
+to -- never whether the click reaches the compositor's other windows.
 """
 
 import json
