@@ -100,6 +100,7 @@ assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
     grep -F 'include "gpu.kdl" optional=true' "$niriConfig"
     grep -F 'steam_app_4564320' "$niriConfig"
     grep -F 'open-floating true' "$niriConfig"
+    grep -F 'niri-float-overlay' "$niriConfig"
 
     work="$(mktemp -d)"
     cp "$niriConfig" "$work/config.kdl"

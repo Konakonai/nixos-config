@@ -1,6 +1,13 @@
-{ config, lilyaTheme, pkgs, ... }:
+{ config, lib, lilyaTheme, pkgs, ... }:
 
 let
+  niriFloatOverlay = pkgs.writeShellApplication {
+    name = "niri-float-overlay";
+    runtimeInputs = [ pkgs.python3 config.programs.niri.package ];
+    text = ''
+      exec python3 ${../../scripts/niri-float-overlay.py} "$@"
+    '';
+  };
   xwaylandCoreFonts = pkgs.writeShellScript "xwayland-core-fonts" ''
     set -euo pipefail
 
@@ -20,6 +27,8 @@ let
   '';
 in
 {
+  home.packages = [ niriFloatOverlay ];
+
   programs.niri.settings = {
     includes = [
       { path = "gpu.kdl"; optional = true; }
@@ -32,6 +41,7 @@ in
       { command = [ "noctalia" ]; }
       { command = [ "${xwaylandCoreFonts}" ]; }
       { command = [ "xrdb" "-merge" "${config.home.homeDirectory}/.Xresources" ]; }
+      { command = [ (lib.getExe niriFloatOverlay) ]; }
     ];
 
     hotkey-overlay.skip-at-startup = true;
@@ -132,6 +142,7 @@ in
         ];
         open-floating = true;
         open-fullscreen = false;
+        open-focused = false;
         clip-to-geometry = false;
         focus-ring.enable = false;
         shadow.enable = false;

@@ -115,6 +115,8 @@ background_opacity = 0.5
         self.assertIn("open-floating = true", core)
         self.assertIn("open-fullscreen = false", core)
         self.assertIn("clip-to-geometry = false", core)
+        self.assertIn("niri-float-overlay.py", core)
+        self.assertIn("niri-float-overlay", core)
 
     def test_kdeconnect_refresh_modes_are_wired(self):
         hook = os.environ.get("KDECONNECT_NM_HOOK")
