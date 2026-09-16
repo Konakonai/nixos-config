@@ -5,8 +5,6 @@ let
     name = "niri-float-overlay";
     runtimeInputs = [ pkgs.python3 config.programs.niri.package ];
     text = ''
-      export NIRI_FLOAT_OVERLAY_LIBX11="${pkgs.libx11}/lib/libX11.so.6"
-      export NIRI_FLOAT_OVERLAY_LIBXEXT="${pkgs.libxext}/lib/libXext.so.6"
       exec python3 ${../../../scripts/niri-float-overlay.py} "$@"
     '';
   };
@@ -150,7 +148,7 @@ in
       }
       {
         # Steam 4564320 / Your Coworker is a per-pixel desktop overlay.
-        # The helper owns the click region; see niri-float-overlay.py.
+        # Proton owns the click region; xwayland-satellite must scale it.
         matches = [
           { app-id = "^steam_app_4564320$"; }
           { app-id = "^YourCoworker[.]exe$"; }
