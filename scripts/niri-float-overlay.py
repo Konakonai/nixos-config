@@ -364,17 +364,23 @@ def apply_input_shape(session=None, force=False):
 
 
 def tick(last_float, session):
-    overlay_open = False
-    for window in niri("windows"):
-        if matches(window):
-            overlay_open = True
-            if should_float(window, last_float):
-                float_window(window["id"])
-    if not overlay_open:
-        session.reset()
-        return False
+    socket = niri_socket()
+    if socket:
+        os.environ["NIRI_SOCKET"] = socket
+        overlay_open = False
+        try:
+            for window in niri("windows"):
+                if matches(window):
+                    overlay_open = True
+                    if should_float(window, last_float):
+                        float_window(window["id"])
+            if not overlay_open:
+                session.reset()
+                return False
+        except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
+            print(f"niri-float-overlay: niri query failed: {error}", file=sys.stderr)
     session.apply()
-    return True
+    return bool(session.target)
 
 
 def singleton_lock():
@@ -415,13 +421,7 @@ def main():
         print("niri-float-overlay: already running", file=sys.stderr)
         return 0
     try:
-        while True:
-            socket = niri_socket()
-            if socket is None:
-                time.sleep(1)
-                continue
-            os.environ["NIRI_SOCKET"] = socket
-            run_loop()
+        run_loop()
     finally:
         lock_file.close()
 

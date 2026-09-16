@@ -48,7 +48,7 @@ rebuild
 
 Niri 下可在 Steam 的游戏属性 → 启动选项中填写 `steam-follow %command%`。启动器会把本次游戏新建的 `steam_app_<AppID>` 窗口移到启动时 Steam 所在屏幕，之后不干预手动移动；窗口首次出现时可能短暂位于另一屏。全屏游戏跨屏使用 `Super+Ctrl+Shift+←/→`，鼠标拖动仍遵循 Niri 的退出全屏行为。目标尺寸由 Niri 通知游戏，游戏内部渲染分辨率是否同步仍取决于游戏本身。Plasma 或无法取得 Steam 所在屏幕时直接启动原命令。删除该启动选项即可停用。
 
-Steam《With Your Coworker》（AppID 4564320）是桌面挂件，启动选项填写 `WINE_LAYERED_OVERLAY_ALPHA=1 %command%`。`niri-float-overlay` 负责将窗口自动置为浮动并设置点击区，保证角色与菜单正常接收点击。
+Steam《With Your Coworker》（AppID 4564320）是桌面挂件，启动选项填写 `WINE_LAYERED_OVERLAY_ALPHA=1 WINE_LAYERED_OVERLAY_INPUT_SHAPE=0 %command%`（或在 GE-Proton 的 `user_settings.py` 中设为 `"WINE_LAYERED_OVERLAY_INPUT_SHAPE": "0"`）。`niri-float-overlay` 负责将窗口自动置为浮动并设置点击区，保证角色与菜单正常接收点击，同时避免 Proton 逐帧（32ms）计算约 600 个细碎矩形更新 X11 ShapeInput 导致拖动卡顿。
 
 ## 配置与外部状态
 
