@@ -54,6 +54,53 @@ class NiriFloatOverlayTests(unittest.TestCase):
         self.assertLess(x + w, 1920)
         self.assertLess(y + h, 1080)
 
+    def test_clickable_rects_include_logical_and_buffer_boxes(self):
+        # Scale 1.5: niri reports 2560x1440, X reports 3840x2160. A click on
+        # the visible pet at logical (1960, 761) must hit the logical box,
+        # while the scaled X event (2940, 1141) must hit the buffer box.
+        rects = overlay.clickable_rects(3840, 2160, 2560, 1440)
+        self.assertEqual(len(rects), 2)
+        buffer, logical = rects
+        bx, by, bw, bh = buffer
+        lx, ly, lw, lh = logical
+        self.assertLessEqual(bx, 2440)
+        self.assertGreaterEqual(bx + bw, 3212)
+        self.assertLessEqual(lx, 1960)
+        self.assertLessEqual(ly, 761)
+        self.assertGreaterEqual(lx + lw, 1960)
+        self.assertGreaterEqual(ly + lh, 761)
+        self.assertLessEqual(bx, 2940)
+        self.assertLessEqual(by, 1141)
+        self.assertGreaterEqual(bx + bw, 2940)
+        self.assertGreaterEqual(by + bh, 1141)
+        area = bw * bh + lw * lh
+        self.assertLess(area / (3840 * 2160), 0.20)
+
+    def test_clickable_rects_without_logical_size_is_a_single_box(self):
+        self.assertEqual(
+            overlay.clickable_rects(3840, 2160),
+            [overlay.clickable_rect(3840, 2160)],
+        )
+
+    def test_inferred_logical_size_uses_output_scale(self):
+        with patch.object(overlay, "output_scale", return_value=1.5):
+            self.assertEqual(overlay.inferred_logical_size(3840, 2160), (2560, 1440))
+
+    def test_watch_records_overlay_logical_size(self):
+        state = overlay.OverlayState()
+        events = [
+            {"WindowOpenedOrChanged": {"window": {
+                "id": 3,
+                "app_id": "steam_app_4564320",
+                "title": "",
+                "is_floating": True,
+                "layout": {"window_size": [2560, 1440]},
+            }}},
+        ]
+        stream = io.StringIO("\n".join(map(json.dumps, events)))
+        overlay.watch(stream, {}, overlay_state=state)
+        self.assertEqual(state.logical_size(), (2560, 1440))
+
     def test_a_vanished_window_does_not_stop_the_watcher(self):
         events = [
             {"WindowOpenedOrChanged": {"window": window(3, app_id="steam_app_4564320")}},

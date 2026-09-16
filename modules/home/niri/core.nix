@@ -150,7 +150,7 @@ in
       }
       {
         # Steam 4564320 / Your Coworker is a per-pixel desktop overlay.
-        # Proton owns its click region; see niri-float-overlay.py.
+        # The helper owns the click region; see niri-float-overlay.py.
         matches = [
           { app-id = "^steam_app_4564320$"; }
           { app-id = "^YourCoworker[.]exe$"; }

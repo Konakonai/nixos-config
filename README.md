@@ -48,11 +48,9 @@ rebuild
 
 Niri 下可在 Steam 的游戏属性 → 启动选项中填写 `steam-follow %command%`。启动器会把本次游戏新建的 `steam_app_<AppID>` 窗口移到启动时 Steam 所在屏幕，之后不干预手动移动；窗口首次出现时可能短暂位于另一屏。全屏游戏跨屏使用 `Super+Ctrl+Shift+←/→`，鼠标拖动仍遵循 Niri 的退出全屏行为。目标尺寸由 Niri 通知游戏，游戏内部渲染分辨率是否同步仍取决于游戏本身。Plasma 或无法取得 Steam 所在屏幕时直接启动原命令。删除该启动选项即可停用。
 
-Steam《With Your Coworker》（AppID 4564320）是逐像素桌面挂件，启动选项为 `WINE_LAYERED_OVERLAY_ALPHA=1 %command%`；`niri-float-overlay` 只负责把窗口移到浮动层。
+Steam《With Your Coworker》（AppID 4564320）是逐像素桌面挂件，启动选项为 `WINE_LAYERED_OVERLAY_ALPHA=1 %command%`；`niri-float-overlay` 负责把窗口移到浮动层，并盖住挂件的点击区。
 
-**Niri 下点击穿透无法实现**，这是合成器栈的限制，不是本仓库能配置出来的。实测（uinput 虚拟指针 + 一个输入区为空的最小 X11 探针窗口）：X11 ShapeInput 区域对 Niri 完全没有作用，空输入区的窗口照样吃掉全屏点击。Niri 内置 `xwayland-satellite`（`src/utils/xwayland/satellite.rs`），而 xwayland-satellite 没有把 X11 ShapeInput 翻译成 `wl_surface.set_input_region`。因此游戏运行时该全屏窗口会吞掉桌面上所有点击。
-
-输入区唯一还起作用的地方是 Xwayland 内部——它决定事件交给哪个 X 客户端，也就是**挂件本身响不响应点击**。因此 Proton 侧保持 `WINE_LAYERED_OVERLAY_INPUT_SHAPE=0`（写在 GE-Proton 的 `user_settings.py`，仓库外状态），由 `niri-float-overlay` 盖一个贴着挂件的小矩形：Proton 的逐像素 alpha 区在 1.5 分数缩放下会因坐标漂移打不中，矩形则足够宽容。矩形尺寸见脚本里的 `PET_*` 常量，取自实测的挂件+HUD 范围。
+Xwayland 会把 X11 ShapeInput 转成 `wl_surface.set_input_region`，`xwayland-satellite` 再转发给 Niri。但 satellite 在把指针坐标乘上 viewport 缩放（本机 1.5）的同时，**没有把输入区坐标除掉同一缩放**。只按 X 窗口（3840×2160）盖矩形时，Niri 会在逻辑像素（2560×1440）里命中测试，点在挂件上却打不中。`niri-float-overlay` 因此同时盖两个矩形：缓冲像素下的挂件框（Wine 收到缩放后的点击）和逻辑像素下的挂件框（Niri 把点击送给挂件）。两框之外的透明区域会穿透到下面的窗口。Proton 侧保持 `WINE_LAYERED_OVERLAY_INPUT_SHAPE=0`（写在 GE-Proton 的 `user_settings.py`，仓库外状态），避免逐像素 alpha 区在分数缩放下把点击打丢。矩形比例见脚本里的 `PET_*` 常量，取自实测的挂件+HUD 范围。
 
 ## 配置与外部状态
 

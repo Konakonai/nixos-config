@@ -126,9 +126,8 @@ background_opacity = 0.5
         self.assertIn("pkgs.libx11", core)
         self.assertIn("pkgs.libxext", core)
         self.assertNotIn("xorg.libX11", core)
-        # The stamped region only decides whether the pet reacts; niri cannot
-        # do click-through at all, so the rect stays small instead of covering
-        # the screen. See README.
+        # The helper stamps buffer-space and logical-space pet boxes so niri
+        # hit-tests the visible pet; see README.
         helper = (ROOT / "scripts/niri-float-overlay.py").read_text()
         self.assertIn("XShapeCombineRectangles", helper)
 

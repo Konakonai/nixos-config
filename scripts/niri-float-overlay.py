@@ -6,17 +6,14 @@ Two jobs, both niri-specific:
    open-floating rules, so a fullscreen overlay lands in the tiling layout.
    Watch the event stream and float each matching window once.
 
-2. Stamp a small X11 ShapeInput rectangle over the pet. This does NOT give
-   click-through: xwayland-satellite (which niri embeds) never translates
-   ShapeInput into `wl_surface.set_input_region`, so the overlay's full
-   rectangle swallows every click on the desktop no matter what is stamped
-   here -- measured with a virtual pointer against a probe window whose input
-   shape was empty. What the region *does* control is which X client Xwayland
-   hands an event to, i.e. whether the pet itself reacts. GE-Proton's per-pixel
-   alpha region (`WINE_LAYERED_OVERLAY_INPUT_SHAPE=1`) is too tight to survive
-   the compositor's coordinate drift on a fractional-scale output, so the pet
-   stops responding; a rectangle around the pet is forgiving enough to work.
-   Proton must therefore be left on INPUT_SHAPE=0 -- see README.
+2. Stamp X11 ShapeInput rectangles over the pet. Xwayland turns that shape into
+   `wl_surface.set_input_region`, and xwayland-satellite forwards the region to
+   niri *without* dividing by the viewport scale, while pointer events *are*
+   multiplied by that scale. A single buffer-space rectangle therefore misses
+   the visible pet (niri hit-tests it in logical pixels). The helper stamps
+   both the buffer-space box (so Wine sees the scaled click) and the
+   logical-space box (so niri sends the click). Transparent areas outside both
+   boxes pass through. Proton stays on INPUT_SHAPE=0 -- see README.
 """
 
 import ctypes
@@ -104,6 +101,85 @@ def clickable_rect(width, height):
     )
 
 
+def clickable_rects(buffer_width, buffer_height, logical_width=None, logical_height=None):
+    """ShapeInput rectangles in X (buffer) coordinates.
+
+    niri's surface is the viewport destination (logical pixels). Satellite
+    copies Xwayland's input region onto that surface unchanged, so a rect
+    computed from the X window size is tested in the wrong space. A second
+    rect computed from niri's logical window size lands on the visible pet.
+    """
+    rects = [clickable_rect(buffer_width, buffer_height)]
+    if (
+        logical_width
+        and logical_height
+        and (logical_width, logical_height) != (buffer_width, buffer_height)
+    ):
+        logical = clickable_rect(logical_width, logical_height)
+        if logical != rects[0]:
+            rects.append(logical)
+    return rects
+
+
+def logical_size_of(window):
+    size = (window.get("layout") or {}).get("window_size")
+    if isinstance(size, (list, tuple)) and len(size) >= 2:
+        width, height = int(size[0]), int(size[1])
+        if width > 0 and height > 0:
+            return (width, height)
+    return None
+
+
+class OverlayState:
+    """Logical (niri) size of the overlay, shared with the shape thread."""
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._logical_size = None
+
+    def set_logical_size(self, size):
+        with self._lock:
+            self._logical_size = size
+
+    def logical_size(self):
+        with self._lock:
+            return self._logical_size
+
+
+_OUTPUT_SCALE = []
+
+
+def output_scale():
+    if _OUTPUT_SCALE:
+        return _OUTPUT_SCALE[0]
+    try:
+        raw = subprocess.run(
+            ["niri", "msg", "--json", "outputs"],
+            capture_output=True,
+            text=True,
+            timeout=2,
+            check=False,
+        ).stdout
+        data = json.loads(raw)
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    for value in data.values():
+        scale = ((value or {}).get("logical") or {}).get("scale")
+        if scale:
+            _OUTPUT_SCALE.append(float(scale))
+            return _OUTPUT_SCALE[0]
+    return None
+
+
+def inferred_logical_size(buffer_width, buffer_height):
+    scale = output_scale()
+    if not scale or scale == 1.0:
+        return None
+    return (max(1, round(buffer_width / scale)), max(1, round(buffer_height / scale)))
+
+
 def float_window(window_id):
     # The window can disappear between the event and the action; a failed
     # float is not worth tearing down the watcher for.
@@ -128,18 +204,24 @@ def should_float(window, last, min_interval=0.4):
     return True
 
 
-def watch(stream, last=None):
+def watch(stream, last=None, overlay_state=None):
     last = {} if last is None else last
     try:
         for line in stream:
             event = json.loads(line)
             if "WindowsChanged" in event:
                 windows = event["WindowsChanged"]["windows"]
+                if overlay_state is not None and not any(matches(window) for window in windows):
+                    overlay_state.set_logical_size(None)
             elif "WindowOpenedOrChanged" in event:
                 windows = [event["WindowOpenedOrChanged"]["window"]]
             else:
                 continue
             for window in windows:
+                if overlay_state is not None and matches(window):
+                    size = logical_size_of(window)
+                    if size:
+                        overlay_state.set_logical_size(size)
                 if should_float(window, last):
                     float_window(window["id"])
     except (OSError, ValueError, KeyError, subprocess.SubprocessError) as error:
@@ -201,9 +283,10 @@ def _children(x11, dpy, window):
 
 
 class ShapeSession:
-    """Keeps the pet rectangle stamped on the overlay's X11 input shape."""
+    """Keeps the pet rectangles stamped on the overlay's X11 input shape."""
 
-    def __init__(self):
+    def __init__(self, overlay_state=None):
+        self.overlay_state = overlay_state
         self.x11 = None
         self.xext = None
         self.dpy = None
@@ -264,7 +347,11 @@ class ShapeSession:
             byref(width), byref(height), byref(border), byref(depth),
         ):
             return None
-        return clickable_rect(width.value, height.value)
+        logical = self.overlay_state.logical_size() if self.overlay_state else None
+        if not logical:
+            logical = inferred_logical_size(width.value, height.value)
+        logical_w, logical_h = logical if logical else (None, None)
+        return clickable_rects(width.value, height.value, logical_w, logical_h)
 
     def apply(self):
         if not self._ensure_display():
@@ -290,19 +377,19 @@ class ShapeSession:
     def restamp(self):
         if self.dpy is None or not self.target or self.rect is None:
             return False
-        rx, ry, rw, rh = self.rect
-        shape = XRectangle(rx, ry, rw, rh)
-        # Flush rather than XSync: an round-trip on every tick stalls drags.
+        n = len(self.rect)
+        shapes = (XRectangle * n)(*[XRectangle(x, y, w, h) for x, y, w, h in self.rect])
+        # Flush rather than XSync: a round-trip on every tick stalls drags.
         self.xext.XShapeCombineRectangles(
-            self.dpy, self.target, SHAPE_INPUT, 0, 0, byref(shape), 1, SHAPE_SET, UNSORTED,
+            self.dpy, self.target, SHAPE_INPUT, 0, 0, shapes, n, SHAPE_SET, UNSORTED,
         )
         self.x11.XFlush(self.dpy)
         return not self.failed
 
 
-def shape_loop(stop):
-    """Restamp the pet rectangle until `stop` is set. Runs off the event stream."""
-    session = ShapeSession()
+def shape_loop(stop, overlay_state=None):
+    """Restamp the pet rectangles until `stop` is set. Runs off the event stream."""
+    session = ShapeSession(overlay_state)
     last_locate = 0.0
     try:
         while not stop.is_set():
@@ -321,14 +408,14 @@ def shape_loop(stop):
         session.close()
 
 
-def run_once():
+def run_once(overlay_state=None):
     with subprocess.Popen(
         ["niri", "msg", "--json", "event-stream"],
         stdout=subprocess.PIPE,
         text=True,
     ) as process:
         try:
-            watch(process.stdout)
+            watch(process.stdout, overlay_state=overlay_state)
         finally:
             process.terminate()
 
@@ -336,7 +423,8 @@ def run_once():
 def main():
     # The systemd user unit is the only launcher, so it owns single-instance.
     stop = threading.Event()
-    shaper = threading.Thread(target=shape_loop, args=(stop,), daemon=True)
+    overlay_state = OverlayState()
+    shaper = threading.Thread(target=shape_loop, args=(stop, overlay_state), daemon=True)
     shaper.start()
     try:
         while True:
@@ -346,7 +434,7 @@ def main():
                 continue
             os.environ["NIRI_SOCKET"] = socket
             try:
-                run_once()
+                run_once(overlay_state)
             except OSError as error:
                 print(f"niri-float-overlay: event stream failed: {error}", file=sys.stderr)
             time.sleep(1)
