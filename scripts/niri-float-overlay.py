@@ -79,11 +79,14 @@ def matches(window):
 
 
 def clickable_rect(width, height):
+    # The pet, HUD, and popups all draw into the same fullscreen window.
+    # Keep only a thin outer frame for click-through so wardrobe/pose menus
+    # beside the character still receive clicks.
     return (
-        int(width * 0.28),
-        int(height * 0.18),
-        max(1, int(width * 0.44)),
-        max(1, int(height * 0.68)),
+        int(width * 0.04),
+        int(height * 0.03),
+        max(1, int(width * 0.92)),
+        max(1, int(height * 0.94)),
     )
 
 

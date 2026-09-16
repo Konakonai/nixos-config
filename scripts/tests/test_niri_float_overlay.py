@@ -46,6 +46,8 @@ class NiriFloatOverlayTests(unittest.TestCase):
         self.assertLess(y + h, 2160)
         self.assertTrue(x < 1920 < x + w)
         self.assertTrue(y < 1080 < y + h)
+        self.assertGreater(w, 3840 * 0.8)
+        self.assertTrue(x < 384 < x + w)
 
     def test_late_app_id_floats_once(self):
         events = [
