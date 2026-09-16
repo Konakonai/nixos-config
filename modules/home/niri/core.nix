@@ -31,6 +31,20 @@ in
 {
   home.packages = [ niriFloatOverlay ];
 
+  systemd.user.services.niri-float-overlay = {
+    Unit = {
+      Description = "Float Steam overlay pets and keep their click region";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      ExecStart = lib.getExe niriFloatOverlay;
+      Restart = "on-failure";
+      RestartSec = "2s";
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
   programs.niri.settings = {
     includes = [
       { path = "gpu.kdl"; optional = true; }

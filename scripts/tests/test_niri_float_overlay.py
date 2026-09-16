@@ -1,6 +1,7 @@
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -21,6 +22,22 @@ def window(id, app_id="", title="", floating=False):
 
 
 class NiriFloatOverlayTests(unittest.TestCase):
+    def test_niri_socket_uses_newest_runtime_socket(self, tmp_path=None):
+        import tempfile
+        import os
+        runtime = Path(tempfile.mkdtemp())
+        older = runtime / "niri.wayland-1.1.sock"
+        newer = runtime / "niri.wayland-1.2.sock"
+        older.write_text("")
+        newer.write_text("")
+        os.utime(older, (1, 1))
+        os.utime(newer, (2, 2))
+        env = dict(os.environ)
+        env.pop("NIRI_SOCKET", None)
+        env["XDG_RUNTIME_DIR"] = str(runtime)
+        with patch.dict(os.environ, env, clear=True):
+            self.assertEqual(overlay.niri_socket(), str(newer))
+
     def test_clickable_rect_covers_center(self):
         x, y, w, h = overlay.clickable_rect(3840, 2160)
         self.assertGreater(x, 0)

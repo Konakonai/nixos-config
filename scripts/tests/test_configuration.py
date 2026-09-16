@@ -123,6 +123,7 @@ background_opacity = 0.5
         self.assertNotIn("xorg.libX11", core)
         self.assertNotIn("xorg.libXext", core)
         self.assertTrue((ROOT / "scripts/niri-float-overlay.py").is_file())
+        self.assertIn("systemd.user.services.niri-float-overlay", core)
 
     def test_kdeconnect_refresh_modes_are_wired(self):
         hook = os.environ.get("KDECONNECT_NM_HOOK")

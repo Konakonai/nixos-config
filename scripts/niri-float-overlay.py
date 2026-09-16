@@ -8,11 +8,13 @@ matching windows and sets a center input region covering the character and HUD.
 """
 
 import ctypes
+import fcntl
 import json
 import os
 import subprocess
 import sys
 import time
+from pathlib import Path
 from ctypes import (
     POINTER,
     Structure,
@@ -48,6 +50,19 @@ class XRectangle(Structure):
         ("width", c_ushort),
         ("height", c_ushort),
     ]
+
+
+def niri_socket():
+    env = os.environ.get("NIRI_SOCKET")
+    if env and Path(env).exists():
+        return env
+    runtime = Path(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"))
+    socks = sorted(
+        runtime.glob("niri*.sock"),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    return str(socks[0]) if socks else None
 
 
 def niri(*args):
@@ -272,9 +287,21 @@ def tick(last_float, session):
     return True
 
 
-def main():
-    if not os.environ.get("NIRI_SOCKET"):
-        return 0
+def singleton_lock():
+    runtime = Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp"))
+    lock_path = runtime / "niri-float-overlay.lock"
+    lock_file = open(lock_path, "w")
+    try:
+        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        lock_file.close()
+        return None
+    lock_file.write(str(os.getpid()))
+    lock_file.flush()
+    return lock_file
+
+
+def run_loop():
     last_float = {}
     session = ShapeSession()
     last_niri = 0
@@ -292,6 +319,23 @@ def main():
             time.sleep(0.02)
     finally:
         session.close()
+
+
+def main():
+    lock_file = singleton_lock()
+    if lock_file is None:
+        print("niri-float-overlay: already running", file=sys.stderr)
+        return 0
+    try:
+        while True:
+            socket = niri_socket()
+            if socket is None:
+                time.sleep(1)
+                continue
+            os.environ["NIRI_SOCKET"] = socket
+            run_loop()
+    finally:
+        lock_file.close()
 
 
 if __name__ == "__main__":
