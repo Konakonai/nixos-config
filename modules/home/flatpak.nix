@@ -9,16 +9,18 @@ let
     QT_STYLE_OVERRIDE = lilyaTheme.theme.qtStyle;
     XCURSOR_THEME = lilyaTheme.cursorThemeName;
     XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
-    XCURSOR_PATH = "${config.home.homeDirectory}/.local/share/flatpak-icons:${config.home.homeDirectory}/.local/share/icons";
+    XCURSOR_PATH = "${config.home.homeDirectory}/.local/share/icons";
   };
 
+  # Theme directories under ~/.local/share are symlinks into the store, so the
+  # sandbox also needs the store itself (read-only; it is world-readable anyway).
   themeFilesystems = [
+    "/nix/store:ro"
     "xdg-config/gtk-3.0:ro"
     "xdg-config/gtk-4.0:ro"
     "xdg-config/qt6ct:ro"
     "xdg-data/themes:ro"
     "xdg-data/icons:ro"
-    "xdg-data/flatpak-icons:ro"
   ];
   qqLauncher = pkgs.writeShellScriptBin "qq-session" ''
     set -euo pipefail
@@ -83,6 +85,14 @@ let
 in
 {
   home.packages = [ qqLauncher wechatLauncher ];
+
+  # Expose the GTK and icon themes to Flatpak applications. home.pointerCursor
+  # already links the cursor theme into ~/.local/share/icons.
+  xdg.dataFile = {
+    "themes/${lilyaTheme.theme.gtk}".source = "${pkgs.adw-gtk3}/share/themes/${lilyaTheme.theme.gtk}";
+    "icons/${lilyaTheme.iconThemeName}".source = "${pkgs.colloid-icon-theme}/share/icons/${lilyaTheme.iconThemeName}";
+    "icons/Adwaita".source = "${pkgs.adwaita-icon-theme}/share/icons/Adwaita";
+  };
 
   # Shadow the Flatpak export so the Niri-only NVIDIA workaround is selected
   # at launch time and cannot leak into Plasma.

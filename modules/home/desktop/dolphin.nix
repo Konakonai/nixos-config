@@ -1,18 +1,7 @@
-{ config, lib, lilyaTheme, pkgs, ... }:
+{ lilyaTheme, ... }:
 
 let
-  dolphinConfig = "${config.xdg.configHome}/dolphinrc";
-  konsoleConfig = "${config.xdg.configHome}/konsolerc";
-  konsoleProfile = "${config.xdg.dataHome}/konsole/Lilya.profile";
-  konsoleFont = "${lilyaTheme.fonts.mono},${builtins.toString lilyaTheme.fonts.terminalSize},-1,5,50,0,0,0,0,0";
-  writeKdeConfig = file: group: key: value: ''
-    ${pkgs.kdePackages.kconfig}/bin/kwriteconfig6 \
-      --file ${lib.escapeShellArg file} \
-      --group ${lib.escapeShellArg group} \
-      --key ${lib.escapeShellArg key} \
-      ${lib.escapeShellArg value}
-  '';
-  writeDolphinConfig = writeKdeConfig dolphinConfig;
+  qtFont = family: size: "${family},${toString size},-1,5,50,0,0,0,0,0";
 in
 {
   xdg.configFile."menus/applications.menu".text = ''
@@ -29,18 +18,27 @@ in
     </Menu>
   '';
 
-  home.activation.configureDolphin = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-    ${writeDolphinConfig "General" "GlobalViewProps" "true"}
-    ${writeDolphinConfig "IconsMode" "IconSize" "48"}
-    ${writeDolphinConfig "IconsMode" "PreviewSize" "64"}
-    ${writeDolphinConfig "IconsMode" "UseSystemFont" "false"}
-    ${writeDolphinConfig "IconsMode" "ViewFont" "${lilyaTheme.fonts.sans},${toString (lilyaTheme.fonts.size - 1)},-1,5,50,0,0,0,0,0"}
-    ${writeDolphinConfig "IconsMode" "TextWidthIndex" "1"}
-    ${writeDolphinConfig "IconsMode" "MaximumTextLines" "2"}
+  # plasma-manager writes only these keys; everything else in the files stays
+  # under Dolphin's and Konsole's control.
+  programs.plasma = {
+    configFile = {
+      dolphinrc = {
+        General.GlobalViewProps = true;
+        IconsMode = {
+          IconSize = 48;
+          PreviewSize = 64;
+          UseSystemFont = false;
+          ViewFont = qtFont lilyaTheme.fonts.sans (lilyaTheme.fonts.size - 1);
+          TextWidthIndex = 1;
+          MaximumTextLines = 2;
+        };
+      };
+      konsolerc."Desktop Entry".DefaultProfile = "Lilya.profile";
+    };
 
-    ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg (builtins.dirOf konsoleProfile)}
-    ${writeKdeConfig konsoleProfile "General" "Name" "Lilya"}
-    ${writeKdeConfig konsoleProfile "Appearance" "Font" konsoleFont}
-    ${writeKdeConfig konsoleConfig "Desktop Entry" "DefaultProfile" "Lilya.profile"}
-  '';
+    dataFile."konsole/Lilya.profile" = {
+      General.Name = "Lilya";
+      Appearance.Font = qtFont lilyaTheme.fonts.mono lilyaTheme.fonts.terminalSize;
+    };
+  };
 }

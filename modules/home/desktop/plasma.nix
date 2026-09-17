@@ -193,11 +193,10 @@
     };
   };
 
-  # Both Dolphin and Plasma update KDE service metadata. Rebuild the shared
-  # cache once after both activation steps instead of doing the same full scan
-  # twice on every boot and rebuild.
+  # Desktop entries and KDE service metadata change on most rebuilds; refresh
+  # the shared cache once per activation.
   home.activation.refreshKServiceCache =
-    lib.hm.dag.entryAfter [ "configureDolphin" "writeBoundary" ] ''
+    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       ${pkgs.kdePackages.kservice}/bin/kbuildsycoca6 --noincremental >/dev/null
     '';
 }
