@@ -3,8 +3,11 @@ socks-port: 0
 redir-port: 0
 tproxy-port: 0
 mixed-port: 7890
-authentication: []
-skip-auth-prefixes: null
+# `authentication` and the controller `secret` live in the encrypted proxies
+# fragment. Local clients on the mixed port stay unauthenticated.
+skip-auth-prefixes:
+- 127.0.0.0/8
+- ::1/128
 bind-address: '*'
 allow-lan: true
 mode: rule
@@ -12,11 +15,13 @@ unified-delay: true
 log-level: info
 ipv6: true
 external-controller: 127.0.0.1:9090
+# Only the bundled metacubexd UI (same origin) may call the API from a browser.
+# A wildcard origin plus allow-private-network let any web page drive the
+# controller through the browser's private-network access path.
 external-controller-cors:
   allow-origins:
-  - '*'
-  allow-private-network: true
-secret: ''
+  - http://127.0.0.1:9090
+  allow-private-network: false
 routing-mark: 162
 tcp-concurrent: true
 find-process-mode: 'off'

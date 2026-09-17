@@ -16,14 +16,20 @@
     trustedInterfaces = [ "mihomo" ];
     checkReversePath = false;
 
-    # OpenList and LocalSend are intentionally reachable on the LAN.
+    # OpenList, LocalSend and the Mihomo mixed port are intentionally reachable
+    # on the LAN. The mixed port requires the `authentication` credentials kept
+    # in the encrypted proxies fragment.
     allowedTCPPorts = [
       5244
+      7890
       53317
     ];
 
-    # LocalSend multicast discovery.
-    allowedUDPPorts = [ 53317 ];
+    # LocalSend multicast discovery and the Mihomo mixed port.
+    allowedUDPPorts = [
+      7890
+      53317
+    ];
 
     # programs.kdeconnect owns its TCP/UDP port ranges.
   };
