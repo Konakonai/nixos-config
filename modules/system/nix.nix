@@ -28,11 +28,6 @@ in
       "https://noctalia.cachix.org"
     ];
 
-    trusted-users = [
-      "root"
-      hostProfile.user.userName
-    ];
-
     trusted-public-keys = [
       "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       "niri.cachix.org-1:WvPHH8MAB75+grGROmO1CwMgxMO47J3AaOEGg3RL0c0="

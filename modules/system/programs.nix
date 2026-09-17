@@ -42,7 +42,6 @@ in
       pulseaudio
     ];
     remotePlay.openFirewall = true;
-    dedicatedServer.openFirewall = true;
   };
 
   programs.gamemode.enable = true;
@@ -71,6 +70,8 @@ in
 
   environment.variables = {
     GIT_ASKPASS = askPass;
+    # Applications that bundle their own git binary (editors, agents) still
+    # resolve helpers such as git-remote-https from the system git-core.
     GIT_EXEC_PATH = "${pkgs.git}/libexec/git-core";
   };
 }

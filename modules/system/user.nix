@@ -11,9 +11,10 @@
       "wheel"
       "audio"
       "video"
-      "input"
     ];
   };
+
+  security.sudo.extraConfig = "Defaults pwfeedback";
 
   # Home Manager activation already runs synchronously during every rebuild.
   # Reconcile the persisted generation after logins are enabled instead of
