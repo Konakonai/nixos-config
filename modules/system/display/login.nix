@@ -39,64 +39,36 @@ EOF
   '';
 
   niriLogin = pkgs.writeShellScriptBin "Niri" ''
-    unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
-
     ${lib.getExe niriGpuProbe} || true
     export NIRI_CONFIG="$HOME/.config/niri/config.kdl"
     exec ${niriSession} "$@"
   '';
-  plasmaLogin = pkgs.writeShellScriptBin "Plasma-HDR" ''
-    unset GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
-    unset QT_STYLE_OVERRIDE QT_WAYLAND_DECORATION
-
-    export QT_QPA_PLATFORMTHEME=kde
-
-    exec ${lib.getExe' pkgs.kdePackages.plasma-workspace "startplasma-wayland"} "$@"
-  '';
-
-  mkWaylandSession =
-    {
-      id,
-      name,
-      comment,
-      command,
-      desktopNames,
-    }:
+  # niri-flake registers its own niri.desktop; this session wraps niri-session
+  # with the GPU probe, so it replaces that entry instead of sitting beside it.
+  niriLoginSession =
     let
-      desktopFile = pkgs.writeText "${id}.desktop" ''
+      desktopFile = pkgs.writeText "niri.desktop" ''
         [Desktop Entry]
-        Name=${name}
-        Comment=${comment}
-        Exec=${command}
-        TryExec=${command}
+        Name=Niri
+        Comment=Scrollable-tiling Wayland compositor
+        Exec=${lib.getExe niriLogin}
+        TryExec=${lib.getExe niriLogin}
         Type=Application
-        DesktopNames=${desktopNames}
+        DesktopNames=niri
       '';
     in
-    pkgs.runCommand "${id}-wayland-session"
-      {
-        passthru.providedSessions = [ id ];
-      }
-      ''
-        mkdir -p "$out/share/wayland-sessions"
-        ln -s ${desktopFile} "$out/share/wayland-sessions/${id}.desktop"
-      '';
+    pkgs.runCommand "niri-wayland-session" { passthru.providedSessions = [ "niri" ]; } ''
+      mkdir -p "$out/share/wayland-sessions"
+      ln -s ${desktopFile} "$out/share/wayland-sessions/niri.desktop"
+    '';
 
-  niriLoginSession = mkWaylandSession {
-    id = "niri";
-    name = "Niri";
-    comment = "Scrollable-tiling Wayland compositor";
-    command = lib.getExe niriLogin;
-    desktopNames = "niri";
-  };
-  plasmaLoginSession = mkWaylandSession {
-    id = "plasma-hdr";
-    name = "Plasma-HDR";
-    comment = "KDE Plasma Wayland session with the KDE platform theme";
-    command = lib.getExe plasmaLogin;
-    desktopNames = "KDE";
-  };
-
+  # The stock Plasma Wayland session, without the X11 entry the package also ships.
+  plasmaWaylandSession =
+    pkgs.runCommand "plasma-wayland-session" { passthru.providedSessions = [ "plasma" ]; } ''
+      mkdir -p "$out/share/wayland-sessions"
+      ln -s ${pkgs.kdePackages.plasma-workspace.sessions}/share/wayland-sessions/plasma.desktop \
+        "$out/share/wayland-sessions/plasma.desktop"
+    '';
 in
 {
   programs.niri = {
@@ -113,17 +85,16 @@ in
     text = ''
       [Service]
       ExecStartPre=${lib.getExe niriGpuProbe}
-      UnsetEnvironment=GBM_BACKEND __GLX_VENDOR_LIBRARY_NAME
     '';
   };
 
   services.greetd.enable = false;
 
   services.displayManager = {
-    defaultSession = "plasma-hdr";
+    defaultSession = "niri";
     sessionPackages = lib.mkForce [
       niriLoginSession
-      plasmaLoginSession
+      plasmaWaylandSession
     ];
 
     sddm = {

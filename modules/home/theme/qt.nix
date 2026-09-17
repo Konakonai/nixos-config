@@ -31,14 +31,11 @@ let
   '';
 in
 {
+  # QT_QPA_PLATFORMTHEME=qt6ct is set only inside the niri session; the qt6ct
+  # platform-theme plugin itself comes from the system package set.
   home.packages = [
     pkgs.klassy
   ];
-
-  qt = {
-    enable = true;
-    platformTheme.name = "qt6ct";
-  };
 
   xdg.configFile."qt6ct/qt6ct.conf".text = qtctConfig "qt6ct";
 
