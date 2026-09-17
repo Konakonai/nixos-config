@@ -4,7 +4,6 @@ let
   ageIdentityFile = "${homeDirectory}/.config/age/mihomo.txt";
 in
 {
-  name = "lilya-thinkbook";
   hardwareConfiguration = ../../hardware-configuration.nix;
 
   user = {

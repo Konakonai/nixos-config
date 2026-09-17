@@ -8,7 +8,6 @@
     python3Packages.ddgs
     nh
     nvd
-    paru
     nushell
     trash-cli
     udisks

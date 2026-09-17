@@ -18,7 +18,6 @@ in
   });
   codex = pkgs.callPackage ./codex.nix { };
   codex-desktop = pkgs.callPackage ./codex-desktop.nix { inherit inputs; };
-  cursor = pkgs.code-cursor;
   eden = pkgs.callPackage ./eden.nix { };
   file-roller-wayland = fileRollerWayland;
   grok = pkgs.callPackage ./grok.nix { };
@@ -50,7 +49,4 @@ in
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
   wiiu-downloader = pkgs.callPackage ./wiiu-downloader.nix { };
-
-  mcp-server-brave-search = args:
-    pkgs.callPackage ./mcp-server-brave-search.nix args;
 }

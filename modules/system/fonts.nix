@@ -20,10 +20,6 @@ in
       corefonts
       vista-fonts
       vista-fonts-chs
-
-      source-han-sans
-      source-han-serif
-      sarasa-gothic
     ];
 
     fontconfig.defaultFonts = {
