@@ -71,6 +71,17 @@ in
   ];
   programs.fish.enable = true;
   programs.nix-ld.enable = true;
+  # Codex runs with sandbox_mode = "danger-full-access", so its cached generic
+  # Linux runtimes bypass the bwrap adapter that codex-desktop-linux uses to
+  # inject libraries and load through the system nix-ld instead. The primary
+  # runtime's headless LibreOffice needs these on top of the nix-ld defaults.
+  programs.nix-ld.libraries = with pkgs; [
+    fontconfig
+    freetype
+    lcms2
+    nspr
+    nss
+  ];
   programs.ssh.askPassword = askPass;
 
   environment.systemPackages = [
