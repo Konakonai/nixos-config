@@ -8,6 +8,7 @@
     python3Packages.ddgs
     nh
     nvd
+    nix-update
     nushell
     trash-cli
     udisks

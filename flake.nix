@@ -70,6 +70,11 @@
       inherit hostProfile;
     };
 
+    # Local packages, exposed so `nix-update --flake <name>` can bump the
+    # hand-pinned binaries (see README).
+    packages.x86_64-linux =
+      nixpkgs.lib.filterAttrs (_: nixpkgs.lib.isDerivation) nixosConfigurations.nixos.pkgs.lilya;
+
     nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
 

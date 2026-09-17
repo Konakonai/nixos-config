@@ -78,7 +78,7 @@ in
     heroic
     linuxConsoleTools
     mangohud
-    lilya.eden
+    eden
     protonup-qt
     protontricks
     vulkan-tools

@@ -8,7 +8,6 @@ let
     grok-bot
     localsend-no-csd
     nemo-with-extensions-wayland
-    splayer
     ;
   claude-desktop =
     inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.overrideAttrs (oldAttrs: {
@@ -80,7 +79,7 @@ in
     pear-desktop
     pwvucontrol
     resources
-    splayer
+    splayer-next
     spotube
     thunderbird
   ];

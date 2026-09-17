@@ -18,7 +18,6 @@ in
   });
   codex = pkgs.callPackage ./codex.nix { };
   codex-desktop = pkgs.callPackage ./codex-desktop.nix { inherit inputs; };
-  eden = pkgs.callPackage ./eden.nix { };
   file-roller-wayland = fileRollerWayland;
   grok = pkgs.callPackage ./grok.nix { };
   grok-bot = pkgs.callPackage ./grok-bot.nix { };
@@ -45,7 +44,6 @@ in
     };
   };
   libreoffice-gtk-wayland = pkgs.callPackage ./libreoffice-gtk-wayland.nix { };
-  splayer = pkgs.callPackage ./splayer.nix { };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
   wiiu-downloader = pkgs.callPackage ./wiiu-downloader.nix { };
