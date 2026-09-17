@@ -1,4 +1,9 @@
-{ lib, pkgs, inputs, ... }:
+{
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 
 let
   system = pkgs.stdenv.hostPlatform.system;
@@ -13,16 +18,15 @@ let
     flake-utils = inputs.flake-utils;
   };
 
-  codexDesktopBase =
-    codexDesktopFlake.packages.${system}.codex-desktop.override {
-      linuxFeatureIds = [
-        "computer-use-linux"
-        # Replace the upstream Parcel Git watcher with a watcher whose
-        # disposal is joined before the Electron process exits.
-        "directory-only-working-tree-watch"
-        "frameless-titlebar"
-      ];
-    };
+  codexDesktopBase = codexDesktopFlake.packages.${system}.codex-desktop.override {
+    linuxFeatureIds = [
+      "computer-use-linux"
+      # Replace the upstream Parcel Git watcher with a watcher whose
+      # disposal is joined before the Electron process exits.
+      "directory-only-working-tree-watch"
+      "frameless-titlebar"
+    ];
+  };
 
   # Codex's bundled document runtime is an unpatched Linux binary. Keep its
   # non-Electron libraries visible when it launches LibreOffice on NixOS.

@@ -136,7 +136,12 @@ pkgs.stdenv.mkDerivation {
     gappsWrapperArgs+=(
       --prefix LD_LIBRARY_PATH : "${rpath}"
       --prefix PATH : "${binpath}"
-      --suffix PATH : "${lib.makeBinPath [ pkgs.xdg-utils pkgs.coreutils ]}"
+      --suffix PATH : "${
+        lib.makeBinPath [
+          pkgs.xdg-utils
+          pkgs.coreutils
+        ]
+      }"
       --set CHROME_WRAPPER ${pname}
       --add-flags "--enable-features=AcceleratedVideoDecodeLinuxGL,AcceleratedVideoEncoder''${NIXOS_OZONE_WL:+''${WAYLAND_DISPLAY:+,WaylandWindowDecorations --enable-wayland-ime=true}}"
       --add-flags "--disable-features=OutdatedBuildDetector,UseChromeOSDirectVideoDecoder"

@@ -1,4 +1,9 @@
-{ hostProfile, lib, pkgs, ... }:
+{
+  hostProfile,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   codexUpdate = pkgs.callPackage ../../pkgs/codex-update.nix {
@@ -6,7 +11,10 @@ let
   };
 in
 {
-  home.packages = [ pkgs.lilya.codex-desktop codexUpdate ];
+  home.packages = [
+    pkgs.lilya.codex-desktop
+    codexUpdate
+  ];
 
   systemd.user.services.codex-update = {
     Unit = {

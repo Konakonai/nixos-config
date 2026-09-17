@@ -1,4 +1,9 @@
-{ lib, lilyaTheme, pkgs, ... }:
+{
+  lib,
+  lilyaTheme,
+  pkgs,
+  ...
+}:
 
 {
   # A desktop service lets KGlobalAccel own Meta+Return without wrapping Kitty.
@@ -113,13 +118,19 @@
     # 5. 全局快捷键
     shortcuts = {
       kwin = {
-        "Overview" = [ "Meta+O" "Meta+W" ];
+        "Overview" = [
+          "Meta+O"
+          "Meta+W"
+        ];
         "Window Close" = "Meta+Q";
         "Window Maximize" = "Meta+F";
         "Window Fullscreen" = "Meta+Shift+F";
       };
       plasmashell = {
-        "activate application launcher" = [ "Meta+Space" "Alt+F1" ];
+        "activate application launcher" = [
+          "Meta+Space"
+          "Alt+F1"
+        ];
         "manage activities" = "none";
       };
     };
@@ -195,8 +206,7 @@
 
   # Desktop entries and KDE service metadata change on most rebuilds; refresh
   # the shared cache once per activation.
-  home.activation.refreshKServiceCache =
-    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      ${pkgs.kdePackages.kservice}/bin/kbuildsycoca6 --noincremental >/dev/null
-    '';
+  home.activation.refreshKServiceCache = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    ${pkgs.kdePackages.kservice}/bin/kbuildsycoca6 --noincremental >/dev/null
+  '';
 }

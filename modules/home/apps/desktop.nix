@@ -1,4 +1,9 @@
-{ inputs, lib, pkgs, ... }:
+{
+  inputs,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   inherit (pkgs.lilya)
@@ -10,12 +15,13 @@ let
     nemo-with-extensions-wayland
     ;
   claude-desktop =
-    inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.overrideAttrs (oldAttrs: {
-      postFixup = (oldAttrs.postFixup or "") + ''
-        wrapProgram $out/bin/claude-desktop \
-          --set CHROME_DEVEL_SANDBOX "$out/lib/claude-desktop/chrome-sandbox"
-      '';
-    });
+    inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.overrideAttrs
+      (oldAttrs: {
+        postFixup = (oldAttrs.postFixup or "") + ''
+          wrapProgram $out/bin/claude-desktop \
+            --set CHROME_DEVEL_SANDBOX "$out/lib/claude-desktop/chrome-sandbox"
+        '';
+      });
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
@@ -101,7 +107,12 @@ in
       exec = "${nemo-with-extensions-wayland}/bin/nemo %U";
       icon = "system-file-manager";
       terminal = false;
-      categories = [ "Utility" "FileTools" "System" "FileManager" ];
+      categories = [
+        "Utility"
+        "FileTools"
+        "System"
+        "FileManager"
+      ];
       mimeType = [ "inode/directory" ];
     };
 
@@ -111,7 +122,14 @@ in
       exec = "${lib.getExe pkgs.loupe} %U";
       icon = "org.gnome.Loupe";
       terminal = false;
-      categories = [ "GNOME" "GTK" "Graphics" "2DGraphics" "RasterGraphics" "Viewer" ];
+      categories = [
+        "GNOME"
+        "GTK"
+        "Graphics"
+        "2DGraphics"
+        "RasterGraphics"
+        "Viewer"
+      ];
       mimeType = imageMimeTypes;
       startupNotify = true;
       settings.DBusActivatable = "false";
@@ -123,7 +141,11 @@ in
       exec = "${lib.getExe' pkgs.gnome-font-viewer "gnome-font-viewer"} %u";
       icon = "org.gnome.font-viewer";
       terminal = false;
-      categories = [ "GNOME" "GTK" "Utility" ];
+      categories = [
+        "GNOME"
+        "GTK"
+        "Utility"
+      ];
       mimeType = fontMimeTypes;
       startupNotify = true;
       settings.DBusActivatable = "false";

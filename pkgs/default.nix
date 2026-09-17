@@ -1,4 +1,8 @@
-{ pkgs, inputs, lib ? pkgs.lib }:
+{
+  pkgs,
+  inputs,
+  lib ? pkgs.lib,
+}:
 
 let
   braveOrigin = pkgs.callPackage ./brave-origin.nix { };

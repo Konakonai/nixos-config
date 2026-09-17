@@ -1,4 +1,8 @@
-{ lib, libreoffice, symlinkJoin, makeWrapper }:
+{
+  libreoffice,
+  symlinkJoin,
+  makeWrapper,
+}:
 
 symlinkJoin {
   name = "libreoffice-gtk-wayland-${libreoffice.version}";

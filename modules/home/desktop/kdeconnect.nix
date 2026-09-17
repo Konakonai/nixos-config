@@ -3,7 +3,11 @@
 let
   refresh = pkgs.writeShellApplication {
     name = "kdeconnect-refresh";
-    runtimeInputs = [ pkgs.coreutils pkgs.gnugrep pkgs.kdePackages.kdeconnect-kde ];
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.gnugrep
+      pkgs.kdePackages.kdeconnect-kde
+    ];
     text = builtins.readFile ../../../scripts/kdeconnect-refresh.sh;
   };
 in

@@ -1,4 +1,9 @@
-{ config, hostProfile, lib, ... }:
+{
+  config,
+  hostProfile,
+  lib,
+  ...
+}:
 
 let
   nvidia = hostProfile.graphics.nvidia or { enable = false; };
@@ -10,7 +15,8 @@ in
     enable = true;
     enable32Bit = true;
   };
-} // lib.optionalAttrs (nvidia.enable or false) {
+}
+// lib.optionalAttrs (nvidia.enable or false) {
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;
@@ -34,20 +40,27 @@ in
     package = nvidiaPackage;
   };
 
-  environment.etc."nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json".text = builtins.toJSON {
-    rules = [
-      {
-        pattern = { feature = "procname"; matches = "niri"; };
-        profile = "Limit Free Buffer Pool On Wayland Compositors";
-      }
-    ];
-    profiles = [
-      {
-        name = "Limit Free Buffer Pool On Wayland Compositors";
-        settings = [
-          { key = "GLVidHeapReuseRatio"; value = 0; }
-        ];
-      }
-    ];
-  };
+  environment.etc."nvidia/nvidia-application-profiles-rc.d/50-limit-free-buffer-pool-in-wayland-compositors.json".text =
+    builtins.toJSON {
+      rules = [
+        {
+          pattern = {
+            feature = "procname";
+            matches = "niri";
+          };
+          profile = "Limit Free Buffer Pool On Wayland Compositors";
+        }
+      ];
+      profiles = [
+        {
+          name = "Limit Free Buffer Pool On Wayland Compositors";
+          settings = [
+            {
+              key = "GLVidHeapReuseRatio";
+              value = 0;
+            }
+          ];
+        }
+      ];
+    };
 }

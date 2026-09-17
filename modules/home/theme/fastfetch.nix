@@ -3,11 +3,14 @@
 let
   logoSvg = ../../../assets/fastfetch-nixos-logo.svg;
 
-  logoPng = pkgs.runCommand "fastfetch-nixos-logomark.png" {
-    nativeBuildInputs = [ pkgs.resvg ];
-  } ''
-    resvg -w 640 ${logoSvg} $out
-  '';
+  logoPng =
+    pkgs.runCommand "fastfetch-nixos-logomark.png"
+      {
+        nativeBuildInputs = [ pkgs.resvg ];
+      }
+      ''
+        resvg -w 640 ${logoSvg} $out
+      '';
 in
 {
   xdg.configFile."fastfetch/config.jsonc".text = builtins.toJSON {

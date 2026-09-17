@@ -28,6 +28,11 @@ in
         > "$registry"
     fi
 
-    ${lib.concatMapStrings seedTabbedMode [ "Writer" "Calc" "Impress" "Draw" ]}
+    ${lib.concatMapStrings seedTabbedMode [
+      "Writer"
+      "Calc"
+      "Impress"
+      "Draw"
+    ]}
   '';
 }

@@ -1,4 +1,10 @@
-{ config, lib, lilyaTheme, pkgs, ... }:
+{
+  config,
+  lib,
+  lilyaTheme,
+  pkgs,
+  ...
+}:
 
 let
   qtColorSchemeName = "darkly-noctalia.conf";
@@ -44,7 +50,11 @@ in
     exec = lib.getExe pkgs.qt6Packages.qt6ct;
     icon = "preferences-desktop-theme";
     type = "Application";
-    categories = [ "Settings" "DesktopSettings" "Qt" ];
+    categories = [
+      "Settings"
+      "DesktopSettings"
+      "Qt"
+    ];
     terminal = false;
     noDisplay = true;
   };

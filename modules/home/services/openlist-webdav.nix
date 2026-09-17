@@ -1,4 +1,9 @@
-{ pkgs, hostProfile, lib, ... }:
+{
+  pkgs,
+  hostProfile,
+  lib,
+  ...
+}:
 
 let
   refreshOpenList = pkgs.writeShellScriptBin "refresh-openlist" ''

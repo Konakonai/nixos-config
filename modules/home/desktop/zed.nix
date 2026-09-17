@@ -1,31 +1,39 @@
-{ config, lib, lilyaTheme, pkgs, ... }:
+{
+  config,
+  lib,
+  lilyaTheme,
+  pkgs,
+  ...
+}:
 
 let
   zed = lib.getExe config.programs.zed-editor.package;
-  zedSeed = pkgs.writeText "zed-settings.json" (builtins.toJSON {
-    agent_servers.codex-acp.type = "registry";
-    cli_default_open_behavior = "existing_window";
-    proxy = "";
-    agent = {
-      default_model = {
-        provider = "opencode";
-        model = "go/kimi-k2.5";
-        enable_thinking = false;
+  zedSeed = pkgs.writeText "zed-settings.json" (
+    builtins.toJSON {
+      agent_servers.codex-acp.type = "registry";
+      cli_default_open_behavior = "existing_window";
+      proxy = "";
+      agent = {
+        default_model = {
+          provider = "opencode";
+          model = "go/kimi-k2.5";
+          enable_thinking = false;
+        };
+        favorite_models = [ ];
+        model_parameters = [ ];
       };
-      favorite_models = [ ];
-      model_parameters = [ ];
-    };
-    session.trust_all_worktrees = true;
-    ui_font_family = lilyaTheme.fonts.mono;
-    buffer_font_family = lilyaTheme.fonts.mono;
-    ui_font_size = 16;
-    buffer_font_size = 15;
-    theme = {
-      mode = "light";
-      light = "Noctalia Light";
-      dark = "Noctalia Dark";
-    };
-  });
+      session.trust_all_worktrees = true;
+      ui_font_family = lilyaTheme.fonts.mono;
+      buffer_font_family = lilyaTheme.fonts.mono;
+      ui_font_size = 16;
+      buffer_font_size = 15;
+      theme = {
+        mode = "light";
+        light = "Noctalia Light";
+        dark = "Noctalia Dark";
+      };
+    }
+  );
 in
 
 {
@@ -36,7 +44,12 @@ in
     exec = "${zed} %U";
     icon = "zed";
     type = "Application";
-    categories = [ "Utility" "TextEditor" "Development" "IDE" ];
+    categories = [
+      "Utility"
+      "TextEditor"
+      "Development"
+      "IDE"
+    ];
     mimeType = [
       "text/plain"
       "application/x-zerosize"

@@ -1,4 +1,9 @@
-{ pkgs, lib, braveOrigin ? import ./brave-origin.nix { inherit pkgs lib; }, ... }:
+{
+  pkgs,
+  lib,
+  braveOrigin ? import ./brave-origin.nix { inherit pkgs lib; },
+  ...
+}:
 
 let
   operaUserAgent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 OPR/120.0.0.0";
@@ -42,7 +47,10 @@ let
     comment = "Open Netflix in Brave with an Opera user agent";
     exec = lib.getExe launcher;
     icon = "brave-origin";
-    categories = [ "AudioVideo" "Network" ];
+    categories = [
+      "AudioVideo"
+      "Network"
+    ];
     startupNotify = true;
   };
 in

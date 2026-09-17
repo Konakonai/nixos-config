@@ -1,4 +1,11 @@
-{ config, fcitxCompatEnv, lib, lilyaTheme, pkgs, ... }:
+{
+  config,
+  fcitxCompatEnv,
+  lib,
+  lilyaTheme,
+  pkgs,
+  ...
+}:
 
 let
   themeEnv = {
@@ -84,13 +91,17 @@ let
 
 in
 {
-  home.packages = [ qqLauncher wechatLauncher ];
+  home.packages = [
+    qqLauncher
+    wechatLauncher
+  ];
 
   # Expose the GTK and icon themes to Flatpak applications. home.pointerCursor
   # already links the cursor theme into ~/.local/share/icons.
   xdg.dataFile = {
     "themes/${lilyaTheme.theme.gtk}".source = "${pkgs.adw-gtk3}/share/themes/${lilyaTheme.theme.gtk}";
-    "icons/${lilyaTheme.iconThemeName}".source = "${pkgs.colloid-icon-theme}/share/icons/${lilyaTheme.iconThemeName}";
+    "icons/${lilyaTheme.iconThemeName}".source =
+      "${pkgs.colloid-icon-theme}/share/icons/${lilyaTheme.iconThemeName}";
     "icons/Adwaita".source = "${pkgs.adwaita-icon-theme}/share/icons/Adwaita";
   };
 
@@ -167,10 +178,13 @@ in
           "x11"
         ];
         Context.filesystems = themeFilesystems;
-        Environment = themeEnv // fcitxCompatEnv // {
-          ELECTRON_OZONE_PLATFORM_HINT = "wayland";
-          NIXOS_OZONE_WL = "1";
-        };
+        Environment =
+          themeEnv
+          // fcitxCompatEnv
+          // {
+            ELECTRON_OZONE_PLATFORM_HINT = "wayland";
+            NIXOS_OZONE_WL = "1";
+          };
       };
       "com.getpostman.Postman" = {
         Context.sockets = [
@@ -178,10 +192,13 @@ in
           "x11"
         ];
         Context.filesystems = themeFilesystems;
-        Environment = themeEnv // fcitxCompatEnv // {
-          ELECTRON_OZONE_PLATFORM_HINT = "wayland";
-          NIXOS_OZONE_WL = "1";
-        };
+        Environment =
+          themeEnv
+          // fcitxCompatEnv
+          // {
+            ELECTRON_OZONE_PLATFORM_HINT = "wayland";
+            NIXOS_OZONE_WL = "1";
+          };
       };
       "com.tencent.WeChat" = {
         Context.sockets = [
@@ -194,13 +211,16 @@ in
         # QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough on this xcb path;
         # those leftovers double-scale under niri 1.5 and offset the UI.
         # The bundled Qt5 fcitx plugin still needs X11 to avoid candidate drift.
-        Environment = themeEnv // fcitxCompatEnv // {
-          QT_QPA_PLATFORM = "xcb";
-          QT_AUTO_SCREEN_SCALE_FACTOR = "1";
-          XCURSOR_THEME = lilyaTheme.cursorThemeName;
-          XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
-          XCURSOR_PATH = themeEnv.XCURSOR_PATH;
-        };
+        Environment =
+          themeEnv
+          // fcitxCompatEnv
+          // {
+            QT_QPA_PLATFORM = "xcb";
+            QT_AUTO_SCREEN_SCALE_FACTOR = "1";
+            XCURSOR_THEME = lilyaTheme.cursorThemeName;
+            XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
+            XCURSOR_PATH = themeEnv.XCURSOR_PATH;
+          };
       };
     };
   };
@@ -208,19 +228,15 @@ in
   # Keep declarative reconciliation available through the weekly timer and the
   # manual service, but do not make Home Manager activation or login wait for
   # remote Flatpak work.
-  home.activation.flatpak-managed-install =
-    lib.mkForce (lib.hm.dag.entryAnywhere "");
+  home.activation.flatpak-managed-install = lib.mkForce (lib.hm.dag.entryAnywhere "");
   # nix-flatpak merges leftover override tokens: leading empty permission
   # entries crash Flatpak 1.18, and stale Wayland DPI env vars offset the
   # X11 WeChat UI under niri fractional scale.
-  home.activation.sanitizeFlatpakOverrides =
-    lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      ${sanitizeFlatpakOverrides}
-    '';
-  systemd.user.services.flatpak-managed-install.Install.WantedBy =
-    lib.mkForce [ ];
+  home.activation.sanitizeFlatpakOverrides = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    ${sanitizeFlatpakOverrides}
+  '';
+  systemd.user.services.flatpak-managed-install.Install.WantedBy = lib.mkForce [ ];
   systemd.user.services.flatpak-managed-install.Unit.ConditionACPower = true;
-  systemd.user.services.flatpak-managed-install.Service.ExecStartPost =
-    "${sanitizeFlatpakOverrides}";
+  systemd.user.services.flatpak-managed-install.Service.ExecStartPost = "${sanitizeFlatpakOverrides}";
   systemd.user.services.flatpak-managed-install-timer.Unit.ConditionACPower = true;
 }

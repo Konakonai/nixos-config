@@ -1,4 +1,10 @@
-{ config, lib, lilyaTheme, pkgs, ... }:
+{
+  config,
+  lib,
+  lilyaTheme,
+  pkgs,
+  ...
+}:
 
 let
   darklyQtTemplate = ../../assets/noctalia/templates/darkly-qt.conf;
@@ -12,7 +18,11 @@ let
   # kdeglobals so changes made in System Settings survive future activations.
   darklyColorSchemeHook = pkgs.writeShellApplication {
     name = "noctalia-darkly-kde-colors";
-    runtimeInputs = [ pkgs.gawk pkgs.kdePackages.kconfig pkgs.coreutils ];
+    runtimeInputs = [
+      pkgs.gawk
+      pkgs.kdePackages.kconfig
+      pkgs.coreutils
+    ];
     text = builtins.readFile ../../scripts/noctalia-darkly-kde-colors.sh;
   };
   # Nix owns only the default layer (~/.config/noctalia/config.toml). Noctalia
@@ -27,9 +37,21 @@ let
     theme.templates.enable_builtin_templates = true;
     # kitty.conf ends with `include themes/noctalia.conf`, so the palette chosen
     # in the GUI reaches the terminal without the template editing kitty.conf.
-    theme.templates.builtin_ids = [ "btop" "gtk3" "gtk4" "kitty" "niri" ];
+    theme.templates.builtin_ids = [
+      "btop"
+      "gtk3"
+      "gtk4"
+      "kitty"
+      "niri"
+    ];
     theme.templates.enable_community_templates = true;
-    theme.templates.community_ids = [ "zen-browser" "discord" "steam" "telegram" "yazi" ];
+    theme.templates.community_ids = [
+      "zen-browser"
+      "discord"
+      "steam"
+      "telegram"
+      "yazi"
+    ];
 
     shell = {
       corner_radius_scale = 1.65;
@@ -80,7 +102,17 @@ let
         "mihomo-control"
       ];
       center = [ "workspaces" ];
-      end = [ "tray" "notifications" "clipboard" "volume" "brightness" "battery" "clock" "control-center" "session" ];
+      end = [
+        "tray"
+        "notifications"
+        "clipboard"
+        "volume"
+        "brightness"
+        "battery"
+        "clock"
+        "control-center"
+        "session"
+      ];
     };
 
     notification = {
@@ -160,7 +192,7 @@ in
   xdg.configFile."heroic/themes/noctalia/noctalia.json".text = builtins.toJSON {
     name = "Noctalia";
     filename = "noctalia.css";
-    screenshots = [];
+    screenshots = [ ];
     author = "Antigravity";
   };
 
@@ -170,7 +202,10 @@ in
     noDisplay = true;
     terminal = false;
     type = "Application";
-    categories = [ "Settings" "DesktopSettings" ];
+    categories = [
+      "Settings"
+      "DesktopSettings"
+    ];
   };
 
   xdg.configFile = {

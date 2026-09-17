@@ -1,4 +1,9 @@
-{ config, lilyaTheme, pkgs, ... }:
+{
+  config,
+  lilyaTheme,
+  pkgs,
+  ...
+}:
 
 {
   # Desktop-independent variables only. The Qt platform theme and decoration

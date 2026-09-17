@@ -1,4 +1,4 @@
-{ pkgs, lib, ... }:
+{ pkgs, ... }:
 
 pkgs.stdenv.mkDerivation rec {
   pname = "codex";

@@ -1,4 +1,9 @@
-{ stdenvNoCC, fetchzip, imagemagick, lib }:
+{
+  stdenvNoCC,
+  fetchzip,
+  imagemagick,
+  lib,
+}:
 
 stdenvNoCC.mkDerivation {
   pname = "grub-theme-touhou-project";

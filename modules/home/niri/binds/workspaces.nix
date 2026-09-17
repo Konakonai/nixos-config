@@ -22,38 +22,38 @@
     "Mod+Ctrl+8".action.move-column-to-workspace = [ 8 ];
     "Mod+Ctrl+9".action.move-column-to-workspace = [ 9 ];
 
-    "Mod+Page_Up".action.focus-workspace-up = [];
-    "Mod+Page_Down".action.focus-workspace-down = [];
-    "Mod+U".action.focus-workspace-down = [];
-    "Mod+I".action.focus-workspace-up = [];
-    "Mod+Ctrl+Page_Down".action.move-column-to-workspace-down = [];
-    "Mod+Ctrl+Page_Up".action.move-column-to-workspace-up = [];
-    "Mod+Ctrl+U".action.move-column-to-workspace-down = [];
-    "Mod+Ctrl+I".action.move-column-to-workspace-up = [];
-    "Mod+Shift+Page_Up".action.move-workspace-up = [];
-    "Mod+Shift+Page_Down".action.move-workspace-down = [];
-    "Mod+Shift+U".action.move-workspace-down = [];
-    "Mod+Shift+I".action.move-workspace-up = [];
+    "Mod+Page_Up".action.focus-workspace-up = [ ];
+    "Mod+Page_Down".action.focus-workspace-down = [ ];
+    "Mod+U".action.focus-workspace-down = [ ];
+    "Mod+I".action.focus-workspace-up = [ ];
+    "Mod+Ctrl+Page_Down".action.move-column-to-workspace-down = [ ];
+    "Mod+Ctrl+Page_Up".action.move-column-to-workspace-up = [ ];
+    "Mod+Ctrl+U".action.move-column-to-workspace-down = [ ];
+    "Mod+Ctrl+I".action.move-column-to-workspace-up = [ ];
+    "Mod+Shift+Page_Up".action.move-workspace-up = [ ];
+    "Mod+Shift+Page_Down".action.move-workspace-down = [ ];
+    "Mod+Shift+U".action.move-workspace-down = [ ];
+    "Mod+Shift+I".action.move-workspace-up = [ ];
 
     "Mod+WheelScrollDown" = {
       cooldown-ms = 150;
-      action.focus-workspace-down = [];
+      action.focus-workspace-down = [ ];
     };
     "Mod+WheelScrollUp" = {
       cooldown-ms = 150;
-      action.focus-workspace-up = [];
+      action.focus-workspace-up = [ ];
     };
     "Mod+Ctrl+WheelScrollDown" = {
       cooldown-ms = 150;
-      action.move-column-to-workspace-down = [];
+      action.move-column-to-workspace-down = [ ];
     };
     "Mod+Ctrl+WheelScrollUp" = {
       cooldown-ms = 150;
-      action.move-column-to-workspace-up = [];
+      action.move-column-to-workspace-up = [ ];
     };
-    "Mod+WheelScrollRight".action.focus-column-right = [];
-    "Mod+WheelScrollLeft".action.focus-column-left = [];
-    "Mod+Ctrl+WheelScrollRight".action.move-column-right = [];
-    "Mod+Ctrl+WheelScrollLeft".action.move-column-left = [];
+    "Mod+WheelScrollRight".action.focus-column-right = [ ];
+    "Mod+WheelScrollLeft".action.focus-column-left = [ ];
+    "Mod+Ctrl+WheelScrollRight".action.move-column-right = [ ];
+    "Mod+Ctrl+WheelScrollLeft".action.move-column-left = [ ];
   };
 }

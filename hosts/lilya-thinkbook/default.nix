@@ -19,7 +19,10 @@ in
       serial = "0x00006002";
       scale = 1.75;
       # Match the physical layout: the laptop panel sits on the left.
-      position = { x = -1829; y = 149; };
+      position = {
+        x = -1829;
+        y = 149;
+      };
     };
 
     external = {
@@ -27,14 +30,21 @@ in
       model = "PHL 27E2F7901";
       serial = "UHB2341003696";
       scale = 1.5;
-      position = { x = 0; y = 0; };
+      position = {
+        x = 0;
+        y = 0;
+      };
     };
   };
 
   graphics.nvidia = {
     enable = true;
     intelBusId = "PCI:0:2:0";
-    pci = { bus = 1; device = 0; function = 0; };
+    pci = {
+      bus = 1;
+      device = 0;
+      function = 0;
+    };
   };
 
   kernel.blacklistedModules = [

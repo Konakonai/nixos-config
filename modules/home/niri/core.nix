@@ -1,4 +1,9 @@
-{ config, lilyaTheme, pkgs, ... }:
+{
+  config,
+  lilyaTheme,
+  pkgs,
+  ...
+}:
 
 let
   xwaylandCoreFonts = pkgs.writeShellScript "xwayland-core-fonts" ''
@@ -22,8 +27,14 @@ in
 {
   programs.niri.settings = {
     includes = [
-      { path = "gpu.kdl"; optional = true; }
-      { path = "noctalia.kdl"; optional = true; }
+      {
+        path = "gpu.kdl";
+        optional = true;
+      }
+      {
+        path = "noctalia.kdl";
+        optional = true;
+      }
     ];
 
     prefer-no-csd = true;
@@ -31,7 +42,13 @@ in
     spawn-at-startup = [
       { command = [ "noctalia" ]; }
       { command = [ "${xwaylandCoreFonts}" ]; }
-      { command = [ "xrdb" "-merge" "${config.home.homeDirectory}/.Xresources" ]; }
+      {
+        command = [
+          "xrdb"
+          "-merge"
+          "${config.home.homeDirectory}/.Xresources"
+        ];
+      }
     ];
 
     hotkey-overlay.skip-at-startup = true;
@@ -87,7 +104,9 @@ in
         { proportion = 1.0; }
       ];
 
-      default-column-width = { proportion = 0.5; };
+      default-column-width = {
+        proportion = 0.5;
+      };
 
       focus-ring = {
         enable = true;
@@ -112,14 +131,16 @@ in
 
     window-rules = [
       {
-        geometry-corner-radius = let
-          radius = lilyaTheme.radius.windows;
-        in {
-          top-left = radius;
-          top-right = radius;
-          bottom-left = radius;
-          bottom-right = radius;
-        };
+        geometry-corner-radius =
+          let
+            radius = lilyaTheme.radius.windows;
+          in
+          {
+            top-left = radius;
+            top-right = radius;
+            bottom-left = radius;
+            bottom-right = radius;
+          };
         draw-border-with-background = false;
         clip-to-geometry = true;
       }

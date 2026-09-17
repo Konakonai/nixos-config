@@ -56,7 +56,10 @@
         "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
       };
       niri = {
-        default = [ "gnome" "gtk" ];
+        default = [
+          "gnome"
+          "gtk"
+        ];
         "org.freedesktop.impl.portal.ScreenCast" = [ "gnome" ];
         "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
       };

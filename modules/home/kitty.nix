@@ -1,4 +1,4 @@
-{ config, lilyaTheme, pkgs, ... }:
+{ lilyaTheme, ... }:
 
 {
   # Kitty 终端配置

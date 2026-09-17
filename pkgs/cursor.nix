@@ -1,4 +1,8 @@
-{ appimageTools, fetchurl, code-cursor }:
+{
+  appimageTools,
+  fetchurl,
+  code-cursor,
+}:
 
 let
   version = "3.20.17";

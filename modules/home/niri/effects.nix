@@ -1,4 +1,12 @@
-{ config, hostProfile, lilyaTheme, pkgs, lib, inputs, ... }:
+{
+  config,
+  hostProfile,
+  lilyaTheme,
+  pkgs,
+  lib,
+  inputs,
+  ...
+}:
 
 let
   internalDisplay = hostProfile.display.internal;
@@ -74,9 +82,6 @@ let
 in
 {
   xdg.configFile.niri-config.source = lib.mkForce (
-    inputs.niri.lib.internal.validated-config-for
-      pkgs
-      config.programs.niri.package
-      sessionConfig
+    inputs.niri.lib.internal.validated-config-for pkgs config.programs.niri.package sessionConfig
   );
 }

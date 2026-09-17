@@ -12,11 +12,12 @@ in
 pkgs.appimageTools.wrapType2 {
   inherit pname version src;
 
-  extraPkgs = pkgs: with pkgs; [
-    glib-networking
-    openssl
-    webkitgtk_4_1
-  ];
+  extraPkgs =
+    pkgs: with pkgs; [
+      glib-networking
+      openssl
+      webkitgtk_4_1
+    ];
 
   profile = ''
     case "''${XDG_CURRENT_DESKTOP:-}" in

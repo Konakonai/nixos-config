@@ -1,4 +1,12 @@
-{ lib, stdenv, fetchurl, zstd, installShellFiles, makeDesktopItem, copyDesktopItems }:
+{
+  lib,
+  stdenv,
+  fetchurl,
+  zstd,
+  installShellFiles,
+  makeDesktopItem,
+  copyDesktopItems,
+}:
 
 stdenv.mkDerivation rec {
   pname = "grok";
@@ -24,11 +32,21 @@ stdenv.mkDerivation rec {
       icon = "grok";
       terminal = true;
       categories = [ "Development" ];
-      keywords = [ "ai" "coding" "agent" "grok" "xai" ];
+      keywords = [
+        "ai"
+        "coding"
+        "agent"
+        "grok"
+        "xai"
+      ];
     })
   ];
 
-  nativeBuildInputs = [ zstd installShellFiles copyDesktopItems ];
+  nativeBuildInputs = [
+    zstd
+    installShellFiles
+    copyDesktopItems
+  ];
 
   dontUnpack = true;
 

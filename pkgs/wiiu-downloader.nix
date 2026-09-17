@@ -18,7 +18,10 @@ let
     comment = "Browse and download Wii U titles from Nintendo's servers";
     exec = pname;
     icon = pname;
-    categories = [ "Game" "Utility" ];
+    categories = [
+      "Game"
+      "Utility"
+    ];
   };
 in
 pkgs.stdenvNoCC.mkDerivation {

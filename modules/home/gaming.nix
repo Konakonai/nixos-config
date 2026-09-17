@@ -3,7 +3,10 @@
 let
   steamFollow = pkgs.writeShellApplication {
     name = "steam-follow";
-    runtimeInputs = [ pkgs.python3 config.programs.niri.package ];
+    runtimeInputs = [
+      pkgs.python3
+      config.programs.niri.package
+    ];
     text = ''
       exec python3 ${../../scripts/steam-follow.py} "$@"
     '';
@@ -63,8 +66,7 @@ in
 {
   # This Bluetooth controller identifies as an Xbox pad but exposes a non-standard
   # HID button order. SDL applications need the machine-specific mapping below.
-  home.sessionVariables.SDL_GAMECONTROLLERCONFIG =
-    "050018dc491900000a0400001b010000,Xbox Wireless Controller,a:b0,b:b1,x:b2,y:b3,leftshoulder:b4,rightshoulder:b5,back:b6,start:b7,leftstick:b8,rightstick:b9,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,platform:Linux,";
+  home.sessionVariables.SDL_GAMECONTROLLERCONFIG = "050018dc491900000a0400001b010000,Xbox Wireless Controller,a:b0,b:b1,x:b2,y:b3,leftshoulder:b4,rightshoulder:b5,back:b6,start:b7,leftstick:b8,rightstick:b9,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a3,righty:a4,lefttrigger:a2,righttrigger:a5,platform:Linux,";
 
   home.packages = with pkgs; [
     cabextract

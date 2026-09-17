@@ -1,4 +1,9 @@
-{ hostProfile, lib, pkgs, ... }:
+{
+  hostProfile,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   cfg = hostProfile.virtualization.externalWindows or { enable = false; };
@@ -6,36 +11,41 @@ let
   memoryKiB = cfg.memoryGiB * 1024 * 1024;
   ovmf = pkgs.OVMFFull.fd;
 
-  guestToolsIso = pkgs.runCommand "external-windows-guest-tools.iso" {
-    nativeBuildInputs = [ pkgs.xorriso ];
-  } ''
-    iso_root="$TMPDIR/iso-root"
-    mkdir -p "$iso_root/amd64"
-    cp -R ${pkgs.win-spice}/amd64/qxl "$iso_root/amd64/"
-    cp -R ${pkgs.win-spice}/amd64/vdagent "$iso_root/amd64/"
-    cp -R ${pkgs.win-spice}/amd64/vioserial "$iso_root/amd64/"
-    cp ${../../assets/virtualization/Install-Guest-Tools.ps1} "$iso_root/Install-Guest-Tools.ps1"
-    cp ${../../assets/virtualization/Install-Guest-Tools.cmd} "$iso_root/Install-Guest-Tools.cmd"
-    cp ${../../assets/virtualization/README.txt} "$iso_root/README.txt"
+  guestToolsIso =
+    pkgs.runCommand "external-windows-guest-tools.iso"
+      {
+        nativeBuildInputs = [ pkgs.xorriso ];
+      }
+      ''
+        iso_root="$TMPDIR/iso-root"
+        mkdir -p "$iso_root/amd64"
+        cp -R ${pkgs.win-spice}/amd64/qxl "$iso_root/amd64/"
+        cp -R ${pkgs.win-spice}/amd64/vdagent "$iso_root/amd64/"
+        cp -R ${pkgs.win-spice}/amd64/vioserial "$iso_root/amd64/"
+        cp ${../../assets/virtualization/Install-Guest-Tools.ps1} "$iso_root/Install-Guest-Tools.ps1"
+        cp ${../../assets/virtualization/Install-Guest-Tools.cmd} "$iso_root/Install-Guest-Tools.cmd"
+        cp ${../../assets/virtualization/README.txt} "$iso_root/README.txt"
 
-    xorriso -as mkisofs \
-      -iso-level 3 \
-      -J \
-      -joliet-long \
-      -R \
-      -V SPICE_TOOLS \
-      -o "$out" \
-      "$iso_root"
-  '';
+        xorriso -as mkisofs \
+          -iso-level 3 \
+          -J \
+          -joliet-long \
+          -R \
+          -V SPICE_TOOLS \
+          -o "$out" \
+          "$iso_root"
+      '';
 
-  domainXml = pkgs.writeText "${domainName}.xml" (import ./external-windows-domain-xml.nix {
-    inherit domainName memoryKiB guestToolsIso;
-    uuid = cfg.uuid;
-    vcpus = cfg.vcpus;
-    diskById = cfg.diskById;
-    ovmfCode = "${ovmf}/FV/OVMF_CODE.fd";
-    ovmfVars = "${ovmf}/FV/OVMF_VARS.ms.fd";
-  });
+  domainXml = pkgs.writeText "${domainName}.xml" (
+    import ./external-windows-domain-xml.nix {
+      inherit domainName memoryKiB guestToolsIso;
+      uuid = cfg.uuid;
+      vcpus = cfg.vcpus;
+      diskById = cfg.diskById;
+      ovmfCode = "${ovmf}/FV/OVMF_CODE.fd";
+      ovmfVars = "${ovmf}/FV/OVMF_VARS.ms.fd";
+    }
+  );
 
   launcher = pkgs.writeShellApplication {
     name = "external-windows";
@@ -54,7 +64,8 @@ let
       export EXTERNAL_WINDOWS_DOMAIN=${lib.escapeShellArg domainName}
       export EXTERNAL_WINDOWS_DISK=${lib.escapeShellArg cfg.diskById}
       export EXTERNAL_WINDOWS_CONNECTION=qemu:///system
-    '' + builtins.readFile ../../scripts/external-windows.sh;
+    ''
+    + builtins.readFile ../../scripts/external-windows.sh;
   };
 
   desktopItem = pkgs.makeDesktopItem {

@@ -1,4 +1,9 @@
-{ hostProfile, lib, pkgs, ... }:
+{
+  hostProfile,
+  lib,
+  pkgs,
+  ...
+}:
 
 {
   users.users.${hostProfile.user.userName} = {

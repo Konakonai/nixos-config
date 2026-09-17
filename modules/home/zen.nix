@@ -1,4 +1,11 @@
-{ config, hostProfile, lib, lilyaTheme, pkgs, ... }:
+{
+  config,
+  hostProfile,
+  lib,
+  lilyaTheme,
+  pkgs,
+  ...
+}:
 
 let
   zenProfilePath = hostProfile.zen.profilePath;
@@ -54,7 +61,10 @@ in
     icon = "zen-browser";
     terminal = false;
     type = "Application";
-    categories = [ "Network" "WebBrowser" ];
+    categories = [
+      "Network"
+      "WebBrowser"
+    ];
     mimeType = [
       "text/html"
       "text/xml"

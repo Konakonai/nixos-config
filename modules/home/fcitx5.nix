@@ -115,19 +115,22 @@ let
   # 安装到 fcitx5 用户自定义图标目录（fcitx5 优先于此目录），并注入
   # 用户级 hicolor 兜底，保证托盘主机无论按 SNI IconName 还是按主题
   # 解析都能命中 Colloid-Light 风格的图标。
-  colloidRimeIcon = pkgs.runCommand "fcitx5-rime-icon-colloid-light" {
-    nativeBuildInputs = [ pkgs.librsvg ];
-  } ''
-    rime_svg=${pkgs.colloid-icon-theme}/share/icons/${lilyaTheme.iconThemeName}/status/symbolic/fcitx-rime-symbolic.svg
+  colloidRimeIcon =
+    pkgs.runCommand "fcitx5-rime-icon-colloid-light"
+      {
+        nativeBuildInputs = [ pkgs.librsvg ];
+      }
+      ''
+        rime_svg=${pkgs.colloid-icon-theme}/share/icons/${lilyaTheme.iconThemeName}/status/symbolic/fcitx-rime-symbolic.svg
 
-    mkdir -p $out/fcitx5-icons
-    cp "$rime_svg" $out/fcitx5-icons/fcitx-rime.svg
-    rsvg-convert -w 48 -h 48 -o $out/fcitx5-icons/fcitx-rime.png "$rime_svg"
+        mkdir -p $out/fcitx5-icons
+        cp "$rime_svg" $out/fcitx5-icons/fcitx-rime.svg
+        rsvg-convert -w 48 -h 48 -o $out/fcitx5-icons/fcitx-rime.png "$rime_svg"
 
-    mkdir -p $out/hicolor/scalable/apps $out/hicolor/48x48/apps
-    cp "$rime_svg" $out/hicolor/scalable/apps/fcitx-rime.svg
-    rsvg-convert -w 48 -h 48 -o $out/hicolor/48x48/apps/fcitx-rime.png "$rime_svg"
-  '';
+        mkdir -p $out/hicolor/scalable/apps $out/hicolor/48x48/apps
+        cp "$rime_svg" $out/hicolor/scalable/apps/fcitx-rime.svg
+        rsvg-convert -w 48 -h 48 -o $out/hicolor/48x48/apps/fcitx-rime.png "$rime_svg"
+      '';
 
   catppuccinLavenderLightTheme = pkgs.runCommand "fcitx5-theme-catppuccin-lavender-light" { } ''
     theme_dir="$out/share/fcitx5/themes/catppuccin-lavender-light"

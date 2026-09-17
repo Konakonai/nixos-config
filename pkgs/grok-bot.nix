@@ -1,4 +1,8 @@
-{ lib, appimageTools, fetchurl }:
+{
+  lib,
+  appimageTools,
+  fetchurl,
+}:
 
 let
   pname = "grok-bot";
@@ -14,10 +18,11 @@ in
 appimageTools.wrapType2 {
   inherit pname version src;
 
-  extraPkgs = pkgs: with pkgs; [
-    libsecret
-    libnotify
-  ];
+  extraPkgs =
+    pkgs: with pkgs; [
+      libsecret
+      libnotify
+    ];
 
   extraInstallCommands = ''
     install -Dm444 ${appimageContents}/grok-bot.desktop -t $out/share/applications/
