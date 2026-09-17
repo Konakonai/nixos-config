@@ -15,16 +15,19 @@ let
     runtimeInputs = [ pkgs.gawk pkgs.kdePackages.kconfig pkgs.coreutils ];
     text = builtins.readFile ../../scripts/noctalia-darkly-kde-colors.sh;
   };
-  tomlFormat = pkgs.formats.toml { };
-  noctaliaConfigMigrationPython = pkgs.python3.withPackages (pythonPackages: [
-    pythonPackages.tomlkit
-  ]);
+  # Nix owns only the default layer (~/.config/noctalia/config.toml). Noctalia
+  # keeps GUI changes as deltas in ~/.local/state/noctalia/settings.toml, which
+  # always wins and is never touched by activation, so appearance changes made
+  # in the GUI survive rebuilds. `config-drift noctalia` shows those deltas
+  # when they are worth promoting into this file.
   noctaliaSettings = {
     theme.mode = lilyaTheme.theme.mode;
     theme.source = lilyaTheme.theme.source;
     theme.custom_palette = lilyaTheme.theme.paletteName;
     theme.templates.enable_builtin_templates = true;
-    theme.templates.builtin_ids = [ "btop" "gtk3" "gtk4" "niri" ];
+    # kitty.conf ends with `include themes/noctalia.conf`, so the palette chosen
+    # in the GUI reaches the terminal without the template editing kitty.conf.
+    theme.templates.builtin_ids = [ "btop" "gtk3" "gtk4" "kitty" "niri" ];
     theme.templates.enable_community_templates = true;
     theme.templates.community_ids = [ "zen-browser" "discord" "steam" "telegram" "yazi" ];
 
@@ -152,7 +155,6 @@ let
     };
 
   };
-  noctaliaSeed = tomlFormat.generate "noctalia-config.toml" noctaliaSettings;
 in
 {
   xdg.configFile."heroic/themes/noctalia/noctalia.json".text = builtins.toJSON {
@@ -180,37 +182,9 @@ in
     "noctalia/templates/heroic.css".source = heroicNoctaliaTemplate;
   };
 
-  xdg.dataFile."nixos-config/defaults/noctalia-config.toml".source = noctaliaSeed;
-
-  home.activation.seedNoctaliaConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    config_file=${lib.escapeShellArg "${config.xdg.configHome}/noctalia/config.toml"}
-
-    if [ -L "$config_file" ]; then
-      target="$(${pkgs.coreutils}/bin/readlink -f "$config_file" || true)"
-      case "$target" in
-        /nix/store/*) ${pkgs.coreutils}/bin/rm -f "$config_file" ;;
-      esac
-    fi
-
-    if [ ! -e "$config_file" ]; then
-      ${pkgs.coreutils}/bin/install -Dm600 ${noctaliaSeed} "$config_file"
-    fi
-  '';
-
-  # Noctalia keeps GUI changes in an app-owned state overlay. Reconcile the
-  # active palette and the small set of visual-effect tokens that this module
-  # owns while preserving layout, widgets, shortcuts, and all other GUI state.
-  home.activation.reconcileNoctaliaSettings = lib.hm.dag.entryAfter [ "seedNoctaliaConfig" ] ''
-    state_file="''${XDG_STATE_HOME:-$HOME/.local/state}/noctalia/settings.toml"
-
-    if [ -f "$state_file" ]; then
-      ${noctaliaConfigMigrationPython}/bin/python3 ${../../scripts/reconcile-noctalia.py} \
-        ${noctaliaSeed} "$state_file"
-    fi
-  '';
-
   programs.noctalia = {
     enable = true;
+    settings = noctaliaSettings;
     customPalettes.${lilyaTheme.theme.paletteName} =
       ../../assets/noctalia/palettes/catppuccin-lavender-light.json;
   };

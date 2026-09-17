@@ -3,7 +3,7 @@
 let
   inherit (pkgs) lib;
   home = config.home-manager.users.${hostProfile.user.userName};
-  python = pkgs.python3.withPackages (ps: [ ps.tomlkit ps.pyyaml ]);
+  python = pkgs.python3.withPackages (ps: [ ps.pyyaml ]);
   domainXml = builtins.head config.systemd.services.external-windows-libvirt-domain.restartTriggers;
   vcpus = toString hostProfile.virtualization.externalWindows.vcpus;
   flatpakTimer = home.systemd.user.timers."flatpak-managed-install-timer";
@@ -41,7 +41,6 @@ assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
 {
   configuration = pkgs.runCommand "configuration-regressions" {
     nativeBuildInputs = [ python pkgs.bash pkgs.coreutils pkgs.git pkgs.jq pkgs.util-linux ];
-    NOCTALIA_SEED = home.xdg.dataFile."nixos-config/defaults/noctalia-config.toml".source;
     DOMAIN_XML = domainXml;
     EXPECTED_VCPUS = vcpus;
     KDECONNECT_NM_HOOK = kdeconnectNmHook;

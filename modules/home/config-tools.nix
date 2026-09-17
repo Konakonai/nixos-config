@@ -2,6 +2,7 @@
 
 let
   defaultsDir = "${config.xdg.dataHome}/nixos-config/defaults";
+  noctaliaDefaults = config.xdg.configFile."noctalia/config.toml".source;
   jsonc = ../../scripts/jsonc.py;
   configDrift = pkgs.writeShellApplication {
     name = "config-drift";
@@ -14,7 +15,8 @@ let
           trap 'rm -f "$current" "$default"' EXIT
           noctalia config export merged > "$current"
           # Compare parsed values: serialization order and comments are irrelevant.
-          python3 - "${defaultsDir}/noctalia-config.toml" "$current" "$default" <<'PYTHON'
+          # The diff is exactly the GUI override layer (settings.toml).
+          python3 - "${noctaliaDefaults}" "$current" "$default" <<'PYTHON'
 import json
 from pathlib import Path
 import sys

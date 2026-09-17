@@ -79,6 +79,8 @@
 
     extraConfig = ''
       envinclude KITTY_CONF_*
+      # Noctalia's kitty template renders the active palette here.
+      include themes/noctalia.conf
     '';
   };
 }
