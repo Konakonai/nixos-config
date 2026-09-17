@@ -10,11 +10,11 @@
 
 stdenv.mkDerivation rec {
   pname = "grok";
-  version = "1.0.25";
+  version = "1.0.34";
 
   src = fetchurl {
     url = "https://x.ai/cli/grok-${version}-linux-x86_64.zst";
-    sha256 = "1pvy7sq1961dbvbdvqclc7ij8np9ha0zinj43d62n2130hkp29m4";
+    sha256 = "1wbgw3mcszn4vymdri6m7pqzfk0r51v66kmx0xn7z25l3qklcyba";
   };
 
   icon = fetchurl {
