@@ -1,97 +1,104 @@
 # lilya's NixOS configuration
 
-个人 ThinkBook 的 Nix Flakes + Home Manager 配置，同时提供 **Niri + Noctalia** 和 **Plasma Wayland**。当前默认登录会话为 `plasma-hdr`；这个名称本身不保证 HDR 已开启。
+个人 ThinkBook 16p 的 Nix Flakes + Home Manager 配置。默认会话是 **Niri + Noctalia**，备用 **Plasma (Wayland)**。自动化修改前先读 [AGENTS.md](AGENTS.md)。
 
-自动化修改请先读 [AGENTS.md](AGENTS.md)。待实施的后续工作见 [配置优化计划](docs/configuration-optimization-plan-2026-09-12.md)。已落地的 P1 修复与当时边界见 [2026-09-12 改进计划](docs/configuration-improvement-plan-2026-09-12.md)；[2026-09-11 审计](docs/configuration-audit-2026-09-11.md) 仅作历史记录。
-
-## 入口与目录
+## 目录
 
 ```text
-flake.nix                         inputs、overlay、NixOS 与 checks 输出
-configuration.nix                 系统入口
-home.nix                          Home Manager 入口
-hardware-configuration.nix        文件系统与基础硬件配置
-hosts/lilya-thinkbook/             主机、用户、设备与路径事实
-modules/system/                   系统模块；user.nix 管理系统账号
-modules/home/                     应用、桌面和用户服务
-modules/shared/                   共享主题参数
-pkgs/                             本地包与兼容包装
-scripts/                          更新、状态迁移和缓存脚本
-scripts/tests/                    回归测试
-checks/                           Flake 检查定义
-assets/、patches/                 静态资源与上游补丁
+flake.nix                      inputs、overlay、nixosConfigurations.nixos、checks、packages、formatter
+configuration.nix / home.nix   系统与 Home Manager 入口
+hardware-configuration.nix     文件系统与基础硬件（nixos-generate-config 生成）
+hosts/lilya-thinkbook/         主机事实：用户路径、显示器、GPU、外接 Windows 盘、age 身份路径
+modules/system/                系统模块（boot、display、power、mihomo、services、virtualization …）
+modules/home/                  用户环境（apps、desktop、niri、theme、flatpak、services …）
+modules/shared/                共享主题参数（theme-settings.nix）
+pkgs/                          本地包，导出为 pkgs.lilya
+scripts/ + scripts/tests/      独立脚本与回归测试
+checks/                        Flake checks
+assets/ patches/ secrets/      静态资源、上游补丁、age 密文
 ```
 
-`modules/system/default.nix` 和 `modules/home/default.nix` 显式组织模块。当前是单机仓库，未设置自建 `lib/`；通用操作直接使用 Nixpkgs / Home Manager 的库，局部辅助函数就近定义。
+`modules/system/default.nix` 与 `modules/home/default.nix` 显式列出导入；不做目录扫描，没有自建 `lib/`。
 
-## 使用与验证
-
-从仓库目录执行：
+## 日常命令
 
 ```bash
-# 求值，不更新 lock、不构建系统
+rebuild                 # nh os switch，应用当前工作树
+testbuild               # nh os test，切换但不写引导项
+nix fmt                 # nixfmt 全仓
 nix flake check --no-build --no-update-lock-file
-
-# 运行脚本回归、portal、Niri KDL 与虚拟机 CPU XML 检查
-nix build .#checks.x86_64-linux.configuration .#checks.x86_64-linux.portal .#checks.x86_64-linux.niri-config .#checks.x86_64-linux.external-windows-cpu --no-link
-
-# 示例：只构建一个本地包
-nix build .#nixosConfigurations.nixos.pkgs.lilya.grok --no-link
-
-# 应用当前配置；由用户执行
-rebuild
+nix build .#checks.x86_64-linux.{configuration,lint,portal,niri-config,external-windows-cpu} --no-link
 ```
 
-还提供 `testbuild`（`nh os test`）。这会实际切换当前运行配置用于测试，不是只读检查。当前没有顶层 `packages` 输出，因此 `.#packages.x86_64-linux.<name>` 不是本仓库的包构建入口。
+`checks.configuration` 跑 `scripts/tests/`（脚本失败路径、mihomo 规则顺序、KDE Connect 契约）；`lint` 跑 statix / deadnix / `nixfmt --check`；`niri-config` 用锁定的 Niri 校验最终 KDL；`portal` 与 `external-windows-cpu` 是跨模块契约。它们不等于全系统构建或图形会话测试。
 
-`checks` 覆盖脚本失败路径、portal 选项、最终 Niri KDL、虚拟机 CPU 拓扑，以及 Flatpak/Mihomo 的部分 systemd 契约；不等于全系统构建、图形会话测试、真实磁盘测试或所有应用配置的验证。运行前应查看检查输出，确认实际执行的目标。
+本地直跑脚本测试需要 `pyyaml`（`nix build .#checks.x86_64-linux.configuration` 自带）。
 
-Niri 下可在 Steam 的游戏属性 → 启动选项中填写 `steam-follow %command%`。启动器会把本次游戏新建的 `steam_app_<AppID>` 窗口移到启动时 Steam 所在屏幕，之后不干预手动移动；窗口首次出现时可能短暂位于另一屏。全屏游戏跨屏使用 `Super+Ctrl+Shift+←/→`，鼠标拖动仍遵循 Niri 的退出全屏行为。目标尺寸由 Niri 通知游戏，游戏内部渲染分辨率是否同步仍取决于游戏本身。Plasma 或无法取得 Steam 所在屏幕时直接启动原命令。删除该启动选项即可停用。
+## 配置所有权
 
-## 配置与外部状态
+原则：**Nix 提供默认层，GUI 拥有覆盖层，rebuild 不碰覆盖层**。
 
-`flake.lock` 固定 Nix 输入，本地下载包固定源哈希。完整用户会话仍依赖不在 Git 中的状态：
+| 对象 | 管理方式 |
+|---|---|
+| Niri 主配置、快捷键、显示器、MIME、字体、GTK/Qt 主题文件 | Nix 持续管理（只读符号链接） |
+| Noctalia `~/.config/noctalia/config.toml` | Nix 写入的默认层（`programs.noctalia.settings`，构建时 `noctalia config validate`） |
+| Noctalia `~/.local/state/noctalia/settings.toml` | GUI 写入的覆盖层，永远优先，激活时不触碰。GUI 改回与默认相同的值时 Noctalia 自动删除该键 |
+| Plasma（plasma-manager 声明的键） | 每次激活重写这些键；其余键由 Plasma 自己保存 |
+| Zed `settings.json` | 首次种子，之后由 Zed 保存；Zed 没有配置分层 |
+| LibreOffice 工具栏模式 | 激活时只补未配置的初始值 |
+| Flatpak 应用与 Noctalia 插件 | 运行时安装/更新，不由 flake.lock 固定 |
+
+工具：
+
+- `config-dump noctalia` 导出合并后的用户配置；`config-drift noctalia` 显示 GUI 相对 Nix 默认层的差量（返回码 1 = 有差量，不是错误）。想把 GUI 里调好的外观变成默认值时，把差量抄进 `modules/home/noctalia.nix`。
+- `config-dump zed` / `config-drift zed` 同理（解析 JSONC）。
+- `config-repair noctalia-templates` 重新应用 Noctalia 模板。
+
+主题联动：Noctalia 的调色板通过模板生成 GTK3/4、Niri（`noctalia.kdl`，可选 include）、Qt（darkly）、kitty（`~/.config/kitty/themes/noctalia.conf`，`kitty.conf` 末尾 include）。`modules/shared/theme-settings.nix` 里的色板只作为 Nix 侧默认值（starship、fastfetch、fcitx、控制台）。Noctalia 的 starship 模板无法写入 HM 管理的 `starship.toml`，不要启用。
+
+## 会话与环境变量
+
+- SDDM 提供 `Niri`（默认）与 `Plasma (Wayland)`；`RememberLastSession = false`。
+- Niri 会话前先跑 `niri-gpu-probe`：外接屏在 NVIDIA 上时把渲染设备写进 `~/.config/niri/gpu.kdl`（可选 include），否则用 Intel 核显。
+- `QT_QPA_PLATFORMTHEME=qt6ct`、`QT_WAYLAND_DECORATION`、`GSK_RENDERER` 只在 Niri 的 `environment {}` 里设置；`home.sessionVariables` 只放桌面无关变量。Plasma 用标准会话，不需要 unset 任何东西。
+- `KITTY_CONF_NIRI_*` 让 kitty 只在 Niri 下隐藏装饰。
+
+## 不在 Git 里的状态
 
 | 状态 | 用途 |
 |---|---|
-| `~/.config/age/mihomo.txt` | 解密仓库内 age 密文的身份文件 |
-| `~/.config/openlist/` | OpenList 配置与数据库 |
-| `~/.config/rclone/rclone.conf` | WebDAV 挂载凭据 |
-| 浏览器 profile、应用账号、用户数据 | 会话和数据恢复 |
-| libvirt NVRAM / TPM 状态、外接 Windows 磁盘 | 虚拟机持续身份与系统数据 |
+| `~/.config/age/mihomo.txt` | 解密 `secrets/*.age` 的身份文件，也是整套秘密的信任根 |
+| `~/.local/state/noctalia/settings.toml` | Noctalia GUI 覆盖层 |
+| `~/.config/openlist/`、`~/.config/rclone/rclone.conf` | OpenList 数据与 WebDAV 凭据 |
+| 浏览器 profile、应用账号 | 会话恢复 |
+| libvirt NVRAM / TPM、外接 Windows 磁盘 | 虚拟机持续身份与数据 |
 
-这些文件应单独备份恢复，不要将明文凭据提交到仓库。Git 配置、已构建包和 `/run/current-system` 是不同状态，不能用提交成功推断已经生效。
+这些单独备份。明文凭据不进仓库。
 
-### 用户配置由谁管理
+**待办：全盘加密。** 磁盘目前未加密，上表中的一切在丢机时都是明文。它与当前引导布局冲突（256 MB ESP，`/boot-grub` 在根分区，`copyKernels = false` 让 GRUB 直接读 `/nix/store`），需要离线重分区或 GRUB cryptodisk，不能通过 rebuild 完成。
 
-| 对象 | 当前管理方式 |
-|---|---|
-| Niri 主配置、主题资源、MIME | Nix 持续管理 |
-| Noctalia `config.toml` | 首次创建；已有文件保留 |
-| Noctalia `settings.toml` | GUI 覆盖；激活时仅当 Nix-owned 字段与种子不同才写。主题模式/色板在 Noctalia 已运行时走 CLI，其余字段仍改文件。激活后 GUI 再写回无法消除 |
-| Zed `settings.json` | 首次种子，后续由应用/用户修改 |
-| LibreOffice 工具栏 | 激活时补充未配置的初始值 |
-| Dolphin / Plasma 部分键 | 激活时重新写入指定值 |
-| Flatpak 应用和 Noctalia 插件 | 运行时安装/更新，不由 flake.lock 固定其实际版本 |
+## 网络与代理
 
-`config-dump noctalia` 导出合并后的用户配置；`config-drift noctalia` 与仓库种子按解析后的值比较，返回码 1 表示存在差异，不必然是错误。Zed 的这两个工具解析 JSONC（行/块注释），比较的是去掉注释后的值。
+- Mihomo TUN 模式，配置由 `modules/system/mihomo/config-before-proxies.yaml` + age 密文 + `config-after-proxies.yaml` 拼接到 `/run/mihomo/config.yaml`，经 systemd credential 提供给守护进程。三者任一变化都会重启 `mihomo`（会中断当前连接）。生成器只拼接、不运行 `mihomo -t`。
+- 密文里除 `proxies` 还有控制 API 的 `secret` 和 mixed 端口的 `authentication`。控制 API 绑定 `127.0.0.1:9090`，CORS 只允许自带的 metacubexd 同源，`allow-private-network` 关闭。Noctalia 的 mihomo-control 插件里的 secret 是 GUI 状态，不进 Nix。
+- 7890 对局域网放行（防火墙），连接需要 `authentication` 里的账号；本机 `127.0.0.0/8` 免认证。
+- 规则：STUN / IP 检测站 / 显式 pin → 各策略组的 `GEOSITE,<category>` → `.cn` 与 `GEOSITE,cn|private` 直连 → `GEOIP` → `MATCH`。`GEOSITE` 类别来自 `geox-url` 指向的 MetaCubeX geosite.dat（DNS 的 `nameserver-policy` 已依赖同一文件）。改规则后先 `mihomo -t` 校验，再看 `scripts/tests/test_mihomo_*.py` 的顺序断言。
+- 主机 IPv6 关闭、STUN 走代理、外部 DNS 走代理 DoH：都是为了堵 WebRTC 泄漏。
+- OpenList（5244）与 LocalSend（53317）对 LAN 开放；`refresh-openlist` 刷新目录并重挂 WebDAV。
 
-`config-repair noctalia-templates` 请求应用模板。Niri 把 `noctalia.kdl` 和 `gpu.kdl` 都标为 optional include：干净目录缺少颜色文件时可以启动，使用 `layout.focus-ring` 等声明式默认；Noctalia 生成颜色后覆盖这些键。损坏的已存在 include 仍会使 `niri validate` 失败。最终会话 KDL（含手写效果块和显示器段）在构建时用锁定 Niri 校验。
+## 本地包与更新
 
-## 更新与服务
+- `pkgs/` 里的手 pin 二进制包通过 `packages.x86_64-linux` 暴露，`nix-update --flake <name>` 可自动改版本和 hash（GitHub release 的包能自动找最新版；`antigravity` 这类需要 `--version=<v>`）。能用 nixpkgs 的就不自己 pin（eden、splayer-next 已切回 nixpkgs）。
+- `codex-update` 每日检查 Codex Desktop / CLI，在临时 worktree 里构建通过后仅当主工作区未变时快进提交；不推送、不 rebuild。日志在 `~/.local/state/codex-update/update.log`。
+- Flatpak 每周定时更新（接电条件），`rebuild` 不负责安装新声明的 Flatpak；需要时 `systemctl --user start flatpak-managed-install.service`。Flatpak 通过 `/nix/store:ro` 与 `~/.local/share/{themes,icons}` 的 store 符号链接读取主题。
 
-- `codex-update` 每日检查上游，使用临时 Git worktree 构建 Desktop/CLI，通过检查后仅在主工作区未变化时快进并本地提交。它不自动推送或执行 `rebuild`；日志位于 `~/.local/state/codex-update/update.log`。
-- Codex 定时服务有接电条件。Flatpak 的手动服务和每周定时器实际目标 `flatpak-managed-install-timer.service` 都有接电条件；条件写在对应 Service 的 Unit 段，不写在 Timer 段。
-- Flatpak 已关闭激活/登录时的自动安装，因此声明新增应用后，`rebuild` 本身不负责立即下载安装。接电后可按需执行 `systemctl --user start flatpak-managed-install.service`，或等待每周任务。
-- Mihomo 使用 age 密文拼接 `/run/mihomo/config.yaml`，再通过 systemd credential 提供给守护进程。前/后片段或密文源变化会进入 `mihomo` 与 `mihomo-config` 的 restartTriggers。生成器只拼接、不运行 `mihomo -t`。应用配置后代理会重启，可能中断当前连接。
-- 正常功耗策略由 power-profiles-daemon / UPower 管理；电池且省电模式时，单独服务禁用 Intel turbo，并将 CPU 频率限制为 400–1800 MHz；离开该状态或服务停止时恢复原值。自动休眠的既有规避配置保留。
-- Home Manager 在用户会话启用之后才激活，以免拖住登录界面。冷启动后若主题或快捷键尚未写完，注销再进入一次即可。
-- KDE Connect：电脑网络变化由 NetworkManager dispatcher 立刻 `--refresh`；两分钟定时器仅在没有可达设备时广播，用于手机自己切网。
+## 电源与硬件
+
+- power-profiles-daemon 管普通策略；电池 + 省电模式时 `power-saver-cpu` 关 turbo、限频 400–1800 MHz、PCIe ASPM powersupersave，离开该状态或服务停止即恢复。
+- 合盖不休眠（s2idle 在这台机器上恢复不可靠），面板自行关闭。
+- USB-C：`modules/system/usb-c.nix` 的 udev 规则与 `reset-{pch,tb}-usbc.sh` 处理 PD 事件后 mux 停在充电态的问题；脚本可用 `SYSROOT` 注入测试。
+- Home Manager 在用户会话允许之后才激活，避免拖住 SDDM；冷启动后若主题未齐，注销再进一次。
 
 ## 外接 Windows 虚拟机
 
-菜单中的 **External Windows 11** 使用指定 USB 磁盘运行 KVM/libvirt 来宾。启动器先成功采集磁盘拓扑和来宾状态，再决定卸载或启动：`virsh`/`lsblk`/`jq` 失败、磁盘消失或卸载失败时不会调用 `virsh start`。已启动来宾只打开 viewer。`virsh start` 前会再探测一次挂载；启动失败且磁盘又被挂上时不会重试 start。两次探测之间仍可能被其他进程重新挂载，这不是对所有挂载工具的互斥。
-
-首次启用 `libvirtd` 用户组后需重新登录。首次虚拟启动可在 Windows 内以管理员身份运行 `SPICE_TOOLS` 光盘中的 `Install-Guest-Tools.cmd`，随后重启来宾，以使用动态分辨率与剪贴板。
-
-先在来宾内关闭 Windows，再拔盘或原生启动；运行期间不要在宿主挂载该盘的文件系统。当前禁用来宾 VMX 暴露，虚拟机内不提供 Hyper-V/WSL2 的嵌套虚拟化路径。NVRAM、TPM 状态和 Windows 数据不应作为可随意删除的生成缓存处理。
+菜单里的 **External Windows 11** 用指定 USB 盘启动 KVM 来宾。启动器先确认磁盘拓扑与来宾状态：`virsh` / `lsblk` / `jq` 失败、磁盘不在或卸载失败都不会 `virsh start`；已运行的来宾只打开 viewer。首次启动可在来宾内运行 `SPICE_TOOLS` 光盘里的 `Install-Guest-Tools.cmd`。来宾内先关机再拔盘；宿主运行期间不要挂载该盘。来宾不暴露 VMX。
