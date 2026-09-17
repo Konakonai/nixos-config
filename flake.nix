@@ -109,6 +109,9 @@
                 code-cursor = final.callPackage ./pkgs/cursor.nix {
                   code-cursor = prev.code-cursor;
                 };
+                colloid-icon-theme = final.callPackage ./pkgs/colloid-icon-theme.nix {
+                  colloid-icon-theme = prev.colloid-icon-theme;
+                };
                 lilya = import ./pkgs {
                   pkgs = final;
                   inherit inputs;

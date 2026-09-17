@@ -133,7 +133,5 @@ in
   xdg.dataFile."fcitx5/themes/catppuccin-lavender-light".source =
     "${catppuccinLavenderLightTheme}/share/fcitx5/themes/catppuccin-lavender-light";
 
-  # The rime tray icon needs no override: Colloid-Light ships status/{16,22,24}
-  # fcitx-rime.svg and both Noctalia and fcitx5 resolve the SNI name through the
-  # icon theme before falling back to fcitx5-rime's own hicolor icon.
+  # The rime tray icon comes from the icon theme; see pkgs/colloid-icon-theme.nix.
 }
