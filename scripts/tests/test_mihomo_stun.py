@@ -18,14 +18,19 @@ class StunProxyOrderTest(unittest.TestCase):
     def test_stun_rules_precede_cn_direct(self):
         stun = self.rules.index("DOMAIN-KEYWORD,stun,Default Proxy")
         port = self.rules.index("DST-PORT,3478,Default Proxy")
-        miwifi = self.rules.index("DOMAIN-SUFFIX,miwifi.com,DIRECT")
-        bili = self.rules.index("DOMAIN-SUFFIX,bilibili.com,DIRECT")
+        cn_suffix = self.rules.index("DOMAIN-SUFFIX,cn,DIRECT")
+        geosite_cn = self.rules.index("GEOSITE,cn,DIRECT")
         geoip = self.rules.index("GEOIP,CN,DIRECT")
-        self.assertLess(stun, miwifi)
-        self.assertLess(stun, bili)
-        self.assertLess(stun, geoip)
-        self.assertLess(port, miwifi)
-        self.assertLess(port, geoip)
+        for direct in (cn_suffix, geosite_cn, geoip):
+            self.assertLess(stun, direct)
+            self.assertLess(port, direct)
+
+    def test_ip_check_sites_precede_cn_direct(self):
+        # Chinese IP-echo sites are listed in geosite:cn; they must still go
+        # through the proxy so the real WAN address is not revealed.
+        geosite_cn = self.rules.index("GEOSITE,cn,DIRECT")
+        for site in ("ip138.com", "ipip.net", "cip.cc", "myip.la"):
+            self.assertLess(self.rules.index(f"DOMAIN-SUFFIX,{site},Default Proxy"), geosite_cn)
 
     def test_miwifi_fakeip_filter_does_not_cover_stun(self):
         start = self.text.index("\n  fake-ip-filter:\n")
