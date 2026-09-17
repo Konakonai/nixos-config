@@ -28,16 +28,6 @@ let
     ];
   };
 
-  # Codex's bundled document runtime is an unpatched Linux binary. Keep its
-  # non-Electron libraries visible when it launches LibreOffice on NixOS.
-  documentRuntimeLibs = with pkgs; [
-    curl
-    fontconfig
-    freetype
-    lcms2
-    pixman
-  ];
-
   codexDesktop = pkgs.symlinkJoin {
     name = "${codexDesktopBase.name}-codex-cli-path";
     paths = [ codexDesktopBase ];
@@ -46,8 +36,7 @@ let
       if [ -e "$out/bin/codex-desktop" ]; then
         rm -f "$out/bin/codex-desktop"
         makeWrapper "${codexDesktopBase}/bin/codex-desktop" "$out/bin/codex-desktop" \
-          --set CODEX_CLI_PATH "${codexCli}/bin/codex" \
-          --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath documentRuntimeLibs}"
+          --set CODEX_CLI_PATH "${codexCli}/bin/codex"
       fi
 
       desktopFile="$out/share/applications/codex-desktop.desktop"
