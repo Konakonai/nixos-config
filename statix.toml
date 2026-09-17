@@ -1,0 +1,10 @@
+# Style-only lints that conflict with this repository's one-option-per-line
+# style (repeated_keys, empty_pattern) or are purely a matter of taste
+# (manual_inherit, manual_inherit_from) are disabled.
+disabled = [
+  "empty_pattern",
+  "manual_inherit",
+  "manual_inherit_from",
+  "repeated_keys",
+]
+nix_version = "2.4"

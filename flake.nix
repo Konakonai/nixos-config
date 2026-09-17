@@ -59,69 +59,80 @@
     };
   };
 
-  outputs = inputs@{ nixpkgs, home-manager, niri, noctalia, millennium, plasma-manager, agenix, ... }:
-  let
-    hostProfile = import ./hosts/lilya-thinkbook;
-    lilyaTheme = import ./modules/shared/theme-settings.nix;
-  in
-  rec {
-    checks.x86_64-linux = import ./checks {
-      inherit (nixosConfigurations.nixos) pkgs config;
-      inherit hostProfile;
-    };
-
-    # Local packages, exposed so `nix-update --flake <name>` can bump the
-    # hand-pinned binaries (see README).
-    packages.x86_64-linux =
-      nixpkgs.lib.filterAttrs (_: nixpkgs.lib.isDerivation) nixosConfigurations.nixos.pkgs.lilya;
-
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-      system = "x86_64-linux";
-
-      specialArgs = {
-        inherit inputs hostProfile lilyaTheme;
+  outputs =
+    inputs@{
+      nixpkgs,
+      home-manager,
+      niri,
+      millennium,
+      agenix,
+      ...
+    }:
+    let
+      hostProfile = import ./hosts/lilya-thinkbook;
+      lilyaTheme = import ./modules/shared/theme-settings.nix;
+    in
+    rec {
+      checks.x86_64-linux = import ./checks {
+        inherit (nixosConfigurations.nixos) pkgs config;
+        inherit hostProfile;
       };
 
-      modules = [
-        ./configuration.nix
+      # Local packages, exposed so `nix-update --flake <name>` can bump the
+      # hand-pinned binaries (see README).
+      packages.x86_64-linux = nixpkgs.lib.filterAttrs (
+        _: nixpkgs.lib.isDerivation
+      ) nixosConfigurations.nixos.pkgs.lilya;
 
-        niri.nixosModules.niri
-        agenix.nixosModules.default
+      formatter.x86_64-linux = nixosConfigurations.nixos.pkgs.nixfmt;
 
-        {
-          nixpkgs.overlays = [
-            millennium.overlays.default
-            (final: prev: {
-              xwayland-satellite = final.callPackage ./pkgs/xwayland-satellite.nix {
-                xwayland-satellite = prev.xwayland-satellite;
-              };
-              code-cursor = final.callPackage ./pkgs/cursor.nix {
-                code-cursor = prev.code-cursor;
-              };
-              lilya = import ./pkgs {
-                pkgs = final;
-                inherit inputs;
-                lib = final.lib;
-              };
-              cc-switch = final.lilya.cc-switch;
-            })
-          ];
-        }
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
 
-        home-manager.nixosModules.home-manager
-        {
-          home-manager.useGlobalPkgs = true;
-          home-manager.useUserPackages = true;
-          home-manager.backupFileExtension = "backup";
-          home-manager.overwriteBackup = true;
+        specialArgs = {
+          inherit inputs hostProfile lilyaTheme;
+        };
 
-          home-manager.extraSpecialArgs = {
-            inherit inputs hostProfile lilyaTheme;
-          };
+        modules = [
+          ./configuration.nix
 
-          home-manager.users.${hostProfile.user.userName} = import ./home.nix;
-        }
-      ];
+          niri.nixosModules.niri
+          agenix.nixosModules.default
+
+          {
+            nixpkgs.overlays = [
+              millennium.overlays.default
+              (final: prev: {
+                xwayland-satellite = final.callPackage ./pkgs/xwayland-satellite.nix {
+                  xwayland-satellite = prev.xwayland-satellite;
+                };
+                code-cursor = final.callPackage ./pkgs/cursor.nix {
+                  code-cursor = prev.code-cursor;
+                };
+                lilya = import ./pkgs {
+                  pkgs = final;
+                  inherit inputs;
+                  lib = final.lib;
+                };
+                cc-switch = final.lilya.cc-switch;
+              })
+            ];
+          }
+
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.backupFileExtension = "backup";
+            home-manager.overwriteBackup = true;
+
+            home-manager.extraSpecialArgs = {
+              inherit inputs hostProfile lilyaTheme;
+            };
+
+            home-manager.users.${hostProfile.user.userName} = import ./home.nix;
+          }
+        ];
+      };
     };
-  };
 }

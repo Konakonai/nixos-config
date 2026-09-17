@@ -1,4 +1,8 @@
-{ pkgs, config, hostProfile }:
+{
+  pkgs,
+  config,
+  hostProfile,
+}:
 
 let
   inherit (pkgs) lib;
@@ -12,11 +16,14 @@ let
   flatpakInstall = home.systemd.user.services.flatpak-managed-install;
   flatpakSanitize = toString flatpakInstall.Service.ExecStartPost;
   wechatEnv = home.services.flatpak.overrides."com.tencent.WeChat".Environment;
-  mihomoTriggerNames = map (item: baseNameOf (toString item)) config.systemd.services.mihomo.restartTriggers;
+  mihomoTriggerNames = map (
+    item: baseNameOf (toString item)
+  ) config.systemd.services.mihomo.restartTriggers;
   kdeconnectRefreshExec = toString home.systemd.user.services.kdeconnect-refresh.Service.ExecStart;
   kdeconnectNmHook = (builtins.head config.networking.networkmanager.dispatcherScripts).source;
   qtPluginPath = config.environment.variables.QT_PLUGIN_PATH;
-  qtPluginList = if builtins.isList qtPluginPath then qtPluginPath else lib.splitString ":" qtPluginPath;
+  qtPluginList =
+    if builtins.isList qtPluginPath then qtPluginPath else lib.splitString ":" qtPluginPath;
 in
 assert lib.hasInfix "if-unreachable" kdeconnectRefreshExec;
 assert lib.hasInfix "fcitx5" (toString qtPluginPath);
@@ -33,91 +40,139 @@ assert !config.networking.enableIPv6;
 assert config.networking.networkmanager.connectionConfig."ipv6.method" == "disabled";
 assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.requires;
 assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.after;
-assert config.systemd.services.mihomo.restartTriggers == config.systemd.services.mihomo-config.restartTriggers;
+assert
+  config.systemd.services.mihomo.restartTriggers
+  == config.systemd.services.mihomo-config.restartTriggers;
 assert lib.elem "config-before-proxies.yaml" mihomoTriggerNames;
 assert lib.elem "config-after-proxies.yaml" mihomoTriggerNames;
 assert lib.elem "mihomo-proxies.yaml.age" mihomoTriggerNames;
 assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
 {
-  configuration = pkgs.runCommand "configuration-regressions" {
-    nativeBuildInputs = [ python pkgs.bash pkgs.coreutils pkgs.git pkgs.jq pkgs.util-linux ];
-    DOMAIN_XML = domainXml;
-    EXPECTED_VCPUS = vcpus;
-    KDECONNECT_NM_HOOK = kdeconnectNmHook;
-    KDECONNECT_REFRESH_EXEC = kdeconnectRefreshExec;
-    src = pkgs.lib.fileset.toSource {
-      root = ../.;
-      fileset = pkgs.lib.fileset.unions [
-        ../scripts
-        ../modules/system/mihomo
-        ../modules/system/virtualization.nix
-        ../modules/system/external-windows-domain-xml.nix
-        ../modules/home/niri
-      ];
-    };
-  } ''
-    cp -R "$src" source
-    chmod -R u+w source
-    cd source
-    python -B -m unittest discover -s scripts/tests -v
-    touch "$out"
-  '';
+  configuration =
+    pkgs.runCommand "configuration-regressions"
+      {
+        nativeBuildInputs = [
+          python
+          pkgs.bash
+          pkgs.coreutils
+          pkgs.git
+          pkgs.jq
+          pkgs.util-linux
+        ];
+        DOMAIN_XML = domainXml;
+        EXPECTED_VCPUS = vcpus;
+        KDECONNECT_NM_HOOK = kdeconnectNmHook;
+        KDECONNECT_REFRESH_EXEC = kdeconnectRefreshExec;
+        src = pkgs.lib.fileset.toSource {
+          root = ../.;
+          fileset = pkgs.lib.fileset.unions [
+            ../scripts
+            ../modules/system/mihomo
+            ../modules/system/virtualization.nix
+            ../modules/system/external-windows-domain-xml.nix
+            ../modules/home/niri
+          ];
+        };
+      }
+      ''
+        cp -R "$src" source
+        chmod -R u+w source
+        cd source
+        python -B -m unittest discover -s scripts/tests -v
+        touch "$out"
+      '';
 
-  portal = assert config.xdg.portal.config.niri."org.freedesktop.impl.portal.ScreenCast" == "gnome";
+  # statix/deadnix over every Nix file; nixfmt --check keeps the tree formatted.
+  lint =
+    pkgs.runCommand "lint"
+      {
+        nativeBuildInputs = [
+          pkgs.statix
+          pkgs.deadnix
+          pkgs.nixfmt
+        ];
+        src = pkgs.lib.fileset.toSource {
+          root = ../.;
+          fileset = pkgs.lib.fileset.unions [
+            (pkgs.lib.fileset.fileFilter (file: file.hasExt "nix") ../.)
+            ../statix.toml
+          ];
+        };
+      }
+      ''
+        cd "$src"
+        statix check .
+        deadnix --fail --exclude hardware-configuration.nix .
+        nixfmt --check .
+        touch "$out"
+      '';
+
+  portal =
+    assert config.xdg.portal.config.niri."org.freedesktop.impl.portal.ScreenCast" == "gnome";
     assert config.xdg.portal.config.niri."org.freedesktop.impl.portal.FileChooser" == "gtk";
     pkgs.runCommand "portal-backend-contract" { } ''touch "$out"'';
 
-  external-windows-cpu = pkgs.runCommand "external-windows-cpu" {
-    xml = domainXml;
-    inherit vcpus;
-  } ''
-    set -euo pipefail
-    grep -F "<vcpu placement='static'>$vcpus</vcpu>" "$xml"
-    grep -F "cores='$vcpus'" "$xml"
-    test "$vcpus" != 3
-    xml3="${pkgs.writeText "external-windows-3vcpu.xml" (import ../modules/system/external-windows-domain-xml.nix {
-      domainName = "cpu-contract";
-      uuid = "00000000-0000-0000-0000-000000000000";
-      memoryKiB = 5 * 1024 * 1024;
-      vcpus = 3;
-      diskById = "/dev/null";
-      ovmfCode = "/ovmf/CODE.fd";
-      ovmfVars = "/ovmf/VARS.fd";
-      guestToolsIso = "/guest.iso";
-    })}"
-    grep -F "<vcpu placement='static'>3</vcpu>" "$xml3"
-    grep -F "cores='3'" "$xml3"
-    touch "$out"
-  '';
+  external-windows-cpu =
+    pkgs.runCommand "external-windows-cpu"
+      {
+        xml = domainXml;
+        inherit vcpus;
+      }
+      ''
+        set -euo pipefail
+        grep -F "<vcpu placement='static'>$vcpus</vcpu>" "$xml"
+        grep -F "cores='$vcpus'" "$xml"
+        test "$vcpus" != 3
+        xml3="${
+          pkgs.writeText "external-windows-3vcpu.xml" (
+            import ../modules/system/external-windows-domain-xml.nix {
+              domainName = "cpu-contract";
+              uuid = "00000000-0000-0000-0000-000000000000";
+              memoryKiB = 5 * 1024 * 1024;
+              vcpus = 3;
+              diskById = "/dev/null";
+              ovmfCode = "/ovmf/CODE.fd";
+              ovmfVars = "/ovmf/VARS.fd";
+              guestToolsIso = "/guest.iso";
+            }
+          )
+        }"
+        grep -F "<vcpu placement='static'>3</vcpu>" "$xml3"
+        grep -F "cores='3'" "$xml3"
+        touch "$out"
+      '';
 
-  niri-config = pkgs.runCommand "niri-session-config" {
-    nativeBuildInputs = [ home.programs.niri.package ];
-    niriConfig = home.xdg.configFile.niri-config.source;
-  } ''
-    set -euo pipefail
-    grep -F 'include "noctalia.kdl" optional=true' "$niriConfig"
-    grep -F 'include "gpu.kdl" optional=true' "$niriConfig"
+  niri-config =
+    pkgs.runCommand "niri-session-config"
+      {
+        nativeBuildInputs = [ home.programs.niri.package ];
+        niriConfig = home.xdg.configFile.niri-config.source;
+      }
+      ''
+        set -euo pipefail
+        grep -F 'include "noctalia.kdl" optional=true' "$niriConfig"
+        grep -F 'include "gpu.kdl" optional=true' "$niriConfig"
 
-    work="$(mktemp -d)"
-    cp "$niriConfig" "$work/config.kdl"
+        work="$(mktemp -d)"
+        cp "$niriConfig" "$work/config.kdl"
 
-    niri validate -c "$work/config.kdl"
+        niri validate -c "$work/config.kdl"
 
-    cat > "$work/noctalia.kdl" <<'EOF'
-    layout {
-        focus-ring {
-            active-color "#7c5cfa"
+        cat > "$work/noctalia.kdl" <<'EOF'
+        layout {
+            focus-ring {
+                active-color "#7c5cfa"
+            }
         }
-    }
-    EOF
-    niri validate -c "$work/config.kdl"
+        EOF
+        niri validate -c "$work/config.kdl"
 
-    printf '%s\n' 'this is not valid kdl' > "$work/noctalia.kdl"
-    if niri validate -c "$work/config.kdl"; then
-      echo "corrupt noctalia.kdl was accepted" >&2
-      exit 1
-    fi
+        printf '%s\n' 'this is not valid kdl' > "$work/noctalia.kdl"
+        if niri validate -c "$work/config.kdl"; then
+          echo "corrupt noctalia.kdl was accepted" >&2
+          exit 1
+        fi
 
-    touch "$out"
-  '';
+        touch "$out"
+      '';
 }
