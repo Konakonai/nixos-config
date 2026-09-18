@@ -22,7 +22,7 @@
     # byte-identical. Chosen for its Linux Computer Use bridges (wlroots-bridge
     # covers niri).
     claude-desktop = {
-      url = "github:patrickjaja/claude-desktop-extra/v2.110.0-2";
+      url = "github:patrickjaja/claude-desktop-extra";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
