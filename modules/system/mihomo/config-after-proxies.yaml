@@ -111,10 +111,30 @@ proxy-groups:
   type: select
 - name: Download
   proxies:
+  - Download-Auto
+  - Auto
+  - Default Proxy
   - US-D1-1
   - US-D1-2
   - US-D1-3
   - US-D1-4
+  - Fast-B1-1
+  - Fast-B1-2
+  - Fast-B1-3
+  - Fast-B1-4
+  - US Fixed IP
+  - US-Dedicated-B1-1
+  - US-Dedicated-B1-2
+  - US-Dedicated-B1-3
+  - US-Dedicated-B1-4
+  - JP-Dedicated-B1-1
+  - JP-Dedicated-B1-2
+  - JP-Dedicated-B1-3
+  - JP-Dedicated-B1-4
+  - TW-IPv6-P1-1
+  - TW-IPv6-P1-2
+  - TW-IPv6-P1-3
+  - TW-IPv6-P1-4
   - DIRECT
   type: select
 - name: Steam
@@ -297,6 +317,17 @@ proxy-groups:
   - IN-NexIP-Sticky
   - IN-NexIP-Rotating
   type: select
+- hidden: true
+  interval: 180
+  name: Download-Auto
+  proxies:
+  - US-D1-1
+  - US-D1-2
+  - US-D1-3
+  - US-D1-4
+  - Auto
+  type: fallback
+  url: http://www.gstatic.com/generate_204
 sub-rules: null
 listeners: null
 hosts: {}
