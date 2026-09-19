@@ -30,8 +30,19 @@ let
   '';
 in
 lib.mkIf (nvidia.enable or false) {
+  # udev re-evaluates on driver bind and AC plug/unplug; the oneshot applies
+  # the policy at boot and on every rebuild, when no such event is replayed.
   services.udev.extraRules = ''
     ACTION=="bind", SUBSYSTEM=="pci", KERNEL=="${pciAddress}", RUN+="${applyPolicy}"
     ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ADP0", RUN+="${applyPolicy}"
   '';
+
+  systemd.services.dgpu-runtime-pm = {
+    description = "Keep the NVIDIA dGPU awake on mains";
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = applyPolicy;
+    };
+  };
 }
