@@ -50,5 +50,6 @@ in
   libreoffice-gtk-wayland = pkgs.callPackage ./libreoffice-gtk-wayland.nix { };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
+  urnetwork = pkgs.callPackage ./urnetwork.nix { };
   wiiu-downloader = pkgs.callPackage ./wiiu-downloader.nix { };
 }
