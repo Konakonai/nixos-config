@@ -13,7 +13,6 @@ let
     grok-bot
     localsend-no-csd
     nemo-with-extensions-wayland
-    urnetwork
     ;
   claude-desktop =
     inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.overrideAttrs
@@ -89,7 +88,6 @@ in
     splayer-next
     spotube
     thunderbird
-    urnetwork
   ];
 
   xdg.desktopEntries = {
