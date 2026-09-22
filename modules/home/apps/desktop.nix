@@ -15,11 +15,25 @@ let
     nemo-with-extensions-wayland
     ;
   claude-desktop =
-    inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.overrideAttrs
+    (inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.override {
+      # Upstream v2.2553.x is built against Electron 44; nixpkgs' default
+      # `electron` alias lags behind, so pin the major the bundle expects.
+      electron = pkgs.electron_44;
+    }).overrideAttrs
       (oldAttrs: {
         postFixup = (oldAttrs.postFixup or "") + ''
           wrapProgram $out/bin/claude-desktop \
             --set CHROME_DEVEL_SANDBOX "$out/lib/claude-desktop/chrome-sandbox"
+
+          # The bundled node-pty binding links libstdc++, but Electron itself
+          # ships a static libc++, so nothing in the process provides it and
+          # the pty-host worker dies with a misleading "Cannot find module
+          # pty.node" (the built-in terminal shows "Failed to spawn shell").
+          # Give the binding its own RPATH instead of leaking LD_LIBRARY_PATH
+          # into every shell and MCP server the app spawns.
+          pty=$out/lib/claude-desktop/resources/app.asar.unpacked/node_modules/node-pty/prebuilds/linux-x64/pty.node
+          chmod u+w "$pty"
+          patchelf --add-rpath ${lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ]} "$pty"
         '';
       });
   fontMimeTypes = [
