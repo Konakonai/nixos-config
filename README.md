@@ -55,7 +55,9 @@ nix-update --flake <name>   # 升级 pkgs/ 里手 pin 的二进制包（见 pack
 
 ## 不在 Git 里的状态
 
-`~/.config/age/mihomo.txt`（解密 `secrets/` 的身份，整套秘密的信任根）、`~/.local/state/noctalia/settings.toml`、`~/.config/openlist/`、`~/.config/rclone/rclone.conf`、浏览器 profile、libvirt NVRAM/TPM 与外接 Windows 盘。单独备份；磁盘未加密是有意的取舍。
+`~/.config/age/mihomo.txt`（解密 `secrets/` 的身份，整套秘密的信任根）、`~/.local/state/noctalia/settings.toml`、`~/.config/openlist/`、`~/.config/rclone/rclone.conf`、浏览器 profile、libvirt NVRAM/TPM 与外接 Windows 盘。磁盘未加密是有意的取舍。
+
+`modules/system/backup.nix` 每天用 restic 把其中除浏览器 profile 和 Windows 盘以外的部分，连同 `~/.ssh`、`~/.gnupg`，加密备份到首尔服务器（SFTP，chroot 的 `restic` 账号）和 Google Drive（rclone 远端 `gdrive`，`drive.file` 范围）。restic 密码在 `secrets/` 里，而 `secrets/` 又要靠 age 私钥解密，所以 **age 私钥和 restic 密码必须另存一份在机器之外**，否则备份无法恢复。手动操作用 `sudo restic-seoul …` / `sudo restic-gdrive …`。
 
 ## 备注
 

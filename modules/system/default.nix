@@ -3,6 +3,7 @@
 {
   imports = [
     ./audio.nix
+    ./backup.nix
     ./boot
     ./containers.nix
     ./display.nix
