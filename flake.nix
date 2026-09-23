@@ -40,12 +40,6 @@
     niri = {
       url = "github:epireyn/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
-      # Last niri commit before the Smithay bump (6a9ed5b). Since Smithay
-      # 2800e70, cleanup_texture_cache makes every GPU's EGL context current,
-      # which wakes the runtime-suspended NVIDIA dGPU and blocks niri's main
-      # loop for ~1.8 s each time (input freezes, then keystrokes burst out).
-      # Drop this once https://github.com/Smithay/smithay/issues/2178 is fixed.
-      inputs.niri-unstable.url = "github:niri-wm/niri/dd75865f547f0eac0e9b6c4d86d2cd00c0744252";
     };
 
     noctalia = {
