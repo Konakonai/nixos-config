@@ -217,6 +217,11 @@ in
     "noctalia/templates/heroic.css".source = heroicNoctaliaTemplate;
   };
 
+  # The local drop-in takes precedence over Noctalia's auto-updated community
+  # copy, preserving the wider proxy-group layout across plugin updates.
+  xdg.dataFile."noctalia/plugins/mihomo-control".source =
+    ../../assets/noctalia/plugins/mihomo-control;
+
   programs.noctalia = {
     enable = true;
     settings = noctaliaSettings;
