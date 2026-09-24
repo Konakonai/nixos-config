@@ -84,6 +84,10 @@ in
     package = niriPackage;
   };
 
+  # Noctalia owns the authentication prompt in Niri; two agents cannot
+  # register for the same session.
+  systemd.user.services.niri-flake-polkit.enable = false;
+
   services.desktopManager.plasma6.enable = true;
 
   environment.systemPackages = [ niriGpuProbe ];

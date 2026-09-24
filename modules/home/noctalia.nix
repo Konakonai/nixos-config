@@ -56,6 +56,7 @@ let
     shell = {
       corner_radius_scale = 1.65;
       font_family = lilyaTheme.fonts.sans;
+      polkit_agent = true;
 
       animation = {
         enabled = true;
