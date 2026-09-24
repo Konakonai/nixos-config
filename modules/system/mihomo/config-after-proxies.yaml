@@ -1,333 +1,181 @@
+# Subscription nodes come from the `glados` proxy-provider in the encrypted
+# fragment and are picked by the provider's name tags, so plan changes that
+# rename or re-address nodes need no edit here:
+#   Dedicated  bare-metal exit (JP-Dedicated currently exits in Los Angeles)
+#   IPv6       TW exit on Chunghwa business lines, the cleanest IPs we have
+#   Fast/Balancer  cross-region clusters (no geo tag, exit country varies)
+#   D<n>       no rate limit      Netflix  Netflix unlock
+#   X<n>       n-times traffic billing, kept out of every group but Steam's X1
+# `filter` only applies to `use:` members; the static `proxies:` entries
+# (groups, the self-hosted IN-NexIP nodes, DIRECT) always come first.
 proxy-groups:
 - name: Default Proxy
+  type: select
   proxies:
   - Auto
   - Express
-  - IN-NexIP-Sticky
-  - IN-NexIP-Rotating
   - TW Fixed IP
   - US Fixed IP
-  - US-Dedicated-B1-1
-  - US-Dedicated-B1-2
-  - US-Dedicated-B1-3
-  - US-Dedicated-B1-4
-  - JP-Dedicated-B1-1
-  - JP-Dedicated-B1-2
-  - JP-Dedicated-B1-3
-  - JP-Dedicated-B1-4
-  - TW-IPv6-P1-1
-  - TW-IPv6-P1-2
-  - TW-IPv6-P1-3
-  - TW-IPv6-P1-4
-  - Fast-B1-1
-  - Fast-B1-2
-  - Fast-B1-3
-  - Fast-B1-4
-  - Balancer-B1-1
-  - Balancer-B1-2
-  - Balancer-B1-3
-  - Balancer-B1-4
+  - IN-NexIP-Sticky
+  - IN-NexIP-Rotating
   - DIRECT
-  type: select
+  use:
+  - glados
+  filter: Dedicated|IPv6|^(Fast|Balancer)-
 - name: Research + AI
+  type: select
   proxies:
   - US Fixed IP
   - TW Fixed IP
   - IN-NexIP-Sticky
   - IN-NexIP-Rotating
-  - US-Dedicated-B1-1
-  - US-Dedicated-B1-2
-  - US-Dedicated-B1-3
-  - US-Dedicated-B1-4
-  - JP-Dedicated-B1-1
-  - JP-Dedicated-B1-2
-  - JP-Dedicated-B1-3
-  - JP-Dedicated-B1-4
-  - TW-IPv6-P1-1
-  - TW-IPv6-P1-2
-  - TW-IPv6-P1-3
-  - TW-IPv6-P1-4
-  type: select
+  use:
+  - glados
+  filter: Dedicated|IPv6
 - name: Grok
-  proxies:
-  - TW-IPv6-P1-1
-  - TW-IPv6-P1-2
-  - TW-IPv6-P1-3
-  - TW-IPv6-P1-4
-  - TW Fixed IP
   type: select
+  proxies:
+  - TW Fixed IP
+  use:
+  - glados
+  filter: ^TW-IPv6-
 - name: Antigravity
+  type: select
   proxies:
   - US Fixed IP
-  - US-Dedicated-B1-1
-  - US-Dedicated-B1-2
-  - US-Dedicated-B1-3
-  - US-Dedicated-B1-4
-  type: select
+  use:
+  - glados
+  filter: ^US-Dedicated-
 - name: Streaming
+  type: select
   proxies:
   - Netflix
-  - US-Netflix-N2-1
-  - US-Netflix-N2-2
-  - US-Netflix-N2-3
-  - US-Netflix-N2-4
   - Express
   - Download
-  - US-Balancer-N1-1
-  - US-Balancer-N1-2
-  - US-Balancer-N1-3
-  - US-Balancer-N1-4
-  - US-Dedicated-B1-1
-  - US-Dedicated-B1-2
-  - US-Dedicated-B1-3
-  - US-Dedicated-B1-4
-  - JP-Dedicated-B1-1
-  - JP-Dedicated-B1-2
-  - JP-Dedicated-B1-3
-  - JP-Dedicated-B1-4
-  type: select
+  use:
+  - glados
+  filter: Netflix|^US-Balancer-|Dedicated
 - name: Developer
+  type: select
   proxies:
   - US Fixed IP
   - TW Fixed IP
   - IN-NexIP-Sticky
   - IN-NexIP-Rotating
-  - US-Dedicated-B1-1
-  - US-Dedicated-B1-2
-  - US-Dedicated-B1-3
-  - US-Dedicated-B1-4
-  - JP-Dedicated-B1-1
-  - JP-Dedicated-B1-2
-  - JP-Dedicated-B1-3
-  - JP-Dedicated-B1-4
-  - Fast-B1-1
-  - Fast-B1-2
-  - Fast-B1-3
-  - Fast-B1-4
-  - TW-IPv6-P1-1
-  - TW-IPv6-P1-2
-  - TW-IPv6-P1-3
-  - TW-IPv6-P1-4
-  type: select
+  use:
+  - glados
+  filter: Dedicated|IPv6|^Fast-
 - name: Download
+  type: select
   proxies:
   - Download-Auto
   - Auto
   - Default Proxy
-  - US-D1-1
-  - US-D1-2
-  - US-D1-3
-  - US-D1-4
-  - Fast-B1-1
-  - Fast-B1-2
-  - Fast-B1-3
-  - Fast-B1-4
   - US Fixed IP
-  - US-Dedicated-B1-1
-  - US-Dedicated-B1-2
-  - US-Dedicated-B1-3
-  - US-Dedicated-B1-4
-  - JP-Dedicated-B1-1
-  - JP-Dedicated-B1-2
-  - JP-Dedicated-B1-3
-  - JP-Dedicated-B1-4
-  - TW-IPv6-P1-1
-  - TW-IPv6-P1-2
-  - TW-IPv6-P1-3
-  - TW-IPv6-P1-4
   - DIRECT
-  type: select
+  use:
+  - glados
+  filter: -D\d-|^Fast-|Dedicated|IPv6
 - name: Steam
+  type: select
   proxies:
   - US
-  - US-X1-1
-  - US-X1-2
-  - US-X1-3
-  - US-X1-4
   - DIRECT
   - Download
-  - US-D1-1
-  - US-D1-2
-  - US-D1-3
-  - US-D1-4
-  type: select
+  use:
+  - glados
+  filter: ^US-(X1|D\d)-
 - name: Premium
+  type: select
   proxies:
   - Express
   - US Fixed IP
-  - US-Dedicated-B1-1
-  - US-Dedicated-B1-2
-  - US-Dedicated-B1-3
-  - US-Dedicated-B1-4
-  - JP-Dedicated-B1-1
-  - JP-Dedicated-B1-2
-  - JP-Dedicated-B1-3
-  - JP-Dedicated-B1-4
-  - TW-IPv6-P1-1
-  - TW-IPv6-P1-2
-  - TW-IPv6-P1-3
-  - TW-IPv6-P1-4
-  type: select
+  use:
+  - glados
+  filter: Dedicated|IPv6
 - name: Apple
-  proxies:
-  - US-Balancer-N1-1
-  - US-Balancer-N1-2
-  - US-Balancer-N1-3
-  - US-Balancer-N1-4
-  - US-Netflix-N2-1
-  - US-Netflix-N2-2
-  - US-Netflix-N2-3
-  - US-Netflix-N2-4
-  - DIRECT
   type: select
+  proxies:
+  - DIRECT
+  use:
+  - glados
+  filter: ^US-(Balancer|Netflix)-
 - name: Microsoft
+  type: select
   proxies:
-  - US-Balancer-N1-1
-  - US-Balancer-N1-2
-  - US-Balancer-N1-3
-  - US-Balancer-N1-4
-  - US-Netflix-N2-1
-  - US-Netflix-N2-2
-  - US-Netflix-N2-3
-  - US-Netflix-N2-4
   - DIRECT
-  type: select
-- hidden: true
+  use:
+  - glados
+  filter: ^US-(Balancer|Netflix)-
+- name: Auto
+  type: url-test
+  hidden: true
+  use:
+  - glados
+  filter: ^(Fast|Balancer)-|^US-(Balancer|Netflix)-
+  url: http://www.gstatic.com/generate_204
   interval: 180
-  name: Auto
-  proxies:
-  - Fast-B1-1
-  - Fast-B1-2
-  - Fast-B1-3
-  - Fast-B1-4
-  - Balancer-B1-1
-  - Balancer-B1-2
-  - Balancer-B1-3
-  - Balancer-B1-4
-  - TLS-S1-1
-  - TLS-S1-2
-  - TLS-S1-3
-  - TLS-S1-4
-  - US-Balancer-N1-1
-  - US-Balancer-N1-2
-  - US-Balancer-N1-3
-  - US-Balancer-N1-4
-  - US-Netflix-N2-1
-  - US-Netflix-N2-2
-  - US-Netflix-N2-3
-  - US-Netflix-N2-4
   tolerance: 100
+- name: Express
   type: url-test
+  hidden: true
+  use:
+  - glados
+  filter: ^Balancer-|^US-X1-|Dedicated
   url: http://www.gstatic.com/generate_204
-- hidden: true
   interval: 300
-  name: Express
-  proxies:
-  - Balancer-B1-1
-  - Balancer-B1-2
-  - Balancer-B1-3
-  - Balancer-B1-4
-  - TLS-S1-1
-  - TLS-S1-2
-  - TLS-S1-3
-  - TLS-S1-4
-  - US-X1-1
-  - US-X1-2
-  - US-X1-3
-  - US-X1-4
-  - US-Dedicated-B1-1
-  - US-Dedicated-B1-2
-  - US-Dedicated-B1-3
-  - US-Dedicated-B1-4
-  - JP-Dedicated-B1-1
-  - JP-Dedicated-B1-2
-  - JP-Dedicated-B1-3
-  - JP-Dedicated-B1-4
   tolerance: 100
+- name: Netflix
   type: url-test
+  hidden: true
+  use:
+  - glados
+  filter: Netflix
   url: http://www.gstatic.com/generate_204
-- hidden: true
   interval: 300
-  name: Netflix
-  proxies:
-  - US-Netflix-N2-1
-  - US-Netflix-N2-2
-  - US-Netflix-N2-3
-  - US-Netflix-N2-4
   tolerance: 100
-  type: url-test
-  url: http://www.gstatic.com/generate_204
-- hidden: true
-  interval: 120
-  name: US Fixed IP
-  proxies:
-  - US-Dedicated-B1-1
-  - US-Dedicated-B1-2
-  - US-Dedicated-B1-3
-  - US-Dedicated-B1-4
-  - JP-Dedicated-B1-1
-  - JP-Dedicated-B1-2
-  - JP-Dedicated-B1-3
-  - JP-Dedicated-B1-4
+- name: US Fixed IP
   type: fallback
+  hidden: true
+  use:
+  - glados
+  filter: ^(US|JP)-Dedicated-
   url: http://www.gstatic.com/generate_204
-- hidden: true
   interval: 120
-  name: TW Fixed IP
-  proxies:
-  - TW-IPv6-P1-1
-  - TW-IPv6-P1-2
-  - TW-IPv6-P1-3
-  - TW-IPv6-P1-4
+- name: TW Fixed IP
   type: fallback
+  hidden: true
+  use:
+  - glados
+  filter: ^TW-IPv6-
   url: http://www.gstatic.com/generate_204
-- hidden: true
-  interval: 300
-  name: US
-  proxies:
-  - US-X1-1
-  - US-X1-2
-  - US-X1-3
-  - US-X1-4
+  interval: 120
+- name: US
   type: url-test
+  hidden: true
+  use:
+  - glados
+  filter: ^US-X1-
   url: http://www.gstatic.com/generate_204
-- hidden: true
   interval: 300
-  name: TW
-  proxies:
-  - TW-X1-1
-  - TW-X1-2
-  - TW-X1-3
-  - TW-X1-4
-  type: url-test
+# Static members precede provider members, so the unthrottled nodes get their
+# own group to stay ahead of Auto in Download-Auto's fallback order.
+- name: Unthrottled
+  type: fallback
+  hidden: true
+  use:
+  - glados
+  filter: -D\d-
   url: http://www.gstatic.com/generate_204
-- hidden: true
-  interval: 300
-  name: SG
-  proxies:
-  - SG-X5-1
-  - SG-X5-2
-  - SG-X5-3
-  - SG-X5-4
-  type: url-test
-  url: http://www.gstatic.com/generate_204
-- hidden: true
-  name: IN
-  proxies:
-  - IN-NexIP-Sticky
-  - IN-NexIP-Rotating
-  type: select
-- hidden: true
   interval: 180
-  name: Download-Auto
+- name: Download-Auto
+  type: fallback
+  hidden: true
   proxies:
-  - US-D1-1
-  - US-D1-2
-  - US-D1-3
-  - US-D1-4
+  - Unthrottled
   - Auto
-  type: fallback
   url: http://www.gstatic.com/generate_204
+  interval: 180
 sub-rules: null
 listeners: null
 hosts: {}

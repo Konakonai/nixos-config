@@ -22,7 +22,7 @@ assets/ patches/ secrets/    静态资源、上游补丁、age 密文
 ## 亮点
 
 - **两层外观模型**：Nix 只写默认层，GUI 改动留在 Noctalia 的覆盖层，rebuild 不会改回去；调色板经 Noctalia 模板同步到 GTK、Qt、Niri、kitty。
-- **秘密用 agenix**：代理节点、控制 API secret、LAN 认证、GitHub token 全在 `secrets/*.age`。
+- **秘密用 agenix**：订阅链接与自建节点、控制 API secret、LAN 认证、GitHub token 全在 `secrets/*.age`。
 - **Mihomo TUN**：规则以 `GEOSITE` 类别为主，控制 API 同源限制，7890 对局域网开放但需认证，主机 IPv6 关闭以堵 WebRTC 泄漏。
 - **硬件恢复脚本**：USB-C PD 事件后的 mux 复位、电池省电模式下的 CPU/PCIe 限制，失败自动回滚，`SYSROOT` 可注入测试。
 - **外接 Windows 虚拟机**：libvirt 直通 USB 整盘，启动器先确认磁盘未挂载。
@@ -62,6 +62,7 @@ nix-update --flake <name>   # 升级 pkgs/ 里手 pin 的二进制包（见 pack
 ## 备注
 
 - Mihomo 配置由前片段 + 密文 + 后片段拼接到 `/run/mihomo/config.yaml`，三者任一变化都会重启代理。改规则后 `mihomo -t` 校验，再跑 `scripts/tests/test_mihomo_*.py`。
+- 订阅节点由密文里的 `glados` proxy-provider 拉取（12 小时一次，经 `Default Proxy`），缓存在 `/var/lib/private/mihomo/proxy_providers/`；策略组按节点名标签（`Dedicated`、`IPv6`、`D1` …）用 `filter` 选取，不写死节点名。换套餐只需更新密文里的 URL。
 - Qt 平台主题等变量只在 Niri 的 `environment {}` 里设置，Plasma 使用标准会话。
 - 合盖不休眠（s2idle 在这台机器上恢复不可靠）。Home Manager 在用户会话允许之后才激活，冷启动后若主题未齐，注销再进一次。
 - `codex-update` 每日在临时 worktree 里构建 Codex Desktop/CLI，通过后只在主工作区未变时快进提交；不推送、不 rebuild。
