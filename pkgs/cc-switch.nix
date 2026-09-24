@@ -2,10 +2,10 @@
 
 let
   pname = "cc-switch";
-  version = "3.20.3";
+  version = "3.20.4";
   src = pkgs.fetchurl {
     url = "https://github.com/farion1231/cc-switch/releases/download/v${version}/CC-Switch-v${version}-Linux-x86_64.AppImage";
-    hash = "sha256-IGva0ItirS/bV+UurOIie6gvQPX7dDq5k0KRruaTWPM=";
+    hash = "sha256-yNZtgZP9AP0SI5vQaoxQ9Re62/UNkCCkZi6V6QezGO8=";
   };
   appimageContents = pkgs.appimageTools.extract { inherit pname version src; };
 in
