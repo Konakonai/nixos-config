@@ -16,7 +16,7 @@ local STATUS_ICON_COLORS = {
 }
 
 local function panel_id()
-  if noctalia.getConfig("panel_placement") == "attached" then
+  if noctalia.getConfig("open_panel_variant") == "attached" then
     return PLUGIN_ID .. ":panel-attached"
   end
   return PLUGIN_ID .. ":panel"

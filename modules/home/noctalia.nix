@@ -156,7 +156,7 @@ let
       allow_insecure_tls = false;
       test_url = "https://www.gstatic.com/generate_204";
       refresh_interval = 2;
-      panel_placement = "floating";
+      open_panel_variant = "floating";
     };
 
     widget.mihomo-control = {

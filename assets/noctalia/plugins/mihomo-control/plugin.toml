@@ -73,7 +73,7 @@ label_key = "settings.refresh_interval.label"
 description_key = "settings.refresh_interval.description"
 
 [[setting]]
-key = "panel_placement"
+key = "open_panel_variant"
 type = "select"
 default = "floating"
 label_key = "settings.panel_placement.label"
@@ -134,7 +134,7 @@ entry = "widget.luau"
   visible_when = { key = "icon_color_mode", values = ["custom"] }
 
 # Panel placement is host-owned, so the widget selects between two entries
-# backed by the same script according to the panel_placement setting.
+# backed by the same script according to the open_panel_variant setting.
 [[panel]]
 id = "panel"
 entry = "panel.luau"

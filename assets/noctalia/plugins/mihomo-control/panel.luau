@@ -173,7 +173,7 @@ local function latency_color(delay)
       return "primary"
     end
     if delay <= 800 then
-      return "warning"
+      return noctalia.isDarkMode() and "#facc15" or "#a16207"
     end
     return "error"
   end
