@@ -495,7 +495,7 @@ def last_delay:
   ),
   groups: (
     $p | to_entries
-    | map(select(.value.all != null) | {
+    | map(select(.value.all != null and .value.hidden != true) | {
         name: .key,
         type: (.value.type // ""),
         now: .value.now,

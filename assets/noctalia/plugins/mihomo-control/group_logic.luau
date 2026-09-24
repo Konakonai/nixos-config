@@ -137,7 +137,7 @@ function M.build_groups_from_proxies(proxies, default_test_url)
 
   local groups = {}
   for name, info in pairs(proxies) do
-    if type(info) == "table" and type(info.all) == "table" then
+    if type(info) == "table" and type(info.all) == "table" and info.hidden ~= true then
       local members = {}
       for _, member_name in ipairs(info.all) do
         local member = tostring(member_name)
@@ -168,7 +168,7 @@ function M.build_groups_from_slim_proxies(slim, default_test_url)
   local groups = {}
 
   for _, group in ipairs(slim.groups) do
-    if type(group) == "table" and type(group.name) == "string" then
+    if type(group) == "table" and type(group.name) == "string" and group.hidden ~= true then
       local members = {}
       for _, member_name in ipairs(type(group.members) == "table" and group.members or {}) do
         local member = tostring(member_name)

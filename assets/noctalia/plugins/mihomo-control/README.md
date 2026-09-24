@@ -41,7 +41,9 @@ The first command opens the centered floating panel; the second opens the
 variant attached to the bar.
 
 The panel lets you switch the proxy mode (rule / global / direct), restart the
-core, refresh the status, and manage every proxy group. Use the **Server**
+core, refresh the status, and manage visible proxy groups. Mihomo groups marked
+`hidden` remain available as members of their parent groups, but have no card.
+Use the **Server**
 dropdown to switch between saved controller profiles (host, port, secret, TLS).
 **Manage** edits the active profile; profiles and per-server proxy-group order
 are stored in the plugin data directory. Right-click the refresh button to
@@ -52,7 +54,7 @@ shows an overall latency (the selected member's, or the best tested one) right
 in its subtitle, visible without expanding. Member lists are collapsed by
 default; click a group header to expand it. Click a member to select it; the
 current selection is marked with a dot. Use **Test all** next to the Proxy
-groups heading to run a latency test on every group at once. Drag a card by
+groups heading to run a latency test on every visible group at once. Drag a card by
 its ☰ grip over another card to reorder the groups. The nearest insertion gap
 opens to preview the resulting layout before drop. The custom display order
 survives controller polling and plugin restarts.

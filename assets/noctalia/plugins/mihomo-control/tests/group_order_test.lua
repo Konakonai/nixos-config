@@ -122,13 +122,19 @@ local sample_proxies = {
       now = "Node A",
       hidden = false,
       testUrl = "http://example.test/generate_204",
-      all = { "Node A", "Node B" },
+      all = { "Node A", "Node B", "Hidden Fallback" },
+    },
+    ["Hidden Fallback"] = {
+      type = "Fallback",
+      hidden = true,
+      all = { "Node A" },
     },
   },
 }
 local built = logic.build_groups_from_proxies(sample_proxies.proxies, "http://fallback.test")
-assert_eq(#built, 1, "one proxy group")
+assert_eq(#built, 1, "hidden group has no card")
 assert_eq(built[1].name, "Selector", "group name")
+assert_eq(built[1].members[3].name, "Hidden Fallback", "hidden group remains selectable inside parent")
 assert_eq(built[1].members[1].delay, 42, "member delay from history")
 assert_eq(built[1].members[2].delay, 0, "failed probe delay is kept")
 
@@ -141,13 +147,20 @@ local slim = {
       now = "Node A",
       hidden = false,
       testUrl = "http://example.test/generate_204",
-      members = { "Node A", "Node B" },
+      members = { "Node A", "Node B", "Hidden Fallback" },
+    },
+    {
+      name = "Hidden Fallback",
+      type = "Fallback",
+      hidden = true,
+      members = { "Node A" },
     },
   },
 }
 local from_slim = logic.build_groups_from_slim_proxies(slim, "http://fallback.test")
-assert_eq(#from_slim, 1, "slim projection yields one group")
+assert_eq(#from_slim, 1, "slim projection hides internal group")
 assert_eq(from_slim[1].members[1].delay, 42, "slim member delay")
+assert_eq(from_slim[1].members[3].name, "Hidden Fallback", "slim parent keeps hidden group reference")
 
 assert(logic.proxies_body_needs_external_decode(string.rep("x", logic.PROXIES_INLINE_DECODE_LIMIT)) == false, "at-limit body stays inline")
 assert(logic.proxies_body_needs_external_decode(string.rep("x", logic.PROXIES_INLINE_DECODE_LIMIT + 1)) == true, "over-limit body uses jq")

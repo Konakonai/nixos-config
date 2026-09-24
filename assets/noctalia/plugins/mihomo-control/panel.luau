@@ -10,7 +10,7 @@
 --   2. Connection: mode select (rule/global/direct) and refresh button.
 --   3. Traffic: live up/down rates, totals, memory, active connections, and
 --      a "close all connections" action.
---   4. Proxy groups: one card per group — current selection, member select,
+--   4. Proxy groups: one card per visible group — current selection, member select,
 --      and a latency-test button.
 
 local MODES = { "rule", "global", "direct" }
@@ -571,10 +571,6 @@ local function group_insertion_zone(index)
 end
 
 local function group_card(group)
-  local name_text = group.name
-  if group.hidden == true then
-    name_text = name_text .. ` ({noctalia.tr("panel.hidden")})`
-  end
   local expanded = expanded_groups[group.name] == true
   local overall = group_latency(group)
 
@@ -599,7 +595,7 @@ local function group_card(group)
         ui.glyph({ name = "menu-2", size = 14, color = "on_surface_variant" }),
       }),
       ui.label({
-        text = name_text,
+        text = group.name,
         fontWeight = "bold",
         flexGrow = 1,
         maxWidth = 215,

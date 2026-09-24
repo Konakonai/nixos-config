@@ -138,7 +138,7 @@ entry = "widget.luau"
 [[panel]]
 id = "panel"
 entry = "panel.luau"
-width = 680
+width = 560
 height = 720
 placement = "floating"
 position = "center"
@@ -146,7 +146,7 @@ position = "center"
 [[panel]]
 id = "panel-attached"
 entry = "panel.luau"
-width = 680
+width = 560
 height = 720
 placement = "attached"
 position = "auto"
