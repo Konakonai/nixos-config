@@ -43,6 +43,19 @@ class ProxyGroupTest(unittest.TestCase):
     def test_unthrottled_nodes_precede_auto_for_downloads(self):
         self.assertEqual(self.by_name["Download-Auto"]["proxies"][0], "Unthrottled")
 
+    def test_google_account_domains_share_one_exit(self):
+        # Google binds session tokens to the client IP ("<ip> != <ip>").
+        # Anonymous bulk downloads may still take a download group.
+        downloads = {"storage.googleapis.com"}
+        rules = yaml.safe_load(AFTER.read_text())["rules"]
+        for rule in rules:
+            kind, payload, target = (rule.split(",") + [""])[:3]
+            if kind not in {"DOMAIN-SUFFIX", "DOMAIN-KEYWORD", "GEOSITE"}:
+                continue
+            if payload in downloads or not re.search(r"google|gstatic|gmail", payload):
+                continue
+            self.assertEqual(target, "Google", rule)
+
 
 if __name__ == "__main__":
     unittest.main()

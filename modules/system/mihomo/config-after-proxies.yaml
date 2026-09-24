@@ -39,13 +39,17 @@ proxy-groups:
   use:
   - glados
   filter: ^TW-IPv6-
-- name: Antigravity
+# One group for every Google-account domain: Google binds session tokens to
+# the client IP, so splitting accounts.google.com and the Gemini/Antigravity
+# APIs across exits fails with "<ip> != <ip>". Antigravity needs a US exit.
+- name: Google
   type: select
   proxies:
   - US Fixed IP
+  - TW Fixed IP
   use:
   - glados
-  filter: ^US-Dedicated-
+  filter: Dedicated|IPv6
 - name: Streaming
   type: select
   proxies:
@@ -331,8 +335,8 @@ rules:
 # Pinned: keep these ahead of the GEOSITE categories that would otherwise reroute them.
 - DOMAIN-SUFFIX,apple.com.cn,Apple
 - DOMAIN-SUFFIX,files.oaiusercontent.com,Download
-- DOMAIN-SUFFIX,googleapis.cn,Research + AI
-- DOMAIN-SUFFIX,ggpht.com,Research + AI
+- DOMAIN-SUFFIX,googleapis.cn,Google
+- DOMAIN-SUFFIX,ggpht.com,Google
 - DOMAIN-SUFFIX,az764295.vo.msecnd.net,Express
 - DOMAIN-SUFFIX,csgo.wmsj.cn,Steam
 - DOMAIN-SUFFIX,msecnd.net,Default Proxy
@@ -381,17 +385,18 @@ rules:
 - DOMAIN-SUFFIX,ollama.com,Download
 - DOMAIN-SUFFIX,lmstudio.ai,Download
 - DOMAIN-SUFFIX,ai.com,Research + AI
-- GEOSITE,google-gemini,Antigravity
+# Google account domains share one exit; see the Google group.
+- GEOSITE,google-gemini,Google
 - GEOSITE,anthropic,Research + AI
-- DOMAIN-SUFFIX,chat.google.com,Antigravity
-- DOMAIN-SUFFIX,ai.google.dev,Antigravity
-- DOMAIN-SUFFIX,aiplatform.googleapis.com,Antigravity
-- DOMAIN-SUFFIX,ai.google,Antigravity
-- DOMAIN-SUFFIX,ai.google.com,Antigravity
-- DOMAIN-SUFFIX,cloud.google.com,Antigravity
-- DOMAIN-SUFFIX,jetski-webchannel.googleapis.com,Antigravity
-- DOMAIN-SUFFIX,daily-cloudcode-pa.googleapis.com,Antigravity
-- DOMAIN-SUFFIX,cloudcode-pa.googleapis.com,Antigravity
+- DOMAIN-SUFFIX,chat.google.com,Google
+- DOMAIN-SUFFIX,ai.google.dev,Google
+- DOMAIN-SUFFIX,aiplatform.googleapis.com,Google
+- DOMAIN-SUFFIX,ai.google,Google
+- DOMAIN-SUFFIX,ai.google.com,Google
+- DOMAIN-SUFFIX,cloud.google.com,Google
+- DOMAIN-SUFFIX,jetski-webchannel.googleapis.com,Google
+- DOMAIN-SUFFIX,daily-cloudcode-pa.googleapis.com,Google
+- DOMAIN-SUFFIX,cloudcode-pa.googleapis.com,Google
 - DOMAIN-SUFFIX,groq.com,Research + AI
 - DOMAIN-SUFFIX,perplexity.ai,Research + AI
 - GEOSITE,xai,Grok
@@ -406,25 +411,25 @@ rules:
 - DOMAIN-KEYWORD,openai,Research + AI
 - DOMAIN-KEYWORD,claude,Research + AI
 - DOMAIN-KEYWORD,anthropic,Research + AI
-- DOMAIN-KEYWORD,gemini.google,Antigravity
-- DOMAIN-KEYWORD,generativelanguage,Antigravity
-- DOMAIN-KEYWORD,jetski,Antigravity
-- DOMAIN-KEYWORD,antigravity,Antigravity
+- DOMAIN-KEYWORD,gemini.google,Google
+- DOMAIN-KEYWORD,generativelanguage,Google
+- DOMAIN-KEYWORD,jetski,Google
+- DOMAIN-KEYWORD,antigravity,Google
 - DOMAIN-KEYWORD,cursor,Research + AI
 - GEOSITE,youtube,Streaming
 - DOMAIN-KEYWORD,youtube,Streaming
-- DOMAIN-SUFFIX,google.com,Research + AI
-- DOMAIN-SUFFIX,google.com.hk,Research + AI
-- DOMAIN-SUFFIX,google.co.jp,Research + AI
-- DOMAIN-SUFFIX,googleapis.com,Research + AI
-- DOMAIN-SUFFIX,gstatic.com,Research + AI
-- DOMAIN-SUFFIX,googleusercontent.com,Research + AI
-- DOMAIN-SUFFIX,googlesyndication.com,Research + AI
-- DOMAIN-SUFFIX,googleadservices.com,Research + AI
-- DOMAIN-SUFFIX,google-analytics.com,Research + AI
-- DOMAIN-SUFFIX,android.com,Research + AI
-- DOMAIN-SUFFIX,googleplay.com,Research + AI
-- DOMAIN-SUFFIX,xn--ngstr-lra8j.com,Research + AI
+- DOMAIN-SUFFIX,google.com,Google
+- DOMAIN-SUFFIX,google.com.hk,Google
+- DOMAIN-SUFFIX,google.co.jp,Google
+- DOMAIN-SUFFIX,googleapis.com,Google
+- DOMAIN-SUFFIX,gstatic.com,Google
+- DOMAIN-SUFFIX,googleusercontent.com,Google
+- DOMAIN-SUFFIX,googlesyndication.com,Google
+- DOMAIN-SUFFIX,googleadservices.com,Google
+- DOMAIN-SUFFIX,google-analytics.com,Google
+- DOMAIN-SUFFIX,android.com,Google
+- DOMAIN-SUFFIX,googleplay.com,Google
+- DOMAIN-SUFFIX,xn--ngstr-lra8j.com,Google
 - GEOSITE,category-scholar-!cn,Research + AI
 - DOMAIN-SUFFIX,ssrn.com,Research + AI
 - DOMAIN-SUFFIX,philpapers.org,Research + AI
@@ -468,10 +473,10 @@ rules:
 - DOMAIN-SUFFIX,sharelatex.com,Research + AI
 - DOMAIN-SUFFIX,authorea.com,Research + AI
 - DOMAIN-SUFFIX,hypothes.is,Research + AI
-- DOMAIN-SUFFIX,gmail.com,Research + AI
-- DOMAIN-SUFFIX,googlemail.com,Research + AI
-- DOMAIN-KEYWORD,google,Research + AI
-- DOMAIN-KEYWORD,scholar.google,Research + AI
+- DOMAIN-SUFFIX,gmail.com,Google
+- DOMAIN-SUFFIX,googlemail.com,Google
+- DOMAIN-KEYWORD,google,Google
+- DOMAIN-KEYWORD,scholar.google,Google
 - DOMAIN-SUFFIX,netflix.com.edgesuite.net,Streaming
 - DOMAIN-SUFFIX,us-west-2.amazonaws.com,Streaming
 - GEOSITE,category-porn,Streaming
