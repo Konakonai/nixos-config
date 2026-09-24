@@ -41,15 +41,16 @@ proxy-groups:
   filter: ^TW-IPv6-
 # One group for every Google-account domain: Google binds session tokens to
 # the client IP, so splitting accounts.google.com and the Gemini/Antigravity
-# APIs across exits fails with "<ip> != <ip>". Antigravity needs a US exit.
+# APIs across exits fails with "<ip> != <ip>". US-Dedicated only: Antigravity
+# needs a US exit, and Google geolocates the JP-Dedicated and TW exits as
+# CN/HK, so Gemini answers "not supported in your country".
 - name: Google
   type: select
   proxies:
-  - US Fixed IP
-  - TW Fixed IP
+  - Google-US
   use:
   - glados
-  filter: Dedicated|IPv6
+  filter: ^US-Dedicated-
 - name: Streaming
   type: select
   proxies:
@@ -147,6 +148,14 @@ proxy-groups:
   use:
   - glados
   filter: ^(US|JP)-Dedicated-
+  url: https://www.google.com/generate_204
+  interval: 120
+- name: Google-US
+  type: fallback
+  hidden: true
+  use:
+  - glados
+  filter: ^US-Dedicated-
   url: https://www.google.com/generate_204
   interval: 120
 - name: TW Fixed IP
