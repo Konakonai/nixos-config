@@ -139,14 +139,14 @@ proxy-groups:
   url: http://www.gstatic.com/generate_204
   interval: 300
   tolerance: 100
-# The fixed-IP groups carry Google/AI traffic. Probe Google over TLS: some
-# shared exits (e.g. 60.249.28.137 behind TW-IPv6-P2-1/P1-4) answer plain
-# http://gstatic yet reset TLS to Google, and fallback would keep them.
+# Provider nodes use the provider health check, not the group's URL. Keep a
+# separate provider for fixed-IP groups: some shared exits (e.g. behind
+# TW-IPv6-P2-1/P1-4) answer plain HTTP but reset TLS to Google.
 - name: US Fixed IP
   type: fallback
   hidden: true
   use:
-  - glados
+  - glados-fixed-ip
   filter: ^(US|JP)-Dedicated-
   url: https://www.google.com/generate_204
   interval: 120
@@ -154,7 +154,7 @@ proxy-groups:
   type: fallback
   hidden: true
   use:
-  - glados
+  - glados-fixed-ip
   filter: ^US-Dedicated-
   url: https://www.google.com/generate_204
   interval: 120
@@ -162,7 +162,7 @@ proxy-groups:
   type: fallback
   hidden: true
   use:
-  - glados
+  - glados-fixed-ip
   filter: ^TW-IPv6-
   url: https://www.google.com/generate_204
   interval: 120

@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[2]
 AFTER = ROOT / "modules/system/mihomo/config-after-proxies.yaml"
 
 PROVIDER = "glados"
+FIXED_IP_PROVIDER = "glados-fixed-ip"
 BUILTINS = {"DIRECT", "REJECT"}
 # Self-hosted nodes defined statically in the encrypted fragment.
 STATIC_NODES = {"IN-NexIP-Sticky", "IN-NexIP-Rotating"}
@@ -35,7 +36,10 @@ class ProxyGroupTest(unittest.TestCase):
     def test_filters_only_on_provider_groups(self):
         for group in self.groups:
             if "use" in group:
-                self.assertEqual(group["use"], [PROVIDER], group["name"])
+                provider = FIXED_IP_PROVIDER if group["name"] in {
+                    "US Fixed IP", "Google-US", "TW Fixed IP"
+                } else PROVIDER
+                self.assertEqual(group["use"], [provider], group["name"])
                 re.compile(group["filter"])
             else:
                 self.assertNotIn("filter", group, group["name"])
