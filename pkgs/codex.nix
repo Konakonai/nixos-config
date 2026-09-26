@@ -25,6 +25,9 @@ pkgs.stdenv.mkDerivation rec {
     fi
     chmod +x $out/bin/codex $out/bin/codex-code-mode-host
 
+    # The default CLI starts a daemon, which discovers this package via its manifest.
+    cp codex-package.json $out/
+
     if [ -d codex-resources ]; then
       cp -R codex-resources $out/
     fi
