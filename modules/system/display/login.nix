@@ -102,6 +102,15 @@ in
 
   services.greetd.enable = false;
 
+  # pam_kwallet5 starts `ksecretd --pam-login` inside the login session scope,
+  # and nothing stops it on logout. Every closed session then lingers as
+  # "closing", keeping user@.service alive, so group changes never reach niri
+  # even after re-login. Niri uses gnome-keyring for Secret Service; KDE apps
+  # still reach ksecretd through D-Bus activation, at the cost of Plasma no
+  # longer auto-unlocking the wallet at login.
+  security.pam.services.login.kwallet.enable = lib.mkForce false;
+  security.pam.services.kde.kwallet.enable = lib.mkForce false;
+
   services.displayManager = {
     defaultSession = "niri";
     sessionPackages = lib.mkForce [
