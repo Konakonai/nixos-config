@@ -84,6 +84,13 @@ in
   ];
   programs.ssh.askPassword = askPass;
 
+  # Codex Linux Computer Use needs a keyboard backend. Niri exports no
+  # org.gnome.Mutter.RemoteDesktop, so the RemoteDesktop portal always refuses
+  # CreateSession and /dev/uinput alone only gives the backend a pointer.
+  # The module exports YDOTOOL_SOCKET, which the backend reads.
+  programs.ydotool.enable = true;
+  users.users.${userName}.extraGroups = [ "ydotool" ];
+
   environment.systemPackages = [
     pkgs.kdePackages.ksshaskpass
   ];
