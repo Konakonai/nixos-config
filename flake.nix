@@ -103,9 +103,6 @@
             nixpkgs.overlays = [
               millennium.overlays.default
               (final: prev: {
-                xwayland-satellite = final.callPackage ./pkgs/xwayland-satellite.nix {
-                  xwayland-satellite = prev.xwayland-satellite;
-                };
                 colloid-icon-theme = final.callPackage ./pkgs/colloid-icon-theme.nix {
                   colloid-icon-theme = prev.colloid-icon-theme;
                 };
