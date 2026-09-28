@@ -96,7 +96,6 @@ in
     pavucontrol
     resources
     splayer-next
-    spotube
     thunderbird
   ];
 
