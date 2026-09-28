@@ -5,15 +5,11 @@
 }:
 
 let
-  braveOrigin = pkgs.callPackage ./brave-origin.nix { };
   fileRollerWayland = pkgs.callPackage ./file-roller-wayland.nix { };
 in
 {
   antigravity = pkgs.callPackage ./antigravity.nix { };
-  brave-origin = braveOrigin;
-  brave-netflix-opera = pkgs.callPackage ./brave-netflix-opera.nix {
-    inherit braveOrigin;
-  };
+  brave-origin = pkgs.callPackage ./brave-origin.nix { };
   cc-switch = pkgs.callPackage ./cc-switch.nix { };
   celluloid-gl = pkgs.celluloid.overrideAttrs (previous: {
     preFixup = (previous.preFixup or "") + ''

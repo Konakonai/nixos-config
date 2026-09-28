@@ -106,9 +106,6 @@
                 xwayland-satellite = final.callPackage ./pkgs/xwayland-satellite.nix {
                   xwayland-satellite = prev.xwayland-satellite;
                 };
-                code-cursor = final.callPackage ./pkgs/cursor.nix {
-                  code-cursor = prev.code-cursor;
-                };
                 colloid-icon-theme = final.callPackage ./pkgs/colloid-icon-theme.nix {
                   colloid-icon-theme = prev.colloid-icon-theme;
                 };

@@ -74,7 +74,6 @@ in
     crosspipe
     dolphin-emu
     evtest
-    gamescope
     gameStatus
     steamFollow
     heroic

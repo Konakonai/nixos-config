@@ -9,7 +9,6 @@
     nh
     nvd
     nix-update
-    nushell
     trash-cli
     udisks
     ripdrag
@@ -21,9 +20,8 @@
     tinymist
 
     wl-clipboard
-    hyprsunset
-    wlsunset
 
     lilya.grok
+    pi-coding-agent
   ];
 }

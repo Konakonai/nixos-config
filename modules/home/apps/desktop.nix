@@ -82,7 +82,6 @@ in
     bitwarden-desktop
     cc-switch
     claude-desktop
-    code-cursor
     file-roller-wayland
     foliate
     gnome-font-viewer
@@ -92,12 +91,9 @@ in
     localsend-no-csd
     loupe
     mcomix
-    mission-center
     nemo-with-extensions-wayland
     obsidian
     pavucontrol
-    pear-desktop
-    pwvucontrol
     resources
     splayer-next
     spotube

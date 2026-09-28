@@ -16,7 +16,6 @@
     jq
     tree
     unzip
-    p7zip
     killall
     btop
     fastfetch
@@ -30,7 +29,6 @@
     officecli
 
     adwaita-icon-theme
-    tela-icon-theme
     lilya.mactahoe-kde
     qadwaitadecorations-qt6
     kdePackages.dolphin
@@ -40,7 +38,5 @@
     kdePackages.kio-fuse
     kdePackages.kservice
     qt6Packages.qt6ct
-    opencode
-    pi-coding-agent
   ];
 }
