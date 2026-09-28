@@ -159,6 +159,10 @@ let
       refresh_interval = 2;
     };
 
+    # Spotify's AppIndicator reports Passive while its window exists, so the
+    # default hide_passive only flashes the icon at startup.
+    widget.tray.hide_passive = false;
+
     widget.mihomo-control = {
       type = "mdj2812/mihomo-control:widget";
       label_content = "mode";
