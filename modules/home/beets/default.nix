@@ -151,9 +151,13 @@ in
 
       lyrics = {
         synced = true;
-        # Genius rarely has Chinese lyrics and rate-limits hard (429 with
-        # long backoff on every miss), so only LRCLib is queried.
-        sources = [ "lrclib" ];
+        # netease is registered by zhlyrics and covers Chinese releases far
+        # better than LRCLib. Genius rarely has Chinese lyrics and rate-limits
+        # hard (429 with long backoff on every miss), so it is left out.
+        sources = [
+          "netease"
+          "lrclib"
+        ];
       };
 
       replaygain = {
