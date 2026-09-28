@@ -23,8 +23,10 @@ from __future__ import annotations
 
 import dataclasses
 import re
+import time
 
 import opencc
+import requests
 from beets.plugins import BeetsPlugin
 from beets.util.lyrics import Lyrics
 
@@ -84,12 +86,47 @@ def duration_fits(candidate: float, target: float) -> bool:
     return abs(candidate - target) <= tolerance
 
 
+class NetEaseRateLimited(requests.RequestException):
+    pass
+
+
 class NetEase(lyrics.Backend):
     """Fetch lyrics from NetEase Cloud Music."""
 
     SEARCH_URL = "https://music.163.com/api/search/get/web"
     LYRIC_URL = "https://music.163.com/api/song/lyric"
     HEADERS = {"Referer": "https://music.163.com"}
+    # NetEase throttles bursts per IP ("操作频繁", code 405 inside an HTTP 200
+    # body) for minutes at a time, so pace requests and back off when it
+    # still happens. If backing off does not help, stop asking for the rest of
+    # the run rather than stalling every remaining track. Shared across
+    # instances: one beets run is one client.
+    MIN_INTERVAL = 1.5
+    BACKOFF = (10, 30, 60)
+    _last_request = 0.0
+    _blocked = False
+
+    def api(self, url: str, params: dict) -> dict:
+        if NetEase._blocked:
+            raise NetEaseRateLimited("NetEase is rate limiting this IP")
+
+        for delay in (*self.BACKOFF, None):
+            wait = NetEase._last_request + self.MIN_INTERVAL - time.monotonic()
+            if wait > 0:
+                time.sleep(wait)
+            NetEase._last_request = time.monotonic()
+
+            data = self.get_json(url, params=params, headers=self.HEADERS)
+            if data.get("code") != 405:
+                return data
+            if delay is None:
+                break
+            self.warn("NetEase rate limit hit, retrying in {}s", delay)
+            time.sleep(delay)
+        NetEase._blocked = True
+        self.warn("NetEase still rate limited; skipping it for the rest of this run")
+        # Surface as a request error instead of a silent "not found".
+        raise NetEaseRateLimited("NetEase is rate limiting this IP")
 
     def queries(self, artist: str, title: str) -> list[str]:
         halves = split(artist)
@@ -105,10 +142,8 @@ class NetEase(lyrics.Backend):
         wanted = artist_names(artist)
         titles = {normalize(title), normalize(chinese_title(title))}
         for query in self.queries(artist, title):
-            data = self.get_json(
-                self.SEARCH_URL,
-                params={"s": query, "type": 1, "limit": 20},
-                headers=self.HEADERS,
+            data = self.api(
+                self.SEARCH_URL, params={"s": query, "type": 1, "limit": 20}
             )
             songs = [
                 song
@@ -126,11 +161,7 @@ class NetEase(lyrics.Backend):
         # The same recording is often uploaded several times and some uploads
         # have no lyrics, so try a few of the closest matches.
         for song_id in self.search(artist, title, length)[:3]:
-            data = self.get_json(
-                self.LYRIC_URL,
-                params={"id": song_id, "lv": 1, "tv": -1},
-                headers=self.HEADERS,
-            )
+            data = self.api(self.LYRIC_URL, params={"id": song_id, "lv": 1, "tv": -1})
             text = ((data.get("lrc") or {}).get("lyric") or "").strip()
             if not text or "纯音乐" in text:
                 continue
