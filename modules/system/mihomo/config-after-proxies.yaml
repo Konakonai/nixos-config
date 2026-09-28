@@ -60,6 +60,17 @@ proxy-groups:
   use:
   - glados
   filter: Netflix|^US-Balancer-|Dedicated
+# Deezer's search API answers with empty results from exits outside its
+# markets (TW, HK, CN, and DIRECT all return nothing); album lookups work
+# anywhere. The US/JP dedicated exits get full search results, which beets
+# needs when a download carries no UPC.
+- name: Deezer
+  type: select
+  proxies:
+  - US Fixed IP
+  use:
+  - glados
+  filter: ^(US|JP)-Dedicated-
 - name: Developer
   type: select
   proxies:
@@ -490,6 +501,8 @@ rules:
 - DOMAIN-SUFFIX,us-west-2.amazonaws.com,Streaming
 - GEOSITE,category-porn,Streaming
 - GEOSITE,disney,Streaming
+- DOMAIN-SUFFIX,deezer.com,Deezer
+- DOMAIN-SUFFIX,dzcdn.net,Deezer
 - GEOSITE,spotify,Streaming
 - GEOSITE,twitch,Streaming
 - GEOSITE,netflix,Streaming
