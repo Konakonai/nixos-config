@@ -36,11 +36,58 @@ let
       done
     '';
   };
+
+  # Mirror the library to the Navidrome server (see docs/music-server.md).
+  # Navidrome's watcher misses rsync's temp-file-and-rename writes, and its
+  # incremental scan goes by folder mtimes, which tag-only edits (new lyrics)
+  # don't touch, so run a full scan whenever anything changed.
+  music-sync = pkgs.writeShellApplication {
+    name = "music-sync";
+    runtimeInputs = with pkgs; [
+      openssh
+      rsync
+    ];
+    text = ''
+      src="${config.programs.beets.settings.directory}/"
+      remote=shanghai
+      dest=/srv/music/
+
+      rsync_args=()
+      if [ "''${1:-}" = "-n" ]; then
+        rsync_args+=(--dry-run)
+      fi
+
+      # --delete on an empty source would wipe the server's copy.
+      if [ -z "$(find "$src" -type f -print -quit)" ]; then
+        echo "music-sync: $src is empty, refusing to mirror it" >&2
+        exit 1
+      fi
+
+      changes=$(
+        rsync -a --delete --delete-delay --partial --chmod=D755,F644 \
+          --out-format='%i %n' "''${rsync_args[@]}" "$src" "$remote:$dest" |
+          grep -v '^\.d' || true
+      )
+      if [ -z "$changes" ]; then
+        echo "music-sync: already up to date"
+        exit 0
+      fi
+      printf '%s\n' "$changes"
+
+      if [ "''${#rsync_args[@]}" -gt 0 ]; then
+        exit 0
+      fi
+      echo "music-sync: rescanning library on $remote"
+      ssh "$remote" runuser -u navidrome -- /opt/navidrome/navidrome scan --full \
+        -c /etc/navidrome/navidrome.toml --nobanner 2>&1 | grep -i 'finished\|error' || true
+    '';
+  };
 in
 
 {
   home.packages = [
     beet-deezer
+    music-sync
     # badfiles shells out to `flac -wst` to verify downloads.
     pkgs.flac
   ];

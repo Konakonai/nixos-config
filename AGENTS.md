@@ -43,3 +43,4 @@
 | `scripts/` + `scripts/tests/` | 独立脚本与其回归测试 |
 | `checks/` | Flake checks |
 | `assets/`、`patches/`、`secrets/` | 静态资源、上游补丁、age 密文 |
+| `docs/` | 不归 Nix 管理的外部机器状态（`music-server.md`：上海 Navidrome）。改了那边的配置要同步更新文档 |

@@ -15,6 +15,7 @@ pkgs/                        本地包与上游包的局部覆盖，导出为 pk
 scripts/ + scripts/tests/    独立脚本与回归测试
 checks/                      flake checks
 assets/ patches/ secrets/    静态资源、上游补丁、age 密文
+docs/                        仓库之外的手工状态（如音乐服务器）的记录与重建步骤
 ```
 
 导入都是显式列出的；没有 `lib/`，没有目录扫描。
@@ -26,6 +27,7 @@ assets/ patches/ secrets/    静态资源、上游补丁、age 密文
 - **Mihomo TUN**：规则以 `GEOSITE` 类别为主，控制 API 同源限制，7890 对局域网开放但需认证，主机 IPv6 关闭以堵 WebRTC 泄漏。
 - **硬件恢复脚本**：USB-C PD 事件后的 mux 复位、电池省电模式下的 CPU/PCIe 限制，失败自动回滚，`SYSROOT` 可注入测试。
 - **外接 Windows 虚拟机**：libvirt 直通 USB 整盘，启动器先确认磁盘未挂载。
+- **音乐**：beets 按 Deezer 整理 `~/Music`，本地插件 `zhlyrics` 补中文歌词（网易云 + LRCLib，统一简体）；`music-sync` 镜像到上海服务器上的 Navidrome，见 [docs/music-server.md](docs/music-server.md)。
 - **checks**：脚本单测、statix/deadnix/nixfmt、Niri KDL 校验、portal 与虚拟机契约。
 
 ## 使用
