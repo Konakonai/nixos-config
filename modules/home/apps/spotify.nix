@@ -1,13 +1,7 @@
-{
-  inputs,
-  lib,
-  lilyaTheme,
-  ...
-}:
+{ inputs, pkgs, ... }:
 
 let
-  inherit (lilyaTheme) palette;
-  hex = lib.removePrefix "#";
+  spicePkgs = inputs.spicetify-nix.legacyPackages.${pkgs.stdenv.hostPlatform.system};
 in
 {
   imports = [ inputs.spicetify-nix.homeManagerModules.spicetify ];
@@ -19,24 +13,10 @@ in
     # niri and Plasma (NIXOS_OZONE_WL is only a hint the wrapper may ignore).
     wayland = true;
 
-    # Spicetify's built-in theme with a color.ini generated from the shared
-    # palette, so Spotify follows the rest of the desktop.
-    customColorScheme = {
-      text = hex palette.text;
-      subtext = hex palette.subtext;
-      main = hex palette.base;
-      sidebar = hex palette.mantle;
-      player = hex palette.mantle;
-      card = hex palette.mantle;
-      shadow = hex palette.crust;
-      selected-row = hex palette.text;
-      button = hex palette.accent;
-      button-active = hex palette.lavender;
-      button-disabled = hex palette.overlay;
-      tab-active = hex palette.hover;
-      notification = hex palette.accent;
-      notification-error = hex palette.error;
-      misc = hex palette.overlay;
-    };
+    # Spotify hard-codes dark surfaces that a bare color.ini cannot reach;
+    # Catppuccin ships CSS overrides for them, and Latte matches the desktop's
+    # light palette. The accent (lavender) is picked in Spotify's settings.
+    theme = spicePkgs.themes.catppuccin;
+    colorScheme = "latte";
   };
 }
