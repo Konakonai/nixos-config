@@ -70,6 +70,10 @@ in
     }
   ];
   programs.fish.enable = true;
+  programs.vim = {
+    enable = true;
+    defaultEditor = true;
+  };
   programs.nix-ld.enable = true;
   # Codex runs with sandbox_mode = "danger-full-access", so its cached generic
   # Linux runtimes bypass the bwrap adapter that codex-desktop-linux uses to
