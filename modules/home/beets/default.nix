@@ -47,6 +47,18 @@ in
 
   programs.beets = {
     enable = true;
+    # zhlyrics is a local plugin loaded from pluginpath; this only pulls its
+    # OpenCC dependency into beets' Python environment.
+    package =
+      with pkgs.python3Packages;
+      toPythonApplication (
+        beets.override {
+          pluginOverrides.zhlyrics = {
+            enable = true;
+            propagatedBuildInputs = [ opencc ];
+          };
+        }
+      );
 
     settings = {
       directory = "${config.home.homeDirectory}/Music";
@@ -54,12 +66,14 @@ in
       # streaming server only ships audio, art and nothing machine-local.
       library = "${config.xdg.dataHome}/beets/library.db";
 
+      pluginpath = [ "${./plugins}" ];
       plugins = [
         "musicbrainz"
         "deezer"
         "fetchart"
         "embedart"
         "lyrics"
+        "zhlyrics"
         "replaygain"
         "ftintitle"
         "inline"
@@ -137,10 +151,9 @@ in
 
       lyrics = {
         synced = true;
-        sources = [
-          "lrclib"
-          "genius"
-        ];
+        # Genius rarely has Chinese lyrics and rate-limits hard (429 with
+        # long backoff on every miss), so only LRCLib is queried.
+        sources = [ "lrclib" ];
       };
 
       replaygain = {

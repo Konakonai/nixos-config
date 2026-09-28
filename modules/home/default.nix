@@ -8,7 +8,7 @@
     inputs.plasma-manager.homeModules.plasma-manager
 
     ./apps
-    ./beets.nix
+    ./beets
     ./cli-tools.nix
     ./codex.nix
     ./config-tools.nix
