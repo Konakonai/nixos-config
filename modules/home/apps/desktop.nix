@@ -101,6 +101,20 @@ in
   ];
 
   xdg.desktopEntries = {
+    # The system vim package ships upstream launcher entries. vim is only used
+    # from a shell, and gvim.desktop points at a GUI this build does not have.
+    vim = {
+      name = "Vim";
+      exec = "vim %F";
+      terminal = true;
+      noDisplay = true;
+    };
+    gvim = {
+      name = "GVim";
+      exec = "gvim -f %F";
+      noDisplay = true;
+    };
+
     antigravity = {
       name = "Antigravity";
       exec = "${lib.getExe antigravity} %F";
