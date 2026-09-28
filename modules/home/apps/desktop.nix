@@ -79,7 +79,6 @@ in
 {
   home.packages = with pkgs; [
     antigravity
-    bitwarden-desktop
     cc-switch
     claude-desktop
     file-roller-wayland
