@@ -316,6 +316,32 @@ class CircuitBreakerTest(unittest.TestCase):
         self.assertEqual([c.name for c in found.values()], ["寸铁"])
 
 
+class LoggedInTest(unittest.TestCase):
+    def test_similar_artists_mode(self):
+        class Fake:
+            def similar_artists(self, artist_id):
+                return [(7, "寸铁"), (8, "腰乐队")]
+
+        names = discover.Names()
+        known = discover.known_artists(names, [song(1, "腰乐队")], [])
+        seeds = [song(1, "腰乐队"), song(2, "Kidney")]
+        found = discover.collect_netease(Fake(), names, known, seeds, by_artist=True)
+        (candidate,) = found.values()
+        self.assertEqual(
+            (candidate.name, candidate.netease_id, candidate.score), ("寸铁", 7, 2)
+        )
+
+    def test_page_names_the_netease_source(self):
+        page = discover.render(
+            NOW,
+            1,
+            [],
+            [],
+            netease_source="网易云「相似歌曲」（登录 cookie 已失效，按未登录处理）",
+        )
+        self.assertIn("登录 cookie 已失效", page)
+
+
 class LibraryTest(unittest.TestCase):
     def test_reads_artists_and_album_artists(self):
         with tempfile.TemporaryDirectory() as tmp:

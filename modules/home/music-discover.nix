@@ -1,6 +1,7 @@
 {
   config,
   lib,
+  osConfig,
   pkgs,
   ...
 }:
@@ -28,7 +29,8 @@ let
         --playlist ${likedPlaylist} \
         --library-db ${config.programs.beets.settings.library} \
         --state ${stateDir} \
-        --out ${stateDir}/site
+        --out ${stateDir}/site \
+        --cookie-file ${osConfig.age.secrets.netease-cookie.path}
       rsync -a --chmod=D755,F644 ${stateDir}/site/ shanghai:/var/www/discover/
       echo "music-discover: https://106.14.0.229:8443/discover/"
     '';

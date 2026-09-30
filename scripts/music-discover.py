@@ -130,6 +130,7 @@ class Candidate:
     tracks: list[Track] = dataclasses.field(default_factory=list)
     on_netease: bool | None = None
     seen_before: bool = False
+    netease_id: int | None = None
 
     @property
     def score(self) -> int:
@@ -190,16 +191,20 @@ class NetEase(Paced):
     BACKOFF = (10, 30, 60)
     HEADERS = {"Referer": NETEASE, "User-Agent": "Mozilla/5.0"}
 
-    def __init__(self) -> None:
+    def __init__(self, cookie: str | None = None) -> None:
         super().__init__()
         self.blocked = False
+        self.headers = dict(self.HEADERS)
+        if cookie:
+            # MUSIC_U is the web login session (see modules/home/music-discover.nix).
+            self.headers["Cookie"] = f"MUSIC_U={cookie}"
 
     def get(self, path: str, **params) -> dict:
         if self.blocked:
             raise RateLimited("NetEase is rate limiting this IP")
         url = f"{NETEASE}{path}?{urllib.parse.urlencode(params)}"
         for delay in (*self.BACKOFF, None):
-            data = self.fetch_json(url, self.HEADERS)
+            data = self.fetch_json(url, self.headers)
             if data.get("code") != 405:
                 return data
             if delay is None:
@@ -232,6 +237,16 @@ class NetEase(Paced):
                     Song(entry["id"], detail["name"], artists, entry.get("at", 0))
                 )
         return songs
+
+    def account(self) -> str | None:
+        """Nickname of the logged-in account, or None when not logged in."""
+        profile = self.get("/api/nuser/account/get").get("profile")
+        return profile["nickname"] if profile else None
+
+    def similar_artists(self, artist_id: int) -> list[tuple[int, str]]:
+        """Artist-level similarity; NetEase only answers this when logged in."""
+        data = self.get("/api/discovery/simiArtist", artistid=artist_id)
+        return [(a["id"], a["name"]) for a in data.get("artists") or []]
 
     def similar(self, song_id: int) -> list[Song]:
         data = self.get("/api/discovery/simiSong", songid=song_id, limit=10)
@@ -475,7 +490,7 @@ a {{ color:var(--accent); text-decoration:none; }}
 <main>
 <section>
 <h2>同圈子</h2>
-<p>网易云「相似歌曲」，{netease_seeds} 首种子。</p>
+<p>{netease_source}，{netease_seeds} 首种子。</p>
 {netease}
 </section>
 <section>
@@ -529,8 +544,10 @@ def render(
     netease_error: str | None = None,
     further_error: str | None = None,
     youtube_ok: bool = True,
+    netease_source: str = "网易云「相似歌曲」",
 ) -> str:
     return PAGE.format(
+        netease_source=html.escape(netease_source),
         generated=now.strftime("%Y-%m-%d %H:%M"),
         recent_days=RECENT_DAYS,
         known=known,
@@ -556,17 +573,33 @@ def load_json(path: Path, default):
         return default
 
 
-def collect_netease(netease, names, known, seeds) -> dict[str, Candidate]:
+def collect_netease(
+    netease, names, known, seeds, by_artist: bool = False
+) -> dict[str, Candidate]:
+    """Similar artists per seed artist when logged in, else similar songs."""
     candidates: dict[str, Candidate] = {}
     for i, seed in enumerate(seeds, 1):
         log(f"[netease {i}/{len(seeds)}] {seed.artist} - {seed.name}")
         try:
-            similar = netease.similar(seed.id)
+            if by_artist:
+                similar_artists = netease.similar_artists(seed.artists[0][0])
+            else:
+                similar = netease.similar(seed.id)
         except RateLimited:
             if i == 1:
                 raise
             log(f"netease: stopping after {i - 1} seeds, keeping what was found")
             break
+        if by_artist:
+            for artist_id, artist in similar_artists:
+                if not is_known(names, artist, known):
+                    candidate = candidates.setdefault(
+                        names.key(artist),
+                        Candidate(artist, netease_artist_url(artist_id)),
+                    )
+                    candidate.netease_id = artist_id
+                    candidate.add(seed)
+            continue
         for song in similar:
             for artist_id, artist in song.artists[:1]:
                 if not is_known(names, artist, known):
@@ -653,6 +686,9 @@ def main() -> int:
     parser.add_argument("--library-db", type=Path, required=True)
     parser.add_argument("--state", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument(
+        "--cookie-file", type=Path, help="file holding the NetEase MUSIC_U cookie"
+    )
     args = parser.parse_args()
 
     now = dt.datetime.now()
@@ -667,7 +703,29 @@ def main() -> int:
     history: dict[str, str] = load_json(history_path, {})
 
     names = Names()
-    netease = NetEase()
+    cookie = None
+    if args.cookie_file and args.cookie_file.exists():
+        cookie = args.cookie_file.read_text().strip() or None
+    netease = NetEase(cookie)
+    logged_in = False
+    if cookie:
+        try:
+            nickname = netease.account()
+        except Exception as exc:
+            nickname = None
+            log(f"netease login check failed: {exc}")
+        logged_in = nickname is not None
+        log(
+            f"netease: logged in as {nickname}"
+            if logged_in
+            else "netease: cookie rejected"
+        )
+    netease_source = (
+        "网易云「相似艺人」"
+        if logged_in
+        else "网易云「相似歌曲」"
+        + ("（登录 cookie 已失效，按未登录处理）" if cookie else "")
+    )
     log("reading liked songs")
     liked = netease.liked(args.playlist, song_cache)
     songs_path.write_text(json.dumps(song_cache, ensure_ascii=False))
@@ -679,7 +737,15 @@ def main() -> int:
 
     netease_top, netease_error = [], None
     try:
-        netease_top = rank(collect_netease(netease, names, known, netease_seeds))
+        netease_top = rank(
+            collect_netease(netease, names, known, netease_seeds, by_artist=logged_in)
+        )
+        for c in netease_top:
+            if c.netease_id and not c.tracks:
+                try:
+                    c.tracks = netease.top_tracks(c.netease_id)
+                except Exception as exc:
+                    log(f"netease top songs failed for {c.name}: {exc}")
     except Exception as exc:  # keep the other column
         netease_error = f"{type(exc).__name__}: {exc}"
         log(f"netease failed: {netease_error}")
@@ -716,6 +782,7 @@ def main() -> int:
         netease_error,
         further_error,
         youtube_ok,
+        netease_source,
     )
     (args.out / f"{week}.html").write_text(page)
     (args.out / "index.html").write_text(page)
