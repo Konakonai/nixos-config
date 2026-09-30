@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Weekly "similar music" report seeded from a NetEase liked-songs playlist.
 
-Seeds are songs from the playlist, mostly recent likes plus some from the whole
-history, one per artist. Two columns come out of them:
+Seeds are songs from the playlist, one per artist, spread across genre
+buckets (MusicBrainz tags, else a language guess) so that one heavily liked
+genre cannot fill the page; within a bucket, recently liked artists go first.
+Two columns come out of them:
 
 * 同圈子 (same scene): NetEase "similar songs" for each seed. Tight, but only
   five songs per seed, so it gets more seeds than the other column.
@@ -13,18 +15,22 @@ history, one per artist. Two columns come out of them:
 
 An artist scores one point per distinct seed that leads to them. Artists that
 several seeds point at are shown first; single-seed artists only fill up a
-short column. Artists already in the playlist or the beets library are never
-recommended. The result is a static HTML page.
+short column. Artists with very many NetEase followers are probably known and
+passed over, so they are tagged and moved to the back. Artists already liked,
+followed on NetEase, or in the beets library are never recommended. The
+result is a static HTML page.
 """
 
 from __future__ import annotations
 
 import argparse
+import collections
 import contextlib
 import dataclasses
 import datetime as dt
 import html
 import json
+import math
 import random
 import re
 import sqlite3
@@ -41,16 +47,83 @@ USER_AGENT = "music-discover/1.0 (+https://github.com/Konakonai/nixos-config)"
 
 CJK_RANGE = f"{chr(0x3400)}-{chr(0x9FFF)}"
 CJK_RUN = re.compile(rf"[{CJK_RANGE}]+")
+KANA = re.compile(f"[{chr(0x3040)}-{chr(0x30FF)}]")
+
+# Coarse genre buckets for balancing seeds, matched against MusicBrainz tags
+# (most-voted first). Order matters: "trip hop" is electronic, not hip hop;
+# "indie pop" is pop and "indie rock" is rock; "folk rock" counts as folk.
+GENRES = [
+    ("金属", ("metal",)),
+    (
+        "电子",
+        (
+            "electronic",
+            "techno",
+            "house",
+            "ambient",
+            "idm",
+            "downtempo",
+            "trip hop",
+            "trip-hop",
+            "edm",
+            "electro",
+            "drum and bass",
+            "dubstep",
+            "synthwave",
+            "breakbeat",
+            "glitch",
+            "vaporwave",
+        ),
+    ),
+    ("嘻哈", ("hip hop", "hip-hop", "rap", "trap")),
+    ("爵士/灵魂", ("jazz", "soul", "r&b", "rnb", "funk", "blues", "disco")),
+    (
+        "古典/原声",
+        (
+            "classical",
+            "orchestral",
+            "baroque",
+            "opera",
+            "soundtrack",
+            "neoclassical",
+            "minimalism",
+        ),
+    ),
+    ("实验", ("experimental", "avant-garde", "noise", "free improvisation")),
+    ("民谣", ("folk", "singer-songwriter", "acoustic", "country", "americana")),
+    ("流行", ("pop", "idol", "kayōkyoku", "kayokyoku")),
+    (
+        "摇滚",
+        (
+            "rock",
+            "punk",
+            "shoegaze",
+            "grunge",
+            "emo",
+            "new wave",
+            "indie",
+            "psychedelic",
+            "krautrock",
+        ),
+    ),
+    ("世界", ("world", "reggae", "afrobeat", "latin", "bossa nova", "flamenco")),
+]
 # "Kidney 腰乐队" -> ("Kidney", "腰乐队"), as in the beets zhlyrics plugin.
 BILINGUAL = re.compile(rf"^(?P<latin>[^{CJK_RANGE}]*?)\s*(?P<cjk>[{CJK_RANGE}].*)$")
 BAND_SUFFIX = re.compile(r"(乐队|乐团|组合)$")
 PUNCT = re.compile(r"[\s\-_.·・,，'’&()（）\[\]]+")
 
 RECENT_DAYS = 90
-# (recent, whole history) seed quotas per column.
-NETEASE_SEEDS = (100, 50)
-FURTHER_SEEDS = (40, 20)
+NETEASE_SEEDS = 100
+FURTHER_SEEDS = 60
+# New MusicBrainz genre lookups per run; results are cached for good.
+TAG_BUDGET = 250
 PER_COLUMN = 20
+# Look at a few more than shown, since hot and followed artists get moved
+# down or dropped.
+HEADROOM = 10
+# NetEase followers above which an artist is likely known but passed over.
+HOT_FANS = 3_000_000
 # Show single-seed artists only while the column has fewer than this.
 MIN_SHOWN = 8
 LISTENBRAINZ_SIMILAR = 25
@@ -131,6 +204,11 @@ class Candidate:
     on_netease: bool | None = None
     seen_before: bool = False
     netease_id: int | None = None
+    fans: int | None = None
+
+    @property
+    def hot(self) -> bool:
+        return (self.fans or 0) >= HOT_FANS
 
     @property
     def score(self) -> int:
@@ -144,7 +222,8 @@ class Candidate:
 
 class Paced:
     """Minimum spacing between requests to one service, with backoff when it
-    still answers "slow down" (MusicBrainz and ListenBrainz use 503/429)."""
+    still answers "slow down" (MusicBrainz and ListenBrainz use 503/429) or
+    the connection drops (TLS resets through the proxy are common here)."""
 
     MIN_INTERVAL = 1.0
     RETRY_AFTER = (5, 15, 30)
@@ -172,7 +251,11 @@ class Paced:
                     raise
                 exc.close()
                 log(f"HTTP {exc.code}, retrying in {delay}s")
-                time.sleep(delay)
+            except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+                if delay is None:
+                    raise
+                log(f"{type(exc).__name__}: {exc}, retrying in {delay}s")
+            time.sleep(delay)
 
 
 # --- NetEase -----------------------------------------------------------------
@@ -186,9 +269,11 @@ class NetEase(Paced):
     # Same pacing and circuit breaker as the beets plugin: bursts get
     # "操作频繁" (code 405) for minutes. If backing off does not clear it,
     # stop asking for the rest of the run instead of stalling every request.
-    # A run makes ~300 requests; it runs unattended, so pace it gently.
-    MIN_INTERVAL = 2.5
-    BACKOFF = (10, 30, 60)
+    # A run makes ~250 requests and runs unattended, so pace it gently and
+    # wait out a limit for several minutes before giving up (when the limit
+    # kicks in varies from run to run).
+    MIN_INTERVAL = 3.0
+    BACKOFF = (15, 60, 180, 300)
     HEADERS = {"Referer": NETEASE, "User-Agent": "Mozilla/5.0"}
 
     def __init__(self, cookie: str | None = None) -> None:
@@ -242,6 +327,24 @@ class NetEase(Paced):
         """Nickname of the logged-in account, or None when not logged in."""
         profile = self.get("/api/nuser/account/get").get("profile")
         return profile["nickname"] if profile else None
+
+    def followed(self) -> list[tuple[int, str]]:
+        """Artists the logged-in account follows."""
+        artists, offset = [], 0
+        while True:
+            data = self.get(
+                "/api/artist/sublist", limit=1000, offset=offset, total="true"
+            )
+            page = data.get("data") or []
+            artists += [(a["id"], a["name"]) for a in page]
+            if not data.get("hasMore") or not page:
+                return artists
+            offset += len(page)
+
+    def fans(self, artist_id: int) -> tuple[int, bool]:
+        """(follower count, whether the logged-in account follows them)."""
+        data = self.get("/api/artist/follow/count/get", id=artist_id).get("data") or {}
+        return data.get("fansCnt") or 0, bool(data.get("isFollow"))
 
     def similar_artists(self, artist_id: int) -> list[tuple[int, str]]:
         """Artist-level similarity; NetEase only answers this when logged in."""
@@ -307,12 +410,12 @@ class ListenBrainz(Paced):
         "_limit_100_filter_True_skip_30"
     )
 
-    def mbid(self, artist: str, names: Names, cache: dict[str, str]) -> str:
-        """MusicBrainz ID for an artist name, or "" if it cannot be matched."""
+    def lookup(self, artist: str, names: Names, cache: dict[str, dict]) -> dict:
+        """{"mbid", "tags"} for an artist name; mbid is "" if unmatched."""
         if artist in cache:
             return cache[artist]
         wanted = names.keys(artist)
-        found = ""
+        found = {"mbid": "", "tags": []}
         for spelling in Names.spellings(artist):
             quoted = spelling.replace('"', "")
             query = f'artist:"{quoted}" OR alias:"{quoted}"'
@@ -324,9 +427,13 @@ class ListenBrainz(Paced):
                 if result.get("score", 0) >= 90 and any(
                     names.keys(s) & wanted for s in spellings
                 ):
-                    found = result["id"]
+                    tags = sorted(
+                        ((t["count"], t["name"]) for t in result.get("tags") or []),
+                        reverse=True,
+                    )
+                    found = {"mbid": result["id"], "tags": [t for _, t in tags]}
                     break
-            if found:
+            if found["mbid"]:
                 break
         cache[artist] = found
         return found
@@ -389,27 +496,70 @@ def youtube_search_url(query: str) -> str:
 # --- selection and scoring ---------------------------------------------------
 
 
-def pick_seeds(
-    songs: list[Song], now: dt.datetime, rng: random.Random, quotas: tuple[int, int]
-) -> list[Song]:
-    """Mostly recent likes, some from the whole history, one per artist."""
-    cutoff = (now - dt.timedelta(days=RECENT_DAYS)).timestamp() * 1000
-    recent = [s for s in songs if s.liked_at >= cutoff]
-    rng.shuffle(recent)
-    rest = [s for s in songs if s.liked_at < cutoff]
-    rng.shuffle(rest)
+def genre_of(tags: list[str], artist: str) -> str:
+    """Genre bucket from MusicBrainz tags, else a language guess from the
+    name (Chinese indie acts are rarely tagged on MusicBrainz)."""
+    for tag in tags:
+        tag = tag.casefold()
+        for bucket, words in GENRES:
+            if any(word in tag for word in words):
+                return bucket
+    if KANA.search(artist):
+        return "日语（无标签）"
+    if CJK_RUN.search(artist):
+        return "华语（无标签）"
+    return "其他（无标签）"
 
-    seeds, artists = [], set()
-    for pool, quota in ((recent, quotas[0]), (rest + recent, quotas[1])):
-        taken = 0
-        for song in pool:
-            if taken == quota:
-                break
-            if song.artist and song.artist not in artists:
-                artists.add(song.artist)
-                seeds.append(song)
-                taken += 1
-    return seeds
+
+def bucket_quotas(sizes: dict[str, int], total: int) -> dict[str, int]:
+    """Seats per bucket proportional to the square root of its size, so big
+    buckets lead without drowning out small ones (largest remainders)."""
+    weights = {b: math.sqrt(n) for b, n in sizes.items() if n}
+    if not weights:
+        return {}
+    exact = {b: total * w / sum(weights.values()) for b, w in weights.items()}
+    quotas = {b: min(sizes[b], int(x)) for b, x in exact.items()}
+    for b in sorted(exact, key=lambda b: exact[b] - int(exact[b]), reverse=True):
+        if sum(quotas.values()) >= total:
+            break
+        if quotas[b] < sizes[b]:
+            quotas[b] += 1
+    return quotas
+
+
+def pick_seeds(
+    songs: list[Song],
+    now: dt.datetime,
+    rng: random.Random,
+    total: int,
+    genres: dict[str, str],
+) -> tuple[list[Song], dict[str, int]]:
+    """One song per artist, spread across genre buckets. Within a bucket,
+    artists liked in the last RECENT_DAYS come first, and each artist is
+    represented by one of their recent likes when there are any."""
+    cutoff = (now - dt.timedelta(days=RECENT_DAYS)).timestamp() * 1000
+    by_artist: dict[str, list[Song]] = {}
+    for song in songs:
+        if song.artist:
+            by_artist.setdefault(song.artist, []).append(song)
+
+    buckets: dict[str, list[str]] = {}
+    for artist in sorted(by_artist):
+        buckets.setdefault(genres.get(artist, genre_of([], artist)), []).append(artist)
+
+    def is_recent(artist: str) -> bool:
+        return any(s.liked_at >= cutoff for s in by_artist[artist])
+
+    quotas = bucket_quotas({b: len(a) for b, a in buckets.items()}, total)
+    seeds = []
+    for bucket in sorted(quotas):
+        artists = buckets[bucket]
+        rng.shuffle(artists)
+        artists.sort(key=lambda a: not is_recent(a))
+        for artist in artists[: quotas[bucket]]:
+            recent = [s for s in by_artist[artist] if s.liked_at >= cutoff]
+            seeds.append(rng.choice(recent or by_artist[artist]))
+    return seeds, quotas
 
 
 def known_artists(names: Names, playlist: Iterable[Song], library: Iterable[str]):
@@ -477,6 +627,7 @@ h2 + p {{ color:var(--muted); font-size:13px; margin:0 0 12px; }}
 .tag {{ font-size:11px; border:1px solid currentColor; border-radius:4px; padding:0 4px; color:var(--muted); }}
 .tag.warn {{ color:var(--warn); }}
 .why {{ color:var(--muted); font-size:13px; margin:4px 0; }}
+.fans {{ color:var(--muted); font-size:12px; }}
 ul {{ margin:4px 0 0; padding-left:18px; }}
 a {{ color:var(--accent); text-decoration:none; }}
 .error {{ color:var(--warn); }}
@@ -485,7 +636,8 @@ a {{ color:var(--accent); text-decoration:none; }}
 <body>
 <header>
 <h1>音乐发现</h1>
-<div class="meta">{generated} · 种子取自「我喜欢的音乐」（最近 {recent_days} 天的收藏为主，每个艺人一首）· 已排除歌单与曲库里的 {known} 个艺人名 · ×N 表示有 N 首你喜欢的歌指向这个艺人</div>
+<div class="meta">{generated} · 种子取自「我喜欢的音乐」，按风格均衡抽取（最近 {recent_days} 天收藏的艺人优先，每个艺人一首）：{seed_mix}</div>
+<div class="meta">已排除收藏、关注与曲库里的 {known} 个艺人名 · ×N 表示有 N 首你喜欢的歌指向这个艺人 · 网易云粉丝超过 {hot_fans} 的标「大热」并排在后面</div>
 </header>
 <main>
 <section>
@@ -504,6 +656,14 @@ a {{ color:var(--accent); text-decoration:none; }}
 """
 
 
+def format_fans(n: int) -> str:
+    if n >= 1_000_000:
+        return f"{n / 10_000:.0f}万"
+    if n >= 10_000:
+        return f"{n / 10_000:.1f}万"
+    return str(n)
+
+
 def render_column(candidates: list[Candidate], error: str | None) -> str:
     if error:
         return f'<p class="error">这一栏本周没有生成：{html.escape(error)}</p>'
@@ -514,8 +674,12 @@ def render_column(candidates: list[Candidate], error: str | None) -> str:
         tags = ""
         if c.on_netease is False:
             tags += '<span class="tag warn">网易云无</span>'
+        if c.hot:
+            tags += '<span class="tag">大热</span>'
         if c.seen_before:
             tags += '<span class="tag">已推过</span>'
+        if c.fans is not None:
+            tags += f'<span class="fans">粉丝 {format_fans(c.fans)}</span>'
         reasons = "、".join(
             f"{html.escape(s.artist)}《{html.escape(s.name)}》"
             for s in list(c.seeds.values())[:REASONS_SHOWN]
@@ -545,9 +709,12 @@ def render(
     further_error: str | None = None,
     youtube_ok: bool = True,
     netease_source: str = "网易云「相似歌曲」",
+    seed_mix: str = "",
 ) -> str:
     return PAGE.format(
         netease_source=html.escape(netease_source),
+        seed_mix=html.escape(seed_mix),
+        hot_fans=format_fans(HOT_FANS),
         generated=now.strftime("%Y-%m-%d %H:%M"),
         recent_days=RECENT_DAYS,
         known=known,
@@ -574,7 +741,7 @@ def load_json(path: Path, default):
 
 
 def collect_netease(
-    netease, names, known, seeds, by_artist: bool = False
+    netease, names, known, seeds, by_artist: bool = False, known_ids=frozenset()
 ) -> dict[str, Candidate]:
     """Similar artists per seed artist when logged in, else similar songs."""
     candidates: dict[str, Candidate] = {}
@@ -592,7 +759,7 @@ def collect_netease(
             break
         if by_artist:
             for artist_id, artist in similar_artists:
-                if not is_known(names, artist, known):
+                if artist_id not in known_ids and not is_known(names, artist, known):
                     candidate = candidates.setdefault(
                         names.key(artist),
                         Candidate(artist, netease_artist_url(artist_id)),
@@ -602,15 +769,19 @@ def collect_netease(
             continue
         for song in similar:
             for artist_id, artist in song.artists[:1]:
-                if not is_known(names, artist, known):
-                    candidates.setdefault(
+                if artist_id not in known_ids and not is_known(names, artist, known):
+                    candidate = candidates.setdefault(
                         names.key(artist),
                         Candidate(artist, netease_artist_url(artist_id)),
-                    ).add(seed, Track(song.name, netease_song_url(song.id)))
+                    )
+                    candidate.netease_id = artist_id
+                    candidate.add(seed, Track(song.name, netease_song_url(song.id)))
     return candidates
 
 
-def collect_further(names, known, seeds, mbids) -> tuple[dict[str, Candidate], bool]:
+def collect_further(
+    listenbrainz, names, known, seeds, artist_info
+) -> tuple[dict[str, Candidate], bool]:
     candidates: dict[str, Candidate] = {}
 
     def add(artist: str, seed: Song, track: Track | None = None) -> None:
@@ -619,12 +790,11 @@ def collect_further(names, known, seeds, mbids) -> tuple[dict[str, Candidate], b
                 names.key(artist), Candidate(artist, youtube_search_url(artist))
             ).add(seed, track)
 
-    listenbrainz = ListenBrainz()
     failures = 0
     for i, seed in enumerate(seeds, 1):
         log(f"[listenbrainz {i}/{len(seeds)}] {seed.artist}")
         try:
-            if mbid := listenbrainz.mbid(seed.artist, names, mbids):
+            if mbid := listenbrainz.lookup(seed.artist, names, artist_info)["mbid"]:
                 for artist, _ in listenbrainz.similar(mbid):
                     add(artist, seed)
         except Exception as exc:  # one bad seed must not sink the column
@@ -649,13 +819,15 @@ def collect_further(names, known, seeds, mbids) -> tuple[dict[str, Candidate], b
     return candidates, youtube_ok
 
 
-def resolve_on_netease(netease, names, known, ranked) -> list[Candidate]:
+def resolve_on_netease(
+    netease, names, known, ranked, limit: int = PER_COLUMN + HEADROOM
+) -> list[Candidate]:
     """Look the top "further" picks up on NetEase: flag the ones it lacks,
     link the rest to their NetEase page, and drop artists that turn out to be
     known under their NetEase name ("Hebe Tien" is 田馥甄)."""
     kept: list[Candidate] = []
     for c in ranked:
-        if len(kept) == PER_COLUMN:
+        if len(kept) == limit:
             break
         try:
             found = netease.find_artist(c.name, [t.title for t in c.tracks], names)
@@ -672,12 +844,56 @@ def resolve_on_netease(netease, names, known, ranked) -> list[Candidate]:
             if names.key(netease_name) != names.key(c.name):
                 c.name = f"{netease_name}（{c.name}）"
             c.url = netease_artist_url(artist_id)
-            try:
-                c.tracks = netease.top_tracks(artist_id) or c.tracks
-            except Exception as exc:
-                log(f"netease top songs failed for {netease_name}: {exc}")
+            c.netease_id = artist_id
         kept.append(c)
     return kept
+
+
+def finish_column(netease, ranked: list[Candidate]) -> list[Candidate]:
+    """Fan counts, then followed artists out and hot artists to the back,
+    then NetEase top songs for the ones shown."""
+    kept = []
+    for c in ranked:
+        if c.netease_id:
+            try:
+                c.fans, following = netease.fans(c.netease_id)
+            except Exception as exc:
+                log(f"netease fans failed for {c.name}: {exc}")
+                following = False
+            if following:
+                log(f"  already following {c.name}")
+                continue
+        kept.append(c)
+    shown = ([c for c in kept if not c.hot] + [c for c in kept if c.hot])[:PER_COLUMN]
+    for c in shown:
+        # NetEase links beat YouTube ones for artists NetEase has.
+        if c.netease_id and not any(NETEASE in t.url for t in c.tracks):
+            try:
+                c.tracks = netease.top_tracks(c.netease_id) or c.tracks
+            except Exception as exc:
+                log(f"netease top songs failed for {c.name}: {exc}")
+    return shown
+
+
+def tag_artists(listenbrainz, names, liked, artist_info, budget: int) -> None:
+    """Fetch MusicBrainz genre tags for liked artists not seen before, most
+    liked first, up to `budget` per run. Skips artists that fail; gives up on
+    MusicBrainz after a run of failures and balances with what it has."""
+    counts = collections.Counter(s.artist for s in liked if s.artist)
+    todo = [a for a, _ in counts.most_common() if a not in artist_info][:budget]
+    failures = 0
+    for i, artist in enumerate(todo, 1):
+        if i % 50 == 1:
+            log(f"[tags {i}/{len(todo)}] {artist}")
+        try:
+            listenbrainz.lookup(artist, names, artist_info)
+            failures = 0
+        except Exception as exc:
+            failures += 1
+            log(f"  tags for {artist} failed: {type(exc).__name__}: {exc}")
+            if failures == 5:
+                log("tag lookup stopped after 5 failures in a row")
+                return
 
 
 def main() -> int:
@@ -689,6 +905,12 @@ def main() -> int:
     parser.add_argument(
         "--cookie-file", type=Path, help="file holding the NetEase MUSIC_U cookie"
     )
+    parser.add_argument(
+        "--tag-budget",
+        type=int,
+        default=TAG_BUDGET,
+        help="MusicBrainz genre lookups this run (raise once to tag a new library)",
+    )
     args = parser.parse_args()
 
     now = dt.datetime.now()
@@ -696,10 +918,10 @@ def main() -> int:
     args.state.mkdir(parents=True, exist_ok=True)
     args.out.mkdir(parents=True, exist_ok=True)
     songs_path = args.state / "songs.json"
-    mbids_path = args.state / "mbids.json"
+    artists_path = args.state / "artists.json"
     history_path = args.state / "history.json"
     song_cache = load_json(songs_path, {})
-    mbids = load_json(mbids_path, {})
+    artist_info: dict[str, dict] = load_json(artists_path, {})
     history: dict[str, str] = load_json(history_path, {})
 
     names = Names()
@@ -726,45 +948,70 @@ def main() -> int:
         else "网易云「相似歌曲」"
         + ("（登录 cookie 已失效，按未登录处理）" if cookie else "")
     )
+
     log("reading liked songs")
     liked = netease.liked(args.playlist, song_cache)
     songs_path.write_text(json.dumps(song_cache, ensure_ascii=False))
     known = known_artists(names, liked, library_artists(args.library_db))
-    # Same seeds for reruns within a week.
-    netease_seeds = pick_seeds(liked, now, random.Random(week), NETEASE_SEEDS)
-    further_seeds = pick_seeds(liked, now, random.Random(week), FURTHER_SEEDS)
+    known_ids = {artist_id for s in liked for artist_id, _ in s.artists}
+    if logged_in:
+        try:
+            followed = netease.followed()
+            known |= known_artists(names, [], [name for _, name in followed])
+            known_ids |= {artist_id for artist_id, _ in followed}
+            log(f"{len(followed)} followed artists")
+        except Exception as exc:
+            log(f"followed artists failed: {exc}")
     log(f"{len(liked)} liked songs, {len(known)} known artist names")
+
+    listenbrainz = ListenBrainz()
+    try:
+        tag_artists(listenbrainz, names, liked, artist_info, args.tag_budget)
+    finally:
+        artists_path.write_text(json.dumps(artist_info, ensure_ascii=False))
+    genres = {a: genre_of(info.get("tags") or [], a) for a, info in artist_info.items()}
+    # Same seeds for reruns within a week.
+    netease_seeds, mix = pick_seeds(
+        liked, now, random.Random(week), NETEASE_SEEDS, genres
+    )
+    further_seeds, _ = pick_seeds(
+        liked, now, random.Random(f"{week}/further"), FURTHER_SEEDS, genres
+    )
+    seed_mix = " · ".join(
+        f"{b} {n}" for b, n in sorted(mix.items(), key=lambda x: -x[1])
+    )
+    log(f"seed mix: {seed_mix}")
 
     netease_top, netease_error = [], None
     try:
-        netease_top = rank(
-            collect_netease(netease, names, known, netease_seeds, by_artist=logged_in)
+        candidates = collect_netease(
+            netease, names, known, netease_seeds, logged_in, known_ids
         )
-        for c in netease_top:
-            if c.netease_id and not c.tracks:
-                try:
-                    c.tracks = netease.top_tracks(c.netease_id)
-                except Exception as exc:
-                    log(f"netease top songs failed for {c.name}: {exc}")
+        netease_top = finish_column(
+            netease, rank(candidates, limit=PER_COLUMN + HEADROOM)
+        )
     except Exception as exc:  # keep the other column
         netease_error = f"{type(exc).__name__}: {exc}"
         log(f"netease failed: {netease_error}")
 
-    further_ranked, further_error, youtube_ok = [], None, False
+    further_top, further_error, youtube_ok = [], None, False
     try:
-        candidates, youtube_ok = collect_further(names, known, further_seeds, mbids)
+        candidates, youtube_ok = collect_further(
+            listenbrainz, names, known, further_seeds, artist_info
+        )
         shown = {names.key(c.name) for c in netease_top}
-        further_ranked = rank(
+        ranked = rank(
             {k: c for k, c in candidates.items() if k not in shown},
             limit=len(candidates),
+        )
+        further_top = finish_column(
+            netease, resolve_on_netease(netease, names, known, ranked)
         )
     except Exception as exc:
         further_error = f"{type(exc).__name__}: {exc}"
         log(f"further failed: {further_error}")
     finally:
-        mbids_path.write_text(json.dumps(mbids, ensure_ascii=False))
-
-    further_top = resolve_on_netease(netease, names, known, further_ranked)
+        artists_path.write_text(json.dumps(artist_info, ensure_ascii=False))
 
     for c in netease_top + further_top:
         key = names.key(c.name)
@@ -783,6 +1030,7 @@ def main() -> int:
         further_error,
         youtube_ok,
         netease_source,
+        seed_mix,
     )
     (args.out / f"{week}.html").write_text(page)
     (args.out / "index.html").write_text(page)

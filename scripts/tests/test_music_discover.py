@@ -72,24 +72,57 @@ class NamesTest(unittest.TestCase):
 
 
 class SeedTest(unittest.TestCase):
+    def pick(self, songs, total=60, genres=None, rng=0):
+        return discover.pick_seeds(songs, NOW, random.Random(rng), total, genres or {})
+
     def test_one_song_per_artist(self):
         songs = [song(i, "Pink Floyd", 1) for i in range(50)] + [song(100, "Yes", 1)]
-        seeds = discover.pick_seeds(songs, NOW, random.Random(0), (40, 20))
+        seeds, _ = self.pick(songs)
         self.assertEqual(sorted(s.artist for s in seeds), ["Pink Floyd", "Yes"])
 
-    def test_recent_quota_then_broad_quota(self):
-        recent = [song(i, f"recent{i}", 10) for i in range(100)]
-        old = [song(1000 + i, f"old{i}", 400) for i in range(100)]
-        seeds = discover.pick_seeds(recent + old, NOW, random.Random(0), (40, 20))
-        self.assertEqual(len(seeds), 60)
-        self.assertGreaterEqual(sum(s.artist.startswith("recent") for s in seeds), 40)
-        self.assertTrue(any(s.artist.startswith("old") for s in seeds))
+    def test_big_genre_does_not_drown_small_ones(self):
+        songs = [song(i, f"electro{i}", 10) for i in range(100)]
+        songs += [song(1000 + i, f"jazz{i}", 10) for i in range(4)]
+        genres = {
+            s.artist: "电子" if s.artist.startswith("electro") else "爵士/灵魂"
+            for s in songs
+        }
+        seeds, quotas = self.pick(songs, total=20, genres=genres)
+        self.assertEqual(len(seeds), 20)
+        # sqrt(100)=10 vs sqrt(4)=2 -> jazz gets 1/6 of the seats, not 4/104.
+        self.assertEqual(quotas, {"电子": 17, "爵士/灵魂": 3})
+
+    def test_recent_artists_first_within_a_bucket(self):
+        songs = [song(i, f"recent{i}", 10) for i in range(10)]
+        songs += [song(100 + i, f"old{i}", 400) for i in range(10)]
+        seeds, _ = self.pick(songs, total=10)
+        self.assertTrue(all(s.artist.startswith("recent") for s in seeds))
 
     def test_same_week_same_seeds(self):
         songs = [song(i, f"a{i}", i % 200) for i in range(300)]
-        a = discover.pick_seeds(songs, NOW, random.Random("2026-W40"), (40, 20))
-        b = discover.pick_seeds(songs, NOW, random.Random("2026-W40"), (40, 20))
+        a, _ = self.pick(songs, rng="2026-W40")
+        b, _ = self.pick(songs, rng="2026-W40")
         self.assertEqual([s.id for s in a], [s.id for s in b])
+
+
+class GenreTest(unittest.TestCase):
+    def test_most_voted_matching_tag_wins(self):
+        self.assertEqual(
+            discover.genre_of(["japan", "rock", "jazz"], "椎名林檎"), "摇滚"
+        )
+        self.assertEqual(
+            discover.genre_of(["trip hop", "electronic"], "Portishead"), "电子"
+        )
+        self.assertEqual(discover.genre_of(["indie pop"], "x"), "流行")
+        self.assertEqual(discover.genre_of(["folk rock"], "x"), "民谣")
+
+    def test_untagged_artists_bucket_by_script(self):
+        self.assertEqual(discover.genre_of([], "腰乐队"), "华语（无标签）")
+        self.assertEqual(discover.genre_of([], "フィッシュマンズ"), "日语（无标签）")
+        self.assertEqual(discover.genre_of(["seen live"], "Someone"), "其他（无标签）")
+
+    def test_quotas_never_exceed_bucket_size(self):
+        self.assertEqual(discover.bucket_quotas({"a": 1, "b": 1}, 10), {"a": 1, "b": 1})
 
 
 class RankTest(unittest.TestCase):
@@ -175,6 +208,19 @@ class RetryTest(unittest.TestCase):
 
         with patch.object(discover.urllib.request, "urlopen", urlopen):
             self.assertEqual(discover.Paced().fetch_json("https://x"), {"ok": 1})
+
+    @patch.object(discover.time, "sleep")
+    def test_retries_dropped_connections(self, _sleep):
+        responses = [urllib.error.URLError("EOF"), io.BytesIO(b"[]")]
+
+        def urlopen(*_args, **_kwargs):
+            r = responses.pop(0)
+            if isinstance(r, Exception):
+                raise r
+            return r
+
+        with patch.object(discover.urllib.request, "urlopen", urlopen):
+            self.assertEqual(discover.Paced().fetch_json("https://x"), [])
 
     @patch.object(discover.time, "sleep")
     def test_other_errors_are_not_retried(self, _sleep):
@@ -276,7 +322,7 @@ class NetEaseResolveTest(unittest.TestCase):
         kept = discover.resolve_on_netease(netease, self.names, known, ranked)
         self.assertEqual([c.name for c in kept], ["Yo La Tengo", "Nobody Here"])
         self.assertTrue(kept[0].on_netease)
-        self.assertEqual(kept[0].tracks[0].title, "Autumn Sweater")
+        self.assertEqual(kept[0].netease_id, 3)
         self.assertIs(kept[1].on_netease, False)
 
 
@@ -340,6 +386,42 @@ class LoggedInTest(unittest.TestCase):
             netease_source="网易云「相似歌曲」（登录 cookie 已失效，按未登录处理）",
         )
         self.assertIn("登录 cookie 已失效", page)
+
+
+class FinishColumnTest(unittest.TestCase):
+    def test_hot_artists_go_last_and_followed_ones_go(self):
+        class Fake:
+            fan_counts = {
+                1: (19_022_530, False),
+                2: (224_818, False),
+                3: (50_000, True),
+            }
+
+            def fans(self, artist_id):
+                return self.fan_counts[artist_id]
+
+            def top_tracks(self, artist_id):
+                return [discover.Track(f"hit{artist_id}", "u")]
+
+        ranked = []
+        for artist_id, name in (
+            (1, "周杰伦"),
+            (2, "寸铁"),
+            (3, "已关注"),
+            (None, "Björk"),
+        ):
+            c = discover.Candidate(name, "u")
+            c.netease_id = artist_id
+            ranked.append(c)
+        shown = discover.finish_column(Fake(), ranked)
+        self.assertEqual([c.name for c in shown], ["寸铁", "Björk", "周杰伦"])
+        self.assertTrue(shown[-1].hot)
+        self.assertEqual(shown[0].tracks[0].title, "hit2")
+
+    def test_fans_are_shown_in_wan(self):
+        self.assertEqual(discover.format_fans(19_022_530), "1902万")
+        self.assertEqual(discover.format_fans(224_818), "22.5万")
+        self.assertEqual(discover.format_fans(812), "812")
 
 
 class LibraryTest(unittest.TestCase):
