@@ -5,7 +5,7 @@
 | 项 | 值 |
 |---|---|
 | 主机 | 阿里云轻量应用服务器 `106.14.0.229`，Ubuntu 24.04，2C / 1.6G，40G 系统盘 + 40G 数据盘（与实例绑定、同到期、须一起续费）。SSH 别名 `shanghai`（`root`，本机 ed25519；阿里云密钥对 `~/.ssh/shanghai.pem` 备用） |
-| 入口 | `https://106.14.0.229:8443`（nginx TLS → `127.0.0.1:4533`），账号 `lilya`，密码在 Bitwarden |
+| 入口 | `https://106.14.0.229:8443`（nginx TLS → `127.0.0.1:4533`），账号 `lilya`，密码在 Bitwarden；`/discover/` 是每周的音乐发现页（静态，不设密码） |
 | 曲库 | `/srv/music`：mergerfs 合并系统盘的 `/srv/music-sys` 与数据盘的 `/mnt/data/music`（root 所有，navidrome 只读） |
 | 数据 | `/var/lib/navidrome`（SQLite、缓存） |
 | 同机其他服务 | `trial-run` 容器占 80 端口（nginx 默认站点），与本服务无关，只借用它的 `/.well-known/acme-challenge/` |
@@ -21,6 +21,7 @@ music-sync                           # 同步并全量重扫
 
 `music-sync` 用 `rsync --delete` 镜像，本地删除的文件服务器也会删；本地库为空时拒绝执行。Navidrome 的文件监视器跟不上 rsync 的临时文件改名，增量扫描又只看目录 mtime（只改标签不会变），所以有改动就跑 `scan --full`。
 
+- 发现页：本机 systemd 用户定时器每周一跑 `music-discover`（`modules/home/music-discover.nix`，脚本在 `scripts/music-discover.py`），生成后 rsync 到 `/var/www/discover/`。手动跑：`music-discover`；状态和缓存在 `~/.local/state/music-discover/`。
 - 忘记密码：`ssh -t shanghai 'runuser -u navidrome -- /opt/navidrome/navidrome user edit -u lilya --set-password -c /etc/navidrome/navidrome.toml'`
 - 升级：按下文「安装」换版本号重新下载校验，`systemctl restart navidrome`。数据库迁移由 Navidrome 启动时完成，升级前可 `navidrome backup create`。
 - 证书：`/root/.acme.sh/acme.sh --list` 查看；root 的 crontab 每天 4 次检查，3 天续期一次，续期后自动 `systemctl reload nginx`。
@@ -178,6 +179,16 @@ server {
     add_header Strict-Transport-Security "max-age=31536000" always;
     add_header X-Content-Type-Options "nosniff" always;
 
+    # Weekly music-discover page, uploaded from the laptop (see docs/music-server.md).
+    location = /discover {
+        return 301 /discover/;
+    }
+    location /discover/ {
+        alias /var/www/discover/;
+        index index.html;
+        charset utf-8;
+    }
+
     location / {
         proxy_pass http://127.0.0.1:4533;
         proxy_http_version 1.1;
@@ -193,6 +204,7 @@ server {
 ```
 
 ```bash
+install -d -m 755 /var/www/discover
 ln -sf /etc/nginx/sites-available/navidrome /etc/nginx/sites-enabled/navidrome
 nginx -t && systemctl reload nginx
 ```

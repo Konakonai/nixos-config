@@ -18,6 +18,7 @@
     ./flatpak.nix
     ./gaming.nix
     ./kitty.nix
+    ./music-discover.nix
     ./niri
     ./noctalia.nix
     ./shell.nix
