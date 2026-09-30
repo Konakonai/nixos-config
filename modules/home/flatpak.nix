@@ -158,6 +158,7 @@ in
       "com.qq.QQ"
       "com.getpostman.Postman"
       "com.tencent.WeChat"
+      "io.github.kukuruzka165.materialgram"
     ];
 
     # Keep manually installed Flatpak applications alongside the declared set.
@@ -199,6 +200,16 @@ in
             ELECTRON_OZONE_PLATFORM_HINT = "wayland";
             NIXOS_OZONE_WL = "1";
           };
+      };
+      "io.github.kukuruzka165.materialgram" = {
+        # Upstream only grants home:ro, so writes to the default
+        # ~/Downloads/Telegram Desktop location fail inside the sandbox.
+        Context.filesystems = themeFilesystems ++ [ "xdg-download" ];
+        # Cursor only: the GNOME runtime ships no qt6ct plugin, so the full
+        # themeEnv would point Qt at a missing platform theme.
+        Environment = {
+          inherit (themeEnv) XCURSOR_THEME XCURSOR_SIZE XCURSOR_PATH;
+        };
       };
       "com.tencent.WeChat" = {
         Context.sockets = [
