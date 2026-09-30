@@ -12,6 +12,8 @@ let
       flac
       jq
     ];
+    # --noincremental: downloads land in the same folder every time, and
+    # incremental mode skips any folder it has imported from before.
     text = ''
       if [ "$#" -eq 0 ]; then
         echo "usage: beet-deezer <album-dir>..." >&2
@@ -19,8 +21,17 @@ let
       fi
 
       for dir in "$@"; do
-        track=$(find "$dir" -maxdepth 1 -name '*.flac' -print -quit)
-        upc=$(metaflac --show-tag=BARCODE "$track" 2>/dev/null | head -n1 | cut -d= -f2-)
+        # One UPC per call: a download folder holding several releases would
+        # otherwise all be pinned to the first file's album.
+        upcs=$(
+          find "$dir" -maxdepth 1 -name '*.flac' -exec metaflac --show-tag=BARCODE {} + 2>/dev/null |
+            cut -d= -f2- | sort -u
+        )
+        if [ "$(printf '%s' "$upcs" | grep -c .)" -gt 1 ]; then
+          echo "$dir: files from several releases (UPCs: $(paste -sd " " <<<"$upcs")); split them into one folder per album" >&2
+          continue
+        fi
+        upc=$upcs
         id=""
         if [ -n "$upc" ]; then
           id=$(curl -fsS --retry 3 "https://api.deezer.com/album/upc:$upc" | jq -r '.id // empty')
@@ -28,10 +39,10 @@ let
 
         if [ -n "$id" ]; then
           echo "$dir -> https://www.deezer.com/album/$id"
-          beet import --search-id "$id" "$dir"
+          beet import --noincremental --search-id "$id" "$dir"
         else
           echo "$dir: no Deezer album for UPC '$upc', falling back to search" >&2
-          beet import "$dir"
+          beet import --noincremental "$dir"
         fi
       done
     '';
