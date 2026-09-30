@@ -21,7 +21,8 @@ music-sync                           # 同步并全量重扫
 
 `music-sync` 用 `rsync --delete` 镜像，本地删除的文件服务器也会删；本地库为空时拒绝执行。Navidrome 的文件监视器跟不上 rsync 的临时文件改名，增量扫描又只看目录 mtime（只改标签不会变），所以有改动就跑 `scan --full`。
 
-- 发现页：本机 systemd 用户定时器每周一跑 `music-discover`（`modules/home/music-discover.nix`，脚本在 `scripts/music-discover.py`），生成后 rsync 到 `/var/www/discover/`。手动跑：`music-discover`；状态和缓存在 `~/.local/state/music-discover/`。
+- 发现页：本机 systemd 用户定时器每周一跑 `music-discover`（`modules/home/music-discover.nix`，脚本在 `scripts/music-discover.py`），生成后 rsync 到 `/var/www/discover/`。手动跑：`music-discover`；状态和缓存在 `~/.local/state/music-discover/`（`artists.json` 是 MusicBrainz 风格标签缓存，删掉会重新查；新收藏很多时可以 `--tag-budget 3000` 一次查完）。
+- 网易云登录：发现页用 `secrets/netease-cookie.age` 里的 `MUSIC_U` cookie 调「相似艺人」、读关注列表和粉丝数。页面「同圈子」说明里出现「登录 cookie 已失效」时，浏览器重新登录 music.163.com，复制新的 `MUSIC_U`，然后 `nix shell nixpkgs#age -c bash -c 'read -rsp "MUSIC_U: " c; echo; printf %s "$c" | age -r "$(age-keygen -y ~/.config/age/mihomo.txt)" -o ~/nixos-config/secrets/netease-cookie.age && echo "saved (${#c} chars)"'` 并 rebuild。
 - 忘记密码：`ssh -t shanghai 'runuser -u navidrome -- /opt/navidrome/navidrome user edit -u lilya --set-password -c /etc/navidrome/navidrome.toml'`
 - 升级：按下文「安装」换版本号重新下载校验，`systemctl restart navidrome`。数据库迁移由 Navidrome 启动时完成，升级前可 `navidrome backup create`。
 - 证书：`/root/.acme.sh/acme.sh --list` 查看；root 的 crontab 每天 4 次检查，3 天续期一次，续期后自动 `systemctl reload nginx`。
