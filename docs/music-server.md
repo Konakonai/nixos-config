@@ -4,9 +4,9 @@
 
 | 项 | 值 |
 |---|---|
-| 主机 | `106.14.0.229`，Ubuntu 24.04，2C / 1.6G / 40G。SSH 别名 `shanghai`（`root`，本机 ed25519；阿里云密钥对 `~/.ssh/shanghai.pem` 备用） |
+| 主机 | 阿里云轻量应用服务器 `106.14.0.229`，Ubuntu 24.04，2C / 1.6G，40G 系统盘 + 40G 数据盘（与实例绑定、同到期、须一起续费）。SSH 别名 `shanghai`（`root`，本机 ed25519；阿里云密钥对 `~/.ssh/shanghai.pem` 备用） |
 | 入口 | `https://106.14.0.229:8443`（nginx TLS → `127.0.0.1:4533`），账号 `lilya`，密码在 Bitwarden |
-| 曲库 | `/srv/music`（root 所有，navidrome 只读） |
+| 曲库 | `/srv/music`：mergerfs 合并系统盘的 `/srv/music-sys` 与数据盘的 `/mnt/data/music`（root 所有，navidrome 只读） |
 | 数据 | `/var/lib/navidrome`（SQLite、缓存） |
 | 同机其他服务 | `trial-run` 容器占 80 端口（nginx 默认站点），与本服务无关，只借用它的 `/.well-known/acme-challenge/` |
 | 安全组 | 放行 22、80、443、8443 |
@@ -34,10 +34,10 @@ music-sync                           # 同步并全量重扫
 Docker Hub 在这台机器上不通，GitHub 可达，所以用官方二进制而不是容器。
 
 ```bash
-apt-get install -y ffmpeg sqlite3
+apt-get install -y ffmpeg sqlite3 mergerfs
 useradd --system --home-dir /var/lib/navidrome --shell /usr/sbin/nologin navidrome
 install -d -o navidrome -g navidrome -m 750 /var/lib/navidrome
-install -d -o root -g navidrome -m 755 /srv/music
+install -d -o root -g navidrome -m 755 /srv/music /srv/music-sys
 install -d -m 755 /opt/navidrome /etc/navidrome
 
 V=0.64.2; F=navidrome_${V}_linux_amd64.tar.gz; cd /tmp
@@ -45,6 +45,28 @@ curl -fsSLO https://github.com/navidrome/navidrome/releases/download/v$V/$F
 curl -fsSLO https://github.com/navidrome/navidrome/releases/download/v$V/navidrome_checksums.txt
 grep " $F\$" navidrome_checksums.txt | sha256sum -c - && tar -xzf $F -C /opt/navidrome navidrome
 ```
+
+### 存储
+
+数据盘 `/dev/vdb` 整盘 ext4（`mkfs.ext4 -L music-data -m 0`，不给 root 预留），再用 mergerfs 把它和系统盘剩余空间合成一个曲库。新文件写到剩余空间多的分支（`mfs`）；系统盘分支保留 10G 给系统、日志和 `trial-run`，数据盘只留 1G。可用约 56G。
+
+`/etc/fstab` 追加（UUID 以 `blkid /dev/vdb` 为准）：
+
+```text
+# Aliyun data disk (40G) for the music library; see docs/music-server.md.
+UUID=be655c96-fdd1-4255-b9cb-4e7f6ca87359 /mnt/data ext4 defaults,nofail,x-systemd.device-timeout=10s 0 2
+# Music pool: leftover system-disk space + the data disk. New files go to the branch with
+# the most free space; the system disk keeps 10G for the OS, logs and the trial-run container.
+/srv/music-sys=RW,10G:/mnt/data/music=RW,1G /srv/music fuse.mergerfs allow_other,cache.files=off,category.create=mfs,fsname=music-pool,nofail,x-systemd.requires-mounts-for=/mnt/data 0 0
+```
+
+```bash
+systemctl daemon-reload && mount /mnt/data
+install -d -o root -g navidrome -m 755 /mnt/data/music
+mount /srv/music
+```
+
+`allow_other` 必须有，否则 navidrome 用户看不到 root 挂的 FUSE。核对生效的分支：`python3 -c 'import os; print(os.getxattr("/srv/music/.mergerfs", "user.mergerfs.branches"))'`。某首歌在哪块盘上，直接在两个分支目录里找。
 
 ### `/etc/navidrome/navidrome.toml`
 
@@ -68,6 +90,8 @@ Scanner.Schedule = "@every 6h"
 Description=Navidrome music server
 After=network-online.target
 Wants=network-online.target
+# The library is a mergerfs pool over the system and data disks.
+RequiresMountsFor=/srv/music
 
 [Service]
 User=navidrome
@@ -177,4 +201,4 @@ nginx -t && systemctl reload nginx
 
 ## 容量
 
-40G 盘剩约 29G。CD 规格 FLAC 每首 25–30MB，约能再放 1000 首；接近时扩云盘，别在服务器上存有损副本。
+曲库可用约 56G（系统盘分支约 17G + 数据盘约 39G），CD 规格 FLAC 每首 25–30MB，约 2000 首。`df -h /srv/music` 看的是两块盘的原始合计，不扣保留空间。满了就在控制台给数据盘扩容（`resize2fs /dev/vdb`，mergerfs 自动看到），别在服务器上存有损副本。
