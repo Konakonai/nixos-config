@@ -2,8 +2,8 @@
 
 let
   src = pkgs.fetchurl {
-    url = "https://storage.googleapis.com/antigravity-public/antigravity-hub/2.15.1-5880727900913664/linux-x64/Antigravity.tar.gz";
-    hash = "sha256-b2tXgkUAghfauGHDFOalZl6u7qM0jYZpfEHB2H7Y6P8=";
+    url = "https://storage.googleapis.com/antigravity-public/antigravity-hub/2.19.1-6046815158665216/linux-x64/Antigravity.tar.gz";
+    hash = "sha256-cGj6Rxw+WhIl4k5PaDSXdIuEnQjscCMT1JxRjNRfpK8=";
   };
 
   antigravity-src =
