@@ -117,6 +117,7 @@
                   lib = final.lib;
                 };
                 cc-switch = final.lilya.cc-switch;
+                magpie = final.lilya.magpie;
               })
             ];
           }

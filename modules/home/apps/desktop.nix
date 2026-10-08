@@ -12,6 +12,7 @@ let
     file-roller-wayland
     grok-bot
     localsend-no-csd
+    magpie
     nemo-with-extensions-wayland
     ;
   claude-desktop =
@@ -89,6 +90,7 @@ in
     kdePackages.okular
     localsend-no-csd
     loupe
+    magpie
     mcomix
     nemo-with-extensions-wayland
     obsidian

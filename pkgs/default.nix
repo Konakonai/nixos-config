@@ -36,6 +36,7 @@ in
     meta = pkgs.localsend.meta;
   };
   mactahoe-kde = pkgs.callPackage ./mactahoe-kde.nix { };
+  magpie = pkgs.callPackage ./magpie.nix { };
   # nemo-fileroller embeds File Roller's absolute path at build time, so the
   # extension must be rebuilt to make Nemo use the app-local GTK workaround.
   nemo-with-extensions-wayland = pkgs.nemo-with-extensions.override {
