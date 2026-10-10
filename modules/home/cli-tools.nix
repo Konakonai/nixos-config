@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 
 {
   home.packages = with pkgs; [
@@ -22,6 +22,6 @@
     wl-clipboard
 
     lilya.grok
-    pi-coding-agent
+    inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 }
