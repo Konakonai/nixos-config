@@ -68,6 +68,16 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  # Wails disables DMA-BUF when the NVIDIA module is loaded, and Magpie can
+  # disable compositing on Wayland. Keeping both enabled made the changelog
+  # and scrolling noticeably smoother on this host; explicit overrides still work.
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --set-default WEBKIT_DISABLE_DMABUF_RENDERER 0
+      --set-default WEBKIT_DISABLE_COMPOSITING_MODE 0
+    )
+  '';
+
   meta = {
     description = "Centralized AI model manager and gateway for coding agents";
     homepage = "https://usemagpie.ai";
