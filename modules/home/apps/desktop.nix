@@ -117,8 +117,10 @@ in
   # Magpie registers its unwrapped store executable in a user desktop file,
   # which shadows the packaged launcher and stays on an old version after updates.
   # Manage the user entry too, so Magpie cannot replace the wrapped launcher.
-  xdg.dataFile."applications/magpie.desktop".source =
-    "${magpieDesktop}/share/applications/magpie.desktop";
+  xdg.dataFile."applications/magpie.desktop" = {
+    source = "${magpieDesktop}/share/applications/magpie.desktop";
+    force = true;
+  };
 
   xdg.desktopEntries = {
     # The system vim package ships upstream launcher entries. vim is only used
