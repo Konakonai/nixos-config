@@ -37,6 +37,20 @@ let
           patchelf --add-rpath ${lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ]} "$pty"
         '';
       });
+  magpieDesktop = pkgs.makeDesktopItem {
+    name = "magpie";
+    desktopName = "Magpie";
+    genericName = "AI Model Manager";
+    comment = "Centralized AI model manager and gateway for coding agents";
+    exec = "${lib.getExe magpie} %u";
+    icon = "magpie";
+    categories = [
+      "Development"
+      "Utility"
+    ];
+    mimeTypes = [ "x-scheme-handler/magpie" ];
+    terminal = false;
+  };
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
@@ -99,6 +113,12 @@ in
     splayer-next
     thunderbird
   ];
+
+  # Magpie registers its unwrapped store executable in a user desktop file,
+  # which shadows the packaged launcher and stays on an old version after updates.
+  # Manage the user entry too, so Magpie cannot replace the wrapped launcher.
+  xdg.dataFile."applications/magpie.desktop".source =
+    "${magpieDesktop}/share/applications/magpie.desktop";
 
   xdg.desktopEntries = {
     # The system vim package ships upstream launcher entries. vim is only used
