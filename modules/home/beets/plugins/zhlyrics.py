@@ -13,7 +13,12 @@ This plugin:
   Chinese half of the title in Traditional and Simplified script, first with
   each form of the artist name, then by title alone (common titles like "情書"
   return too many songs for the right one to make the cut otherwise);
-* converts found lyrics to one script so they match the library's tags.
+* converts found lyrics to one script so they match the library's tags;
+* before searching online, uses lyrics already on disk: a sidecar `.lrc` next
+  to the track, or the `UNSYNCEDLYRICS` Vorbis comment some downloaders (e.g.
+  SPlayer) write and beets does not read. Both are kept verbatim, so NetEase
+  word-timed lyrics with translations are not replaced by plain line-timed
+  ones, and dropping in a `.lrc` works around NetEase's rate limit.
 
 Candidates are only accepted when their artist matches a half of the tagged
 artist and their duration is within the lyrics plugin's tolerance.
@@ -24,7 +29,9 @@ from __future__ import annotations
 import dataclasses
 import re
 import time
+from pathlib import Path
 
+import mutagen
 import opencc
 import requests
 from beets.plugins import BeetsPlugin
@@ -190,12 +197,35 @@ class ZhLyricsPlugin(BeetsPlugin):
         stock = lyrics.LyricsPlugin.find_lyrics
 
         def find_lyrics(plugin: lyrics.LyricsPlugin, item) -> Lyrics | None:
+            if local := self.local_lyrics(item):
+                return local
             found = stock(plugin, item)
             if found is None and CJK.search(item.title):
                 found = self.search_lrclib(plugin, item)
             return self.convert(found)
 
         lyrics.LyricsPlugin.find_lyrics = find_lyrics
+
+    def local_lyrics(self, item) -> Lyrics | None:
+        """Return lyrics from a sidecar .lrc or the file's own tags."""
+        path = Path(item.filepath)
+        lrc = path.with_suffix(".lrc")
+        if lrc.is_file():
+            text = lrc.read_text(encoding="utf-8-sig").strip()
+            if text:
+                self._log.info("using {}", lrc)
+                return Lyrics(text, "local", lrc.as_uri())
+
+        try:
+            tags = getattr(mutagen.File(path), "tags", None) or {}
+        except mutagen.MutagenError:
+            return None
+        # Only Vorbis comments use this plain key; ID3 and MP4 lyrics are
+        # already read by beets.
+        if text := "\n".join(tags.get("UNSYNCEDLYRICS") or []).strip():
+            self._log.info("using UNSYNCEDLYRICS tag of {}", item)
+            return Lyrics(text, "local")
+        return None
 
     def search_lrclib(self, plugin: lyrics.LyricsPlugin, item) -> Lyrics | None:
         backend = next(
