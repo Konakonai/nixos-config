@@ -2,15 +2,11 @@
   config,
   lib,
   lilyaTheme,
-  pkgs,
   ...
 }:
 
 let
   zen = lib.getExe config.programs.zen-browser.package;
-  zenLaunch = pkgs.writeShellScript "launch-zen-beta" ''
-    exec ${zen} "$@"
-  '';
 in
 {
   programs.zen-browser = {
@@ -55,7 +51,7 @@ in
     name = "Zen Browser (Beta)";
     genericName = "Web Browser";
     comment = "Browse the Web";
-    exec = "${zenLaunch} %U";
+    exec = "${zen} %U";
     icon = "zen-browser";
     terminal = false;
     type = "Application";
@@ -80,19 +76,21 @@ in
     actions = {
       "new-private-window" = {
         name = "New Private Window";
-        exec = "${zenLaunch} --private-window %U";
+        exec = "${zen} --private-window %U";
       };
       "new-window" = {
         name = "New Window";
-        exec = "${zenLaunch} --new-window %U";
+        exec = "${zen} --new-window %U";
       };
       "profile-manager-window" = {
         name = "Profile Manager";
-        exec = "${zenLaunch} --ProfileManager";
+        exec = "${zen} --ProfileManager";
       };
     };
   };
 
+  # Zen's own "make default browser" prompt writes userapp-Zen-*.desktop
+  # entries that shadow the managed launcher and its MIME associations.
   home.activation.removeZenUserappDesktop = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     rm -f "$HOME"/.local/share/applications/userapp-Zen-*.desktop
   '';

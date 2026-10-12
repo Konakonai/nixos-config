@@ -48,56 +48,7 @@ let
             esac
     '';
   };
-  configDump = pkgs.writeShellApplication {
-    name = "config-dump";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.python3
-      config.programs.noctalia.package
-    ];
-    text = ''
-      case "''${1:-}" in
-        noctalia)
-          noctalia config export merged
-          ;;
-        zed)
-          python3 ${jsonc} canonicalize "${config.xdg.configHome}/zed/settings.json"
-          ;;
-        *)
-          echo "usage: config-dump <noctalia|zed>" >&2
-          exit 2
-          ;;
-      esac
-    '';
-  };
-  configRepair = pkgs.writeShellApplication {
-    name = "config-repair";
-    runtimeInputs = [
-      config.programs.noctalia.package
-      pkgs.coreutils
-    ];
-    text = ''
-      if [ "''${1:-}" != "noctalia-templates" ]; then
-        echo "usage: config-repair noctalia-templates" >&2
-        exit 2
-      fi
-
-      for template in darkly-qt.conf darkly-kde-colors heroic.css; do
-        path="${config.xdg.configHome}/noctalia/templates/$template"
-        if [ ! -e "$path" ]; then
-          echo "missing template: $path; run rebuild first" >&2
-          exit 1
-        fi
-      done
-
-      noctalia msg templates-apply
-    '';
-  };
 in
 {
-  home.packages = [
-    configDrift
-    configDump
-    configRepair
-  ];
+  home.packages = [ configDrift ];
 }

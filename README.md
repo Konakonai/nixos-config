@@ -53,7 +53,7 @@ nix-update --flake <name>   # 升级 pkgs/ 里手 pin 的二进制包（见 pack
 | Zed `settings.json`、LibreOffice 工具栏 | 首次种子，之后由应用保存 |
 | Flatpak 应用、Noctalia 插件 | 运行时安装，不由 flake.lock 固定 |
 
-`config-drift noctalia` 显示 GUI 相对默认层的差量，想固化时抄进 `modules/home/noctalia.nix`；`config-dump`、`config-repair noctalia-templates` 同理。
+`config-drift noctalia|zed` 显示 GUI 相对默认层的差量，想固化时抄进对应模块。Noctalia 模板没生效时运行 `noctalia msg templates-apply`。
 
 ## 不在 Git 里的状态
 

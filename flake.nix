@@ -3,6 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    # Not used by this flake directly: pkgs/codex-desktop.nix calls the
+    # non-flake codex-desktop-linux outputs with it.
     flake-utils.url = "github:numtide/flake-utils";
 
     pi = {
@@ -122,8 +124,6 @@
                   inherit inputs;
                   lib = final.lib;
                 };
-                cc-switch = final.lilya.cc-switch;
-                magpie = final.lilya.magpie;
               })
             ];
           }
