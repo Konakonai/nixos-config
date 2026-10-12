@@ -63,7 +63,7 @@ nix-update --flake <name>   # 升级 pkgs/ 里手 pin 的二进制包（见 pack
 
 ## 备注
 
-- Mihomo 配置由前片段 + 密文 + 后片段拼接到 `/run/mihomo/config.yaml`，三者任一变化都会重启代理。改规则后 `mihomo -t` 校验，再跑 `scripts/tests/test_mihomo_*.py`。
+- Mihomo 配置由前片段 + 密文 + 后片段拼接到 `/run/mihomo/config.yaml`，三者任一变化都会重启代理。改规则后 `mihomo -t` 校验，再跑 `configuration` check（含 `scripts/tests/test_mihomo_*.py`）。
 - 订阅节点由密文里的 `glados` proxy-provider 拉取（12 小时一次，经 `Default Proxy`），缓存在 `/var/lib/private/mihomo/proxy_providers/`；策略组按节点名标签（`Dedicated`、`IPv6`、`D1` …）用 `filter` 选取，不写死节点名。换套餐只需更新密文里的 URL。
 - Qt 平台主题等变量只在 Niri 的 `environment {}` 里设置，Plasma 使用标准会话。
 - 合盖不休眠（s2idle 在这台机器上恢复不可靠）。Home Manager 在用户会话允许之后才激活，冷启动后若主题未齐，注销再进一次。
