@@ -10,7 +10,7 @@
 
 let
   internalDisplay = hostProfile.display.internal;
-  externalDisplay = hostProfile.display.external or null;
+  externalDisplay = hostProfile.display.external;
   kdlString = builtins.toJSON;
   outputName = display: "${display.make} ${display.model} ${display.serial}";
   outputOn = display: focusAtStartup: ''
@@ -77,7 +77,7 @@ let
     ${baseConfig}
     ${wildcardOutput}
     ${outputOn internalDisplay false}
-    ${lib.optionalString (externalDisplay != null) (outputOn externalDisplay true)}
+    ${outputOn externalDisplay true}
   '';
 in
 {

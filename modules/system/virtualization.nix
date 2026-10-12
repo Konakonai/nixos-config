@@ -6,7 +6,7 @@
 }:
 
 let
-  cfg = hostProfile.virtualization.externalWindows or { enable = false; };
+  cfg = hostProfile.virtualization.externalWindows;
   domainName = cfg.domainName;
   memoryKiB = cfg.memoryGiB * 1024 * 1024;
   ovmf = pkgs.OVMFFull.fd;
@@ -83,7 +83,7 @@ let
     startupNotify = true;
   };
 in
-lib.mkIf (cfg.enable or false) {
+{
   virtualisation.libvirtd = {
     enable = true;
     qemu = {

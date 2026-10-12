@@ -6,8 +6,7 @@
 }:
 
 let
-  nvidia = hostProfile.graphics.nvidia or { enable = false; };
-  pci = nvidia.pci;
+  inherit (hostProfile.graphics.nvidia) pci;
   hexByte = value: lib.fixedWidthString 2 "0" (lib.toLower (lib.toHexString value));
   pciAddress = "0000:${hexByte pci.bus}:${hexByte pci.device}.${toString pci.function}";
 
@@ -29,7 +28,7 @@ let
     fi
   '';
 in
-lib.mkIf (nvidia.enable or false) {
+{
   # udev re-evaluates on driver bind and AC plug/unplug; the oneshot applies
   # the policy at boot and on every rebuild, when no such event is replayed.
   services.udev.extraRules = ''

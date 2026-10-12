@@ -1,12 +1,11 @@
 {
   config,
   hostProfile,
-  lib,
   ...
 }:
 
 let
-  nvidia = hostProfile.graphics.nvidia or { enable = false; };
+  inherit (hostProfile.graphics) nvidia;
   nvidiaPackage = config.boot.kernelPackages.nvidiaPackages.stable;
 in
 {
@@ -15,8 +14,7 @@ in
     enable = true;
     enable32Bit = true;
   };
-}
-// lib.optionalAttrs (nvidia.enable or false) {
+
   services.xserver.videoDrivers = [ "nvidia" ];
   hardware.nvidia = {
     modesetting.enable = true;

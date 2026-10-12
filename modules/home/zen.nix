@@ -1,6 +1,5 @@
 {
   config,
-  hostProfile,
   lib,
   lilyaTheme,
   pkgs,
@@ -8,7 +7,6 @@
 }:
 
 let
-  zenProfilePath = hostProfile.zen.profilePath;
   zen = lib.getExe config.programs.zen-browser.package;
   zenLaunch = pkgs.writeShellScript "launch-zen-beta" ''
     exec ${zen} "$@"
@@ -23,7 +21,7 @@ in
       id = 0;
       name = "Default Profile";
       # Preserve the existing profile directory and browser data.
-      path = zenProfilePath;
+      path = "i41yvfec.Default Profile";
       isDefault = true;
 
       settings = {

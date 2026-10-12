@@ -38,7 +38,6 @@ in
   };
 
   graphics.nvidia = {
-    enable = true;
     intelBusId = "PCI:0:2:0";
     pci = {
       bus = 1;
@@ -58,7 +57,6 @@ in
   };
 
   virtualization.externalWindows = {
-    enable = true;
     domainName = "external-windows-11";
     uuid = "f03897ba-9c7c-4500-b12d-5e3c95eb0c2b";
     diskById = "/dev/disk/by-id/usb-_aigo_U397_071C3711211EA213-0:0";
@@ -68,6 +66,4 @@ in
   };
 
   secrets.identityFile = ageIdentityFile;
-
-  zen.profilePath = "i41yvfec.Default Profile";
 }
