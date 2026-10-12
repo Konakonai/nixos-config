@@ -1,8 +1,7 @@
 { pkgs, ... }:
 
 let
-  pchReset = ../../scripts/reset-pch-usbc.sh;
-  tbReset = ../../scripts/reset-tb-usbc.sh;
+  reset = "${pkgs.bash}/bin/bash ${../../scripts/reset-usbc.sh}";
   resetPath = [
     pkgs.bash
     pkgs.coreutils
@@ -25,7 +24,7 @@ in
     path = resetPath;
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash ${pchReset}";
+      ExecStart = "${reset} pch";
     };
   };
 
@@ -34,7 +33,7 @@ in
     path = resetPath;
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash ${tbReset}";
+      ExecStart = "${reset} tb";
     };
   };
 
@@ -43,7 +42,7 @@ in
     path = resetPath;
     serviceConfig = {
       Type = "oneshot";
-      ExecStart = "${pkgs.bash}/bin/bash ${tbReset} rearm";
+      ExecStart = "${reset} tb rearm";
     };
   };
 
@@ -56,7 +55,7 @@ in
       Type = "simple";
       Restart = "always";
       RestartSec = "2s";
-      ExecStart = "${pkgs.bash}/bin/bash ${tbReset} watch";
+      ExecStart = "${reset} tb watch";
     };
   };
 
@@ -68,7 +67,7 @@ in
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
-      ExecStart = "${pkgs.bash}/bin/bash ${tbReset} prepare";
+      ExecStart = "${reset} tb prepare";
     };
   };
 

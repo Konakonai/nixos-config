@@ -8,7 +8,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SCRIPT = ROOT / "scripts/reset-tb-usbc.sh"
+SCRIPT = ROOT / "scripts/reset-usbc.sh"
 
 
 class TbUsbcResetTest(unittest.TestCase):
@@ -43,7 +43,7 @@ class TbUsbcResetTest(unittest.TestCase):
     def run_script(self, *args):
         env = os.environ | {"SYSROOT": str(self.root)}
         return subprocess.run(
-            ["bash", str(SCRIPT), *args],
+            ["bash", str(SCRIPT), "tb", *args],
             env=env,
             capture_output=True,
             text=True,
@@ -84,7 +84,7 @@ class TbUsbcResetTest(unittest.TestCase):
     def test_watch_once_bounces_when_idle(self):
         env = os.environ | {"SYSROOT": str(self.root), "WATCH_ONCE": "1", "WATCH_INTERVAL": "0"}
         result = subprocess.run(
-            ["bash", str(SCRIPT), "watch"],
+            ["bash", str(SCRIPT), "tb", "watch"],
             env=env,
             capture_output=True,
             text=True,
