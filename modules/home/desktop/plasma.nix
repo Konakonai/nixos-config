@@ -36,9 +36,9 @@
 
     # 1. 浅色桌面外观体系
     workspace = {
-      lookAndFeel = lilyaTheme.theme.plasma.lookAndFeel;
-      theme = lilyaTheme.theme.plasma.workspace;
-      colorScheme = lilyaTheme.theme.plasma.colorScheme;
+      lookAndFeel = "org.kde.breeze.desktop";
+      theme = "default";
+      colorScheme = "BreezeLight";
       iconTheme = lilyaTheme.iconThemeName;
       cursor = {
         theme = lilyaTheme.cursorThemeName;
@@ -80,7 +80,7 @@
         location = "bottom";
         height = 44;
         floating = true;
-        opacity = lilyaTheme.opacity.plasmaPanel;
+        opacity = "opaque";
         widgets = [
           {
             kickoff = {
@@ -112,7 +112,7 @@
 
     # 4. 窗口管理器与特效（关闭背景模糊）
     kwin = {
-      effects.blur.enable = lilyaTheme.effects.backgroundBlur;
+      effects.blur.enable = false;
     };
 
     # 5. 全局快捷键
@@ -174,8 +174,8 @@
           "TranslucentTitleBar" = false;
         };
         "TitleBarOpacity" = {
-          "ActiveTitleBarOpacity" = lilyaTheme.opacity.plasmaTitlebarActive;
-          "InactiveTitleBarOpacity" = lilyaTheme.opacity.plasmaTitlebarInactive;
+          "ActiveTitleBarOpacity" = 100;
+          "InactiveTitleBarOpacity" = 100;
           "OpaqueMaximizedTitleBars" = true;
         };
         "Windeco" = {

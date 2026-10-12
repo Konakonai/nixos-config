@@ -7,9 +7,10 @@
 }:
 
 let
+  paletteName = "Catppuccin Lavender Light";
   darklyQtTemplate = ../../assets/noctalia/templates/darkly-qt.conf;
   heroicNoctaliaTemplate = pkgs.replaceVars ../../assets/noctalia/templates/heroic.css {
-    modalBackdrop = builtins.toString lilyaTheme.opacity.modalBackdrop;
+    modalBackdrop = builtins.toString 0.48;
     sansFont = lilyaTheme.fonts.sans;
     windowRadius = builtins.toString (builtins.floor lilyaTheme.radius.windows);
   };
@@ -31,9 +32,9 @@ let
   # in the GUI survive rebuilds. `config-drift noctalia` shows those deltas
   # when they are worth promoting into this file.
   noctaliaSettings = {
-    theme.mode = lilyaTheme.theme.mode;
-    theme.source = lilyaTheme.theme.source;
-    theme.custom_palette = lilyaTheme.theme.paletteName;
+    theme.mode = "light";
+    theme.source = "custom";
+    theme.custom_palette = paletteName;
     theme.templates.enable_builtin_templates = true;
     # kitty.conf ends with `include themes/noctalia.conf`, so the palette chosen
     # in the GUI reaches the terminal without the template editing kitty.conf.
@@ -65,11 +66,11 @@ let
 
       shadow = {
         direction = "down";
-        alpha = lilyaTheme.shadow.alpha;
+        alpha = 0.16;
       };
 
       panel = {
-        transparency_mode = lilyaTheme.noctalia.panelTransparencyMode;
+        transparency_mode = "solid";
         borders = false;
         shadow = false;
         launcher_placement = "floating";
@@ -85,8 +86,8 @@ let
     bar.main = {
       position = "top";
       thickness = 38;
-      background_opacity = lilyaTheme.opacity.noctaliaPanels;
-      radius = lilyaTheme.radius.panels;
+      background_opacity = 0.0;
+      radius = 22;
       margin_ends = 180;
       margin_edge = 10;
       padding = 0;
@@ -117,30 +118,26 @@ let
     };
 
     notification = {
-      background_opacity = lilyaTheme.opacity.noctaliaPopups;
+      background_opacity = 1.0;
       offset_x = 18;
       offset_y = 12;
     };
 
     osd = {
-      background_opacity = lilyaTheme.opacity.noctaliaPopups;
+      background_opacity = 1.0;
       offset_x = 18;
       offset_y = 12;
     };
 
-    backdrop = {
-      enabled = false;
-      blur_intensity = lilyaTheme.effects.backdropBlur;
-      tint_intensity = lilyaTheme.effects.backdropTint;
-    };
+    backdrop.enabled = false;
 
     lockscreen = {
-      blur_intensity = lilyaTheme.effects.lockscreenBlur;
-      tint_intensity = lilyaTheme.effects.lockscreenTint;
+      blur_intensity = 0.0;
+      tint_intensity = 0.0;
     };
 
     dock = {
-      background_opacity = lilyaTheme.opacity.noctaliaDock;
+      background_opacity = 0.0;
       reserve_space = false;
     };
 
@@ -229,7 +226,6 @@ in
   programs.noctalia = {
     enable = true;
     settings = noctaliaSettings;
-    customPalettes.${lilyaTheme.theme.paletteName} =
-      ../../assets/noctalia/palettes/catppuccin-lavender-light.json;
+    customPalettes.${paletteName} = ../../assets/noctalia/palettes/catppuccin-lavender-light.json;
   };
 }

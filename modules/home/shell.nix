@@ -11,6 +11,8 @@ let
     export PATH="/run/wrappers/bin:$PATH"
     exec ${nh} os switch ${hostProfile.user.nixosConfigPath} "$@"
   '';
+  inherit (lilyaTheme) palette;
+  inherit (palette) terminal;
   testbuild = pkgs.writeShellScriptBin "testbuild" ''
     export PATH="/run/wrappers/bin:$PATH"
     exec ${nh} os test ${hostProfile.user.nixosConfigPath} "$@"
@@ -73,20 +75,18 @@ in
     settings = {
       format = "$nix_shell$directory$git_branch$git_status$cmd_duration$line_break$character";
 
-      palette = "noctalia";
-
       character = {
-        success_symbol = "[ ❯](bold lavender)";
-        error_symbol = "[ ❯](bold red)";
+        success_symbol = "[ ❯](bold ${palette.lavender})";
+        error_symbol = "[ ❯](bold ${terminal.normal.red})";
       };
 
       directory = {
-        style = "bold teal";
+        style = "bold ${terminal.normal.cyan}";
         format = "[$path]($style) [$read_only]($read_only_style)";
         truncation_length = 3;
         truncate_to_repo = true;
         read_only = "";
-        read_only_style = "red";
+        read_only_style = terminal.normal.red;
       };
 
       directory.substitutions = {
@@ -99,12 +99,12 @@ in
 
       git_branch = {
         symbol = " ";
-        style = "bold sky";
+        style = "bold ${terminal.bright.blue}";
         format = "on [$symbol$branch]($style) ";
       };
 
       git_status = {
-        style = "bold rosewater";
+        style = "bold ${palette.tertiary}";
         format = "[($all_status$ahead_behind)]($style) ";
         conflicted = "=";
         ahead = "⇡";
@@ -119,59 +119,18 @@ in
 
       nix_shell = {
         symbol = " ";
-        style = "bold blue";
+        style = "bold ${terminal.normal.blue}";
         format = "via [$symbol\\($name\\)]($style) ";
       };
 
       cmd_duration = {
         min_time = 2000;
-        style = "bold black";
+        style = "bold ${palette.accent}";
         format = "took [$duration]($style) ";
       };
 
       line_break = {
         disabled = false;
-      };
-
-      # Active Noctalia palette, exposed with Catppuccin-compatible role names.
-      palettes.noctalia = {
-        # Standard colors
-        blue = lilyaTheme.palette.terminal.normal.blue;
-        red = lilyaTheme.palette.terminal.normal.red;
-        green = lilyaTheme.palette.terminal.normal.green;
-        yellow = lilyaTheme.palette.terminal.normal.yellow;
-        cyan = lilyaTheme.palette.terminal.normal.cyan;
-        magenta = lilyaTheme.palette.terminal.normal.magenta;
-        white = lilyaTheme.palette.base;
-        black = lilyaTheme.palette.accent;
-
-        # Extended palette (Catppuccin-compatible names)
-        rosewater = lilyaTheme.palette.tertiary;
-        flamingo = lilyaTheme.palette.error;
-        pink = lilyaTheme.palette.tertiary;
-        mauve = lilyaTheme.palette.accent;
-        maroon = lilyaTheme.palette.error;
-        peach = lilyaTheme.palette.terminal.normal.yellow;
-        teal = lilyaTheme.palette.terminal.normal.cyan;
-        sky = lilyaTheme.palette.terminal.bright.blue;
-        sapphire = lilyaTheme.palette.terminal.normal.blue;
-        lavender = lilyaTheme.palette.lavender;
-
-        # Text shades
-        text = lilyaTheme.palette.text;
-        subtext1 = lilyaTheme.palette.subtext;
-        subtext0 = lilyaTheme.palette.terminal.bright.black;
-
-        # Surface shades
-        overlay2 = lilyaTheme.palette.overlay;
-        overlay1 = lilyaTheme.palette.hover;
-        overlay0 = lilyaTheme.palette.crust;
-        surface2 = lilyaTheme.palette.mantle;
-        surface1 = lilyaTheme.palette.mantle;
-        surface0 = lilyaTheme.palette.base;
-        base = lilyaTheme.palette.base;
-        mantle = lilyaTheme.palette.mantle;
-        crust = lilyaTheme.palette.crust;
       };
     };
   };
