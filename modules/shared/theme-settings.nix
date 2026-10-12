@@ -19,7 +19,11 @@ in
     accent = catppuccinLavenderLight.mPrimary;
     lavender = catppuccinLavenderLight.mSecondary;
     tertiary = catppuccinLavenderLight.mTertiary;
+    onAccent = catppuccinLavenderLight.mOnPrimary;
     text = catppuccinLavenderLight.mOnSurface;
+    surface = catppuccinLavenderLight.mSurface;
+    surfaceVariant = catppuccinLavenderLight.mSurfaceVariant;
+    outline = catppuccinLavenderLight.mOutline;
     crust = catppuccinLavenderLight.mShadow;
     shadow = "${catppuccinLavenderLight.mPrimary}29";
     inherit (catppuccinLavenderLight) terminal;

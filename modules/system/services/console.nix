@@ -1,4 +1,4 @@
-{ ... }:
+{ lilyaTheme, ... }:
 
 {
   services.kmscon = {
@@ -9,7 +9,7 @@
       # discrete NVIDIA GPU awake after switching to a graphical session.
       gpus = "primary";
       hwaccel = true;
-      font-name = "Noto Sans CJK SC";
+      font-name = lilyaTheme.fonts.sans;
       font-size = 16;
       multi-monitor = "largest";
       term = "xterm-256color";

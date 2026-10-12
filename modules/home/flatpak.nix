@@ -1,6 +1,5 @@
 {
   config,
-  fcitxCompatEnv,
   lib,
   lilyaTheme,
   pkgs,
@@ -19,6 +18,15 @@ let
     XCURSOR_PATH = "${config.home.homeDirectory}/.local/share/icons";
   };
 
+  # Sandboxed toolkits do not see the host session's input-method variables.
+  imEnv = {
+    XMODIFIERS = "@im=fcitx";
+    GTK_IM_MODULE = "fcitx";
+    QT_IM_MODULE = "fcitx";
+    SDL_IM_MODULE = "fcitx";
+    GLFW_IM_MODULE = "fcitx";
+  };
+
   # Theme directories under ~/.local/share are symlinks into the store, so the
   # sandbox also needs the store itself (read-only; it is world-readable anyway).
   themeFilesystems = [
@@ -29,6 +37,25 @@ let
     "xdg-data/themes:ro"
     "xdg-data/icons:ro"
   ];
+
+  # Keep Electron apps on Wayland while retaining the real X11 socket for
+  # compatibility. Flatpak 1.18 crashes on the leading empty permission entry
+  # nix-flatpak writes for a negated socket such as !fallback-x11.
+  electronOverride = {
+    Context.sockets = [
+      "wayland"
+      "x11"
+    ];
+    Context.filesystems = themeFilesystems;
+    Environment =
+      themeEnv
+      // imEnv
+      // {
+        ELECTRON_OZONE_PLATFORM_HINT = "wayland";
+        NIXOS_OZONE_WL = "1";
+      };
+  };
+
   qqLauncher = pkgs.writeShellScriptBin "qq-session" ''
     set -euo pipefail
 
@@ -54,47 +81,9 @@ let
       --command=qq \
       com.qq.QQ "$@"
   '';
-
-  wechatLauncher = pkgs.writeShellScriptBin "wechat-session" ''
-    set -euo pipefail
-
-    export QT_IM_MODULE=fcitx
-    export XMODIFIERS=@im=fcitx
-    export GTK_IM_MODULE=fcitx
-    export QT_QPA_PLATFORM=xcb
-    export QT_AUTO_SCREEN_SCALE_FACTOR=1
-
-    exec ${pkgs.flatpak}/bin/flatpak run \
-      --branch=stable \
-      --arch=x86_64 \
-      --command=wechat \
-      --env=QT_IM_MODULE=fcitx \
-      --env=XMODIFIERS=@im=fcitx \
-      --env=GTK_IM_MODULE=fcitx \
-      --env=QT_QPA_PLATFORM=xcb \
-      --env=QT_AUTO_SCREEN_SCALE_FACTOR=1 \
-      --file-forwarding \
-      com.tencent.WeChat @@u "$@" @@
-  '';
-
-  sanitizeFlatpakOverrides = pkgs.writeShellScript "sanitize-flatpak-overrides" ''
-    exec ${pkgs.python3}/bin/python3 ${../../scripts/sanitize-flatpak-overrides.py} \
-      --drop-env QT_ENABLE_HIGHDPI_SCALING \
-      --drop-env QT_SCALE_FACTOR_ROUNDING_POLICY \
-      --drop-env FCITX_QT_USE_SYNC \
-      --drop-env INPUT_METHOD \
-      --drop-unset GLFW_IM_MODULE \
-      --drop-unset SDL_IM_MODULE \
-      --drop-unset INPUT_METHOD \
-      ${lib.escapeShellArg "${config.home.homeDirectory}/.local/share/flatpak/overrides"}
-  '';
-
 in
 {
-  home.packages = [
-    qqLauncher
-    wechatLauncher
-  ];
+  home.packages = [ qqLauncher ];
 
   # Expose the GTK and icon themes to Flatpak applications. home.pointerCursor
   # already links the cursor theme into ~/.local/share/icons.
@@ -126,24 +115,6 @@ in
     '';
   };
 
-  xdg.dataFile."applications/com.tencent.WeChat.desktop" = {
-    force = true;
-    text = ''
-      [Desktop Entry]
-      Name=WeChat
-      Name[zh_CN]=微信
-      Exec=${lib.getExe wechatLauncher} @@u %U @@
-      Terminal=false
-      Type=Application
-      Icon=com.tencent.WeChat
-      StartupWMClass=WeChat
-      Categories=Network;InstantMessaging;
-      Comment=WeChat Desktop
-      Comment[zh_CN]=微信桌面版
-      X-Flatpak=com.tencent.WeChat
-    '';
-  };
-
   services.flatpak = {
     enable = true;
 
@@ -170,37 +141,8 @@ in
     };
 
     overrides = {
-      "com.qq.QQ" = {
-        # Keep QQ on Wayland while retaining the real X11 socket for compatibility.
-        # Flatpak 1.18 crashes on the leading empty permission entry generated
-        # when nix-flatpak serializes a negated socket such as !fallback-x11.
-        Context.sockets = [
-          "wayland"
-          "x11"
-        ];
-        Context.filesystems = themeFilesystems;
-        Environment =
-          themeEnv
-          // fcitxCompatEnv
-          // {
-            ELECTRON_OZONE_PLATFORM_HINT = "wayland";
-            NIXOS_OZONE_WL = "1";
-          };
-      };
-      "com.getpostman.Postman" = {
-        Context.sockets = [
-          "wayland"
-          "x11"
-        ];
-        Context.filesystems = themeFilesystems;
-        Environment =
-          themeEnv
-          // fcitxCompatEnv
-          // {
-            ELECTRON_OZONE_PLATFORM_HINT = "wayland";
-            NIXOS_OZONE_WL = "1";
-          };
-      };
+      "com.qq.QQ" = electronOverride;
+      "com.getpostman.Postman" = electronOverride;
       "io.github.kukuruzka165.materialgram" = {
         # Upstream only grants home:ro, so writes to the default
         # ~/Downloads/Telegram Desktop location fail inside the sandbox.
@@ -220,17 +162,14 @@ in
         # Stay on X11: Flathub enabled native Wayland for 4.1.13.9 and
         # reverted it the same day. Do not set QT_ENABLE_HIGHDPI_SCALING or
         # QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough on this xcb path;
-        # those leftovers double-scale under niri 1.5 and offset the UI.
-        # The bundled Qt5 fcitx plugin still needs X11 to avoid candidate drift.
+        # those double-scale under niri 1.5 and offset the UI. The bundled
+        # Qt5 fcitx plugin still needs X11 to avoid candidate drift.
         Environment =
           themeEnv
-          // fcitxCompatEnv
+          // imEnv
           // {
             QT_QPA_PLATFORM = "xcb";
             QT_AUTO_SCREEN_SCALE_FACTOR = "1";
-            XCURSOR_THEME = lilyaTheme.cursorThemeName;
-            XCURSOR_SIZE = builtins.toString lilyaTheme.cursorSize;
-            XCURSOR_PATH = themeEnv.XCURSOR_PATH;
           };
       };
     };
@@ -240,14 +179,7 @@ in
   # manual service, but do not make Home Manager activation or login wait for
   # remote Flatpak work.
   home.activation.flatpak-managed-install = lib.mkForce (lib.hm.dag.entryAnywhere "");
-  # nix-flatpak merges leftover override tokens: leading empty permission
-  # entries crash Flatpak 1.18, and stale Wayland DPI env vars offset the
-  # X11 WeChat UI under niri fractional scale.
-  home.activation.sanitizeFlatpakOverrides = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    ${sanitizeFlatpakOverrides}
-  '';
   systemd.user.services.flatpak-managed-install.Install.WantedBy = lib.mkForce [ ];
   systemd.user.services.flatpak-managed-install.Unit.ConditionACPower = true;
-  systemd.user.services.flatpak-managed-install.Service.ExecStartPost = "${sanitizeFlatpakOverrides}";
   systemd.user.services.flatpak-managed-install-timer.Unit.ConditionACPower = true;
 }

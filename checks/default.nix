@@ -14,7 +14,6 @@ let
   flatpakTimerUnit = lib.removeSuffix ".service" flatpakTimer.Timer.Unit;
   flatpakTimerService = home.systemd.user.services.${flatpakTimerUnit};
   flatpakInstall = home.systemd.user.services.flatpak-managed-install;
-  flatpakSanitize = toString flatpakInstall.Service.ExecStartPost;
   wechatEnv = home.services.flatpak.overrides."com.tencent.WeChat".Environment;
   mihomoTriggerNames = map (
     item: baseNameOf (toString item)
@@ -31,7 +30,6 @@ assert builtins.length qtPluginList > 1;
 assert flatpakTimer.Timer.Unit == "flatpak-managed-install-timer.service";
 assert flatpakTimerService.Unit.ConditionACPower == true;
 assert flatpakInstall.Unit.ConditionACPower == true;
-assert lib.hasInfix "sanitize-flatpak-overrides" flatpakSanitize;
 assert wechatEnv.QT_QPA_PLATFORM == "xcb";
 assert !(wechatEnv ? QT_ENABLE_HIGHDPI_SCALING);
 assert !(wechatEnv ? QT_SCALE_FACTOR_ROUNDING_POLICY);

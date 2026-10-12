@@ -1,13 +1,7 @@
 { lilyaTheme, pkgs, ... }:
 
 let
-  fcitxCompatEnv = {
-    XMODIFIERS = "@im=fcitx";
-    GTK_IM_MODULE = "fcitx";
-    QT_IM_MODULE = "fcitx";
-    SDL_IM_MODULE = "fcitx";
-    GLFW_IM_MODULE = "fcitx";
-  };
+  inherit (lilyaTheme) palette;
 
   catppuccinLavenderLightThemeConfig = pkgs.writeText "theme.conf" ''
     [Metadata]
@@ -19,10 +13,10 @@ let
 
     [InputPanel]
     Font="${lilyaTheme.fonts.sans} 11"
-    NormalColor=#2c243e
-    HighlightCandidateColor=#ffffff
-    HighlightColor=#7c5cfa
-    HighlightBackgroundColor=#f0edfc
+    NormalColor=${palette.text}
+    HighlightCandidateColor=${palette.onAccent}
+    HighlightColor=${palette.accent}
+    HighlightBackgroundColor=${palette.surfaceVariant}
     Spacing=4
 
     [InputPanel/TextMargin]
@@ -32,7 +26,7 @@ let
     Bottom=8
 
     [InputPanel/Background]
-    Color=#faf8ff
+    Color=${palette.surface}
     Image=panel.svg
 
     [InputPanel/Background/Margin]
@@ -42,7 +36,7 @@ let
     Bottom=12
 
     [InputPanel/Highlight]
-    Color=#7c5cfa
+    Color=${palette.accent}
     Image=highlight.svg
 
     [InputPanel/Highlight/Margin]
@@ -53,11 +47,11 @@ let
 
     [Menu]
     Font="${lilyaTheme.fonts.sans} 10"
-    NormalColor=#2c243e
+    NormalColor=${palette.text}
     Spacing=4
 
     [Menu/Background]
-    Color=#faf8ff
+    Color=${palette.surface}
     Image=panel.svg
 
     [Menu/Background/Margin]
@@ -73,7 +67,7 @@ let
     Bottom=4
 
     [Menu/Highlight]
-    Color=#7c5cfa
+    Color=${palette.accent}
     Image=highlight.svg
 
     [Menu/Highlight/Margin]
@@ -83,7 +77,7 @@ let
     Bottom=5
 
     [Menu/Separator]
-    Color=#d8d0f4
+    Color=${palette.outline}
 
     [Menu/CheckBox]
     Image=radio.png
@@ -100,13 +94,13 @@ let
 
   panelSvg = pkgs.writeText "panel.svg" ''
     <svg width="48" height="48" version="1.1" xmlns="http://www.w3.org/2000/svg">
-      <rect x="1" y="1" width="46" height="46" rx="12" fill="#faf8ff" stroke="#d8d0f4" stroke-width="1.5"/>
+      <rect x="1" y="1" width="46" height="46" rx="12" fill="${palette.surface}" stroke="${palette.outline}" stroke-width="1.5"/>
     </svg>
   '';
 
   highlightSvg = pkgs.writeText "highlight.svg" ''
     <svg width="48" height="48" version="1.1" xmlns="http://www.w3.org/2000/svg">
-      <rect width="48" height="48" rx="8" fill="#7c5cfa"/>
+      <rect width="48" height="48" rx="8" fill="${palette.accent}"/>
     </svg>
   '';
 
@@ -121,10 +115,6 @@ let
   '';
 in
 {
-  _module.args = {
-    inherit fcitxCompatEnv;
-  };
-
   xdg.configFile."fcitx5/conf/classicui.conf".text = ''
     Font="${lilyaTheme.fonts.sans} 11"
     Theme=catppuccin-lavender-light
