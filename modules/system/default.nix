@@ -6,11 +6,12 @@
     ./backup.nix
     ./boot
     ./containers.nix
-    ./display.nix
+    ./display
     ./fonts.nix
     ./graphics.nix
     ./localization.nix
     ./memory.nix
+    ./mihomo
     ./networking.nix
     ./nix.nix
     ./packages.nix

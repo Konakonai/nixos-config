@@ -9,9 +9,16 @@ let
   runtimeDir = "/run/mihomo";
   configFile = "${runtimeDir}/config.yaml";
   proxiesFile = config.age.secrets.mihomo-proxies.path;
-  configBeforeProxies = ./mihomo/config-before-proxies.yaml;
-  configAfterProxies = ./mihomo/config-after-proxies.yaml;
-  encryptedProxies = ../../secrets/mihomo-proxies.yaml.age;
+  configBeforeProxies = ./config-before-proxies.yaml;
+  configAfterProxies = ./config-after-proxies.yaml;
+  encryptedProxies = ../../../secrets/mihomo-proxies.yaml.age;
+  # LoadCredential copies config.yaml at start, so a fragment change must
+  # regenerate the file and then restart the proxy.
+  restartTriggers = [
+    configBeforeProxies
+    configAfterProxies
+    encryptedProxies
+  ];
 in
 {
   age.secrets.mihomo-proxies = {
@@ -29,18 +36,14 @@ in
       pkgs.bash
       pkgs.coreutils
     ];
-    restartTriggers = [
-      configBeforeProxies
-      configAfterProxies
-      encryptedProxies
-    ];
+    inherit restartTriggers;
     serviceConfig = {
       Type = "oneshot";
       RemainAfterExit = true;
       UMask = "0077";
     };
     script = ''
-      bash ${../../scripts/generate-mihomo-config.sh} \
+      bash ${../../../scripts/generate-mihomo-config.sh} \
         ${configBeforeProxies} \
         ${proxiesFile} \
         ${configAfterProxies} \
@@ -57,19 +60,14 @@ in
 
   # The proxy can establish listeners before the uplink is ready and reconnect
   # on its own. Do not hold graphical.target behind NetworkManager's online
-  # heuristic. LoadCredential copies config.yaml at start, so fragment changes
-  # must restart this unit after a successful generator run.
+  # heuristic.
   systemd.services.mihomo = {
     requires = lib.mkForce [ "mihomo-config.service" ];
     after = lib.mkForce [
       "network.target"
       "mihomo-config.service"
     ];
-    restartTriggers = [
-      configBeforeProxies
-      configAfterProxies
-      encryptedProxies
-    ];
+    inherit restartTriggers;
     serviceConfig = {
       Restart = "on-failure";
       RestartSec = "2s";

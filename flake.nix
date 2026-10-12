@@ -97,7 +97,7 @@
         _: nixpkgs.lib.isDerivation
       ) nixosConfigurations.nixos.pkgs.lilya;
 
-      formatter.x86_64-linux = nixosConfigurations.nixos.pkgs.nixfmt;
+      formatter.x86_64-linux = nixosConfigurations.nixos.pkgs.nixfmt-tree;
 
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
