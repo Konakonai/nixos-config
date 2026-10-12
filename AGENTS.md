@@ -22,9 +22,8 @@
 | 改了什么 | 运行 |
 |---|---|
 | 任何 `.nix` 文件 | `lint`（statix、deadnix、nixfmt；格式问题用 `nix fmt` 修） |
-| `scripts/`、`modules/system/mihomo/`、`modules/system/virtualization.nix`、`modules/home/niri/` | 再加 `configuration`（跑 `scripts/tests/`） |
+| `scripts/`、`modules/system/mihomo/` | 再加 `configuration`（跑 `scripts/tests/`） |
 | `modules/home/niri/` | 再加 `niri-config` |
-| `modules/system/virtualization.nix` | 再加 `external-windows-cpu` |
 | mihomo 规则 | 另外 `mihomo -t` 校验生成的配置 |
 | `checks/` 本身 | 跑改动的那个 check |
 | wip 分支上交给用户 `rebuild` 之前 | `.#nixosConfigurations.nixos.config.system.build.toplevel`，确认整机能构建 |

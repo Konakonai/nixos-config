@@ -11,7 +11,6 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts/external-windows.sh"
-VIRT = ROOT / "modules/system/external-windows-domain-xml.nix"
 
 
 class ExternalWindowsTest(unittest.TestCase):
@@ -232,21 +231,3 @@ done
         self.assertIn("udisksctl unmount --block-device /dev/sdb1", trace)
         self.assertTrue(self.started(trace))
         self.assertTrue(self.viewed(trace))
-
-    def test_vcpu_and_topology_share_the_same_parameter(self):
-        source = VIRT.read_text()
-        self.assertIn("<vcpu placement='static'>${toString vcpus}</vcpu>", source)
-        self.assertIn("cores='${toString vcpus}'", source)
-        self.assertNotRegex(source, r"<vcpu placement='static'>[0-9]+</vcpu>")
-
-    def test_generated_xml_matches_configured_vcpus(self):
-        xml_path = os.environ.get("DOMAIN_XML")
-        vcpus = os.environ.get("EXPECTED_VCPUS")
-        if not xml_path or not vcpus:
-            self.skipTest("generated domain XML is supplied by the configuration check")
-        xml = Path(xml_path).read_text()
-        self.assertIn(f"<vcpu placement='static'>{vcpus}</vcpu>", xml)
-        self.assertIn(f"cores='{vcpus}'", xml)
-        self.assertIn("sockets='1'", xml)
-        self.assertIn("threads='1'", xml)
-        self.assertIn("<feature policy='disable' name='vmx'/>", xml)

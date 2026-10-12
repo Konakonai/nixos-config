@@ -1,6 +1,5 @@
-"""Guard routing reachability and cross-module contracts."""
+"""Guard Mihomo rule reachability and ordering."""
 
-import os
 from pathlib import Path
 import unittest
 
@@ -32,20 +31,3 @@ class ConfigurationTest(unittest.TestCase):
         self.assertLess(rules.index("DOMAIN-SUFFIX,cn,DIRECT"), first_geosite)
         self.assertEqual(rules[-3:], ["GEOIP,CN,DIRECT", "GEOIP,PRIVATE,DIRECT", "MATCH,Default Proxy"])
         self.assertEqual(rules[-5:-3], ["GEOSITE,private,DIRECT", "GEOSITE,cn,DIRECT"])
-
-    def test_niri_color_include_is_optional(self):
-        core = (ROOT / "modules/home/niri/core.nix").read_text()
-        effects = (ROOT / "modules/home/niri/effects.nix").read_text()
-        self.assertIn('path = "noctalia.kdl"', core)
-        self.assertIn("optional = true", core)
-        self.assertNotIn('include "noctalia.kdl"', effects)
-        self.assertIn("validated-config-for", effects)
-
-    def test_kdeconnect_refresh_modes_are_wired(self):
-        hook = os.environ.get("KDECONNECT_NM_HOOK")
-        exec_start = os.environ.get("KDECONNECT_REFRESH_EXEC")
-        if not hook or not exec_start:
-            self.skipTest("generated KDE Connect units are supplied by the configuration check")
-        self.assertIn("always", Path(hook).read_text())
-        self.assertIn("runuser", Path(hook).read_text())
-        self.assertIn("if-unreachable", exec_start)

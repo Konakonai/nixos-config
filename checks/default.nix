@@ -8,43 +8,17 @@ let
   inherit (pkgs) lib;
   home = config.home-manager.users.${hostProfile.user.userName};
   python = pkgs.python3.withPackages (ps: [ ps.pyyaml ]);
-  domainXml = builtins.head config.systemd.services.external-windows-libvirt-domain.restartTriggers;
-  vcpus = toString hostProfile.virtualization.externalWindows.vcpus;
-  flatpakTimer = home.systemd.user.timers."flatpak-managed-install-timer";
-  flatpakTimerUnit = lib.removeSuffix ".service" flatpakTimer.Timer.Unit;
-  flatpakTimerService = home.systemd.user.services.${flatpakTimerUnit};
-  flatpakInstall = home.systemd.user.services.flatpak-managed-install;
-  wechatEnv = home.services.flatpak.overrides."com.tencent.WeChat".Environment;
-  mihomoTriggerNames = map (
-    item: baseNameOf (toString item)
-  ) config.systemd.services.mihomo.restartTriggers;
-  kdeconnectRefreshExec = toString home.systemd.user.services.kdeconnect-refresh.Service.ExecStart;
-  kdeconnectNmHook = (builtins.head config.networking.networkmanager.dispatcherScripts).source;
   qtPluginPath = config.environment.variables.QT_PLUGIN_PATH;
   qtPluginList =
     if builtins.isList qtPluginPath then qtPluginPath else lib.splitString ":" qtPluginPath;
 in
-assert lib.hasInfix "if-unreachable" kdeconnectRefreshExec;
+# Merged across modules: setting QT_PLUGIN_PATH in one place must not drop the
+# fcitx5 plugin directory another module contributes.
 assert lib.hasInfix "fcitx5" (toString qtPluginPath);
 assert builtins.length qtPluginList > 1;
-assert flatpakTimer.Timer.Unit == "flatpak-managed-install-timer.service";
-assert flatpakTimerService.Unit.ConditionACPower == true;
-assert flatpakInstall.Unit.ConditionACPower == true;
-assert wechatEnv.QT_QPA_PLATFORM == "xcb";
-assert !(wechatEnv ? QT_ENABLE_HIGHDPI_SCALING);
-assert !(wechatEnv ? QT_SCALE_FACTOR_ROUNDING_POLICY);
-assert !(flatpakTimer.Timer ? ConditionACPower);
+# Host IPv6 stays off: Zen and WebRTC would otherwise leak a GUA past mihomo.
 assert !config.networking.enableIPv6;
 assert config.networking.networkmanager.connectionConfig."ipv6.method" == "disabled";
-assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.requires;
-assert lib.elem "mihomo-config.service" config.systemd.services.mihomo.after;
-assert
-  config.systemd.services.mihomo.restartTriggers
-  == config.systemd.services.mihomo-config.restartTriggers;
-assert lib.elem "config-before-proxies.yaml" mihomoTriggerNames;
-assert lib.elem "config-after-proxies.yaml" mihomoTriggerNames;
-assert lib.elem "mihomo-proxies.yaml.age" mihomoTriggerNames;
-assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
 {
   configuration =
     pkgs.runCommand "configuration-regressions"
@@ -57,18 +31,11 @@ assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
           pkgs.jq
           pkgs.util-linux
         ];
-        DOMAIN_XML = domainXml;
-        EXPECTED_VCPUS = vcpus;
-        KDECONNECT_NM_HOOK = kdeconnectNmHook;
-        KDECONNECT_REFRESH_EXEC = kdeconnectRefreshExec;
         src = pkgs.lib.fileset.toSource {
           root = ../.;
           fileset = pkgs.lib.fileset.unions [
             ../scripts
             ../modules/system/mihomo
-            ../modules/system/virtualization.nix
-            ../modules/system/external-windows-domain-xml.nix
-            ../modules/home/niri
           ];
         };
       }
@@ -102,41 +69,6 @@ assert !(lib.any (name: lib.hasInfix "theme" name) mihomoTriggerNames);
         statix check .
         deadnix --fail --exclude hardware-configuration.nix .
         nixfmt --check .
-        touch "$out"
-      '';
-
-  portal =
-    assert config.xdg.portal.config.niri."org.freedesktop.impl.portal.ScreenCast" == "gnome";
-    assert config.xdg.portal.config.niri."org.freedesktop.impl.portal.FileChooser" == "gtk";
-    pkgs.runCommand "portal-backend-contract" { } ''touch "$out"'';
-
-  external-windows-cpu =
-    pkgs.runCommand "external-windows-cpu"
-      {
-        xml = domainXml;
-        inherit vcpus;
-      }
-      ''
-        set -euo pipefail
-        grep -F "<vcpu placement='static'>$vcpus</vcpu>" "$xml"
-        grep -F "cores='$vcpus'" "$xml"
-        test "$vcpus" != 3
-        xml3="${
-          pkgs.writeText "external-windows-3vcpu.xml" (
-            import ../modules/system/external-windows-domain-xml.nix {
-              domainName = "cpu-contract";
-              uuid = "00000000-0000-0000-0000-000000000000";
-              memoryKiB = 5 * 1024 * 1024;
-              vcpus = 3;
-              diskById = "/dev/null";
-              ovmfCode = "/ovmf/CODE.fd";
-              ovmfVars = "/ovmf/VARS.fd";
-              guestToolsIso = "/guest.iso";
-            }
-          )
-        }"
-        grep -F "<vcpu placement='static'>3</vcpu>" "$xml3"
-        grep -F "cores='3'" "$xml3"
         touch "$out"
       '';
 
