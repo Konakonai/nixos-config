@@ -22,6 +22,7 @@ let
 
         # Antigravity's loading overlay can size itself too early on this Wayland
         # setup; trigger a few delayed bounds refreshes after window changes.
+        # Rechecked on 2.23.0: dropping this still mis-sizes the overlay.
         asar extract "$out/resources/app.asar" app
         substituteInPlace app/dist/loadingOverlay.js \
           --replace-fail "    updateBounds();" "    updateBounds();
