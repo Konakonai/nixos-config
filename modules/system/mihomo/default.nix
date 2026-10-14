@@ -71,6 +71,12 @@ in
     serviceConfig = {
       Restart = "on-failure";
       RestartSec = "2s";
+      # With no default interface every dial fails at once and gets retried,
+      # logging ~300 warnings/s (6.5M lines over one offline morning). The
+      # journald default (10000/30s) let that fill the 4G journal and evict
+      # every earlier boot. Normal operation logs about one line per second.
+      LogRateLimitIntervalSec = "30s";
+      LogRateLimitBurst = 1000;
     };
   };
 
