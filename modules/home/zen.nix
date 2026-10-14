@@ -34,6 +34,9 @@ in
         "font.name.serif.x-western" = "Noto Serif";
         "font.name.monospace.x-western" = lilyaTheme.fonts.mono;
 
+        # The bundled en-US dictionary flags pinyin, code and mixed CJK text.
+        "layout.spellcheckDefault" = 0;
+
         # Keep Zen from restoring duplicate windows after session/crash handoff.
         "browser.startup.page" = 1;
         "browser.sessionstore.resume_from_crash" = false;
