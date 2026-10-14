@@ -32,5 +32,6 @@ in
     python
     lua
     git-lfs
+    android-tools
   ];
 }
