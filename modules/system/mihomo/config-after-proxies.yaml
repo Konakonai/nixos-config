@@ -133,7 +133,6 @@ proxy-groups:
   - glados
   filter: ^(Fast|Balancer)-|^US-(Balancer|Netflix)-
   url: https://www.gstatic.com/generate_204
-  interval: 180
   tolerance: 100
 - name: Express
   type: url-test
@@ -142,7 +141,6 @@ proxy-groups:
   - glados
   filter: ^Balancer-|^US-X1-|Dedicated
   url: https://www.gstatic.com/generate_204
-  interval: 300
   tolerance: 100
 - name: Netflix
   type: url-test
@@ -151,11 +149,12 @@ proxy-groups:
   - glados
   filter: Netflix
   url: https://www.gstatic.com/generate_204
-  interval: 300
   tolerance: 100
-# Provider nodes use the provider health check, not the group's URL. Keep a
-# separate provider for fixed-IP groups: some shared exits (e.g. behind
-# TW-IPv6-P2-1/P1-4) answer plain HTTP but reset TLS to Google.
+# A group's `url` on provider nodes is only registered as an extra URL on the
+# provider's health check; interval, timeout and lazy come from the provider,
+# so these groups set no interval. Keep a separate provider for fixed-IP
+# groups so its own check probes Google over TLS every 120s: some shared exits
+# (e.g. behind TW-IPv6-P2-1/P1-4) answer plain HTTP but reset TLS to Google.
 - name: US Fixed IP
   type: fallback
   hidden: true
@@ -163,7 +162,6 @@ proxy-groups:
   - glados-fixed-ip
   filter: ^(US|JP)-Dedicated-
   url: https://www.google.com/generate_204
-  interval: 120
 - name: Google-US
   type: fallback
   hidden: true
@@ -171,7 +169,6 @@ proxy-groups:
   - glados-fixed-ip
   filter: ^US-Dedicated-
   url: https://www.google.com/generate_204
-  interval: 120
 - name: TW Fixed IP
   type: fallback
   hidden: true
@@ -179,7 +176,6 @@ proxy-groups:
   - glados-fixed-ip
   filter: ^TW-IPv6-
   url: https://www.google.com/generate_204
-  interval: 120
 - name: US
   type: url-test
   hidden: true
@@ -187,7 +183,6 @@ proxy-groups:
   - glados
   filter: ^US-X1-
   url: https://www.gstatic.com/generate_204
-  interval: 300
 # Static members precede provider members, so the unthrottled nodes get their
 # own group to stay ahead of Auto in Download-Auto's fallback order.
 - name: Unthrottled
@@ -197,7 +192,6 @@ proxy-groups:
   - glados
   filter: -D\d-
   url: https://www.gstatic.com/generate_204
-  interval: 180
 - name: Download-Auto
   type: fallback
   hidden: true
