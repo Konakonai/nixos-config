@@ -123,13 +123,16 @@ proxy-groups:
   use:
   - glados
   filter: ^US-(Balancer|Netflix)-
+# Probe over HTTPS: unified-delay sends two requests, and nodes that hijack
+# plain HTTP fail the second HEAD ("failed to get the second response"),
+# marking a working node dead.
 - name: Auto
   type: url-test
   hidden: true
   use:
   - glados
   filter: ^(Fast|Balancer)-|^US-(Balancer|Netflix)-
-  url: http://www.gstatic.com/generate_204
+  url: https://www.gstatic.com/generate_204
   interval: 180
   tolerance: 100
 - name: Express
@@ -138,7 +141,7 @@ proxy-groups:
   use:
   - glados
   filter: ^Balancer-|^US-X1-|Dedicated
-  url: http://www.gstatic.com/generate_204
+  url: https://www.gstatic.com/generate_204
   interval: 300
   tolerance: 100
 - name: Netflix
@@ -147,7 +150,7 @@ proxy-groups:
   use:
   - glados
   filter: Netflix
-  url: http://www.gstatic.com/generate_204
+  url: https://www.gstatic.com/generate_204
   interval: 300
   tolerance: 100
 # Provider nodes use the provider health check, not the group's URL. Keep a
@@ -183,7 +186,7 @@ proxy-groups:
   use:
   - glados
   filter: ^US-X1-
-  url: http://www.gstatic.com/generate_204
+  url: https://www.gstatic.com/generate_204
   interval: 300
 # Static members precede provider members, so the unthrottled nodes get their
 # own group to stay ahead of Auto in Download-Auto's fallback order.
@@ -193,7 +196,7 @@ proxy-groups:
   use:
   - glados
   filter: -D\d-
-  url: http://www.gstatic.com/generate_204
+  url: https://www.gstatic.com/generate_204
   interval: 180
 - name: Download-Auto
   type: fallback
@@ -201,7 +204,7 @@ proxy-groups:
   proxies:
   - Unthrottled
   - Auto
-  url: http://www.gstatic.com/generate_204
+  url: https://www.gstatic.com/generate_204
   interval: 180
 sub-rules: null
 listeners: null
@@ -252,9 +255,12 @@ dns:
       - https://223.5.5.5/dns-query
       - 223.5.5.5
       - 114.114.114.114
+  # DoH by IP: some upstreams (e.g. a phone hotspot running its own fake-ip
+  # proxy) hijack plain UDP/53 and hand back 198.18.x for node domains, so the
+  # nodes get double-proxied and dials time out.
   proxy-server-nameserver:
-  - 223.5.5.5
-  - 114.114.114.114
+  - https://223.5.5.5/dns-query
+  - https://1.12.12.12/dns-query
   direct-nameserver: null
   direct-nameserver-follow-policy: false
 tun:

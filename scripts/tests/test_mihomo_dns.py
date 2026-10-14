@@ -54,7 +54,9 @@ class DnsLeakPreventionTest(unittest.TestCase):
 
     def test_proxy_node_bootstrap_does_not_use_tun_dns(self):
         servers = mapping_list(self.dns, "proxy-server-nameserver")
-        self.assertIn("223.5.5.5", servers)
-        self.assertIn("114.114.114.114", servers)
+        self.assertIn("https://223.5.5.5/dns-query", servers)
+        # Plain UDP/53 can be hijacked by an upstream fake-ip gateway.
+        for line in servers.splitlines()[1:]:
+            self.assertIn("https://", line)
         self.assertNotIn("null", servers)
         self.assertNotIn("1.1.1.1", servers)
