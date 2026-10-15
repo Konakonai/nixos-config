@@ -47,6 +47,33 @@ let
       git status --short
     '';
   };
+  # Magpie releases several times a week and its own updater cannot write to
+  # the store. Bump only Magpie, leaving flake.lock alone so no glibc-sized
+  # change rides along, and commit it straight to main for the next rebuild.
+  update-magpie = pkgs.writeShellApplication {
+    name = "update-magpie";
+    runtimeInputs = [
+      pkgs.git
+      pkgs.nix-update
+    ];
+    text = ''
+      cd ${hostProfile.user.nixosConfigPath}
+      if [ "$(git branch --show-current)" != main ] || ! git diff --quiet HEAD -- pkgs/magpie.nix; then
+        echo "update-magpie: needs main checked out with pkgs/magpie.nix unchanged" >&2
+        exit 1
+      fi
+      old=$(nix eval --raw .#magpie.version)
+      nix-update --flake magpie
+      new=$(nix eval --raw .#magpie.version)
+      if [ "$old" = "$new" ]; then
+        echo "magpie $old is already the latest"
+        exit 0
+      fi
+      nix build .#magpie --no-link
+      git commit -m "update magpie to $new" -- pkgs/magpie.nix
+      echo "magpie $old -> $new committed; run rebuild"
+    '';
+  };
 in
 
 {
@@ -55,6 +82,7 @@ in
     testbuild
     bootbuild
     update-pins
+    update-magpie
   ];
 
   # Fish Shell 配置

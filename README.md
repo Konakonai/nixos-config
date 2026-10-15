@@ -40,6 +40,7 @@ nix fmt
 nix flake check --no-build --no-update-lock-file
 nix build .#checks.x86_64-linux.{configuration,lint,niri-config} --no-link
 update-pins      # flake update + nix-update 手 pin 的包 + flatpak update，改动留给审阅
+update-magpie    # 只升级 Magpie（不动 flake.lock），构建通过后直接提交到 main，之后 rebuild
 ```
 
 ## 配置所有权
