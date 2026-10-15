@@ -5,14 +5,10 @@ pkgs.stdenvNoCC.mkDerivation rec {
   version = "1.2304.79";
 
   src = pkgs.fetchurl {
-    # The upstream release tag is reused when its generated font assets change.
-    # Pin the GitHub asset ID so a later replacement fails instead of silently
-    # resolving the same versioned URL to different contents.
-    url = "https://api.github.com/repos/SpaceTimee/Fusion-JetBrainsMapleMono/releases/assets/518404936";
-    curlOptsList = [
-      "-H"
-      "Accept: application/octet-stream"
-    ];
+    # Upstream re-uploads assets under a reused tag; the hash catches that.
+    # Not the API asset URL: anonymous API calls share a 60/hour quota per
+    # exit IP, which the proxy exhausts.
+    url = "https://github.com/SpaceTimee/Fusion-JetBrainsMapleMono/releases/download/${version}/JetBrainsMapleMono-XX-XX-XX-HT.zip";
     hash = "sha256-J0wbty9flOAI2cmywNHEIg7A86KpCRq289HhF4KDq/8=";
   };
 
