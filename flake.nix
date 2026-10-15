@@ -15,8 +15,10 @@
     nix-flatpak.url = "git+https://github.com/gmodena/nix-flatpak.git?ref=refs/tags/v0.7.0";
 
     agenix = {
-      url = "https://github.com/ryantm/agenix/archive/b027ee29d959fda4b60b57566d64c98a202e0feb.tar.gz";
+      url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+      inputs.darwin.follows = "";
     };
 
     codex-desktop-linux = {
