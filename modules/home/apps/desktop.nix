@@ -8,11 +8,9 @@
 let
   inherit (pkgs.lilya)
     antigravity
-    file-roller-wayland
     grok-bot
     localsend-no-csd
     magpie
-    nemo-with-extensions-wayland
     ;
   claude-desktop =
     (inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.override {
@@ -80,7 +78,7 @@ in
   home.packages = with pkgs; [
     antigravity
     claude-desktop
-    file-roller-wayland
+    file-roller
     foliate
     gimp
     gnome-font-viewer
@@ -91,7 +89,7 @@ in
     loupe
     magpie
     mcomix
-    nemo-with-extensions-wayland
+    nemo-with-extensions
     obsidian
     pavucontrol
     resources
@@ -135,7 +133,7 @@ in
     nemo = {
       name = "Files";
       genericName = "File Manager";
-      exec = "${nemo-with-extensions-wayland}/bin/nemo %U";
+      exec = "${pkgs.nemo-with-extensions}/bin/nemo %U";
       icon = "system-file-manager";
       terminal = false;
       categories = [

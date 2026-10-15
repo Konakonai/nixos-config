@@ -4,9 +4,6 @@
   lib ? pkgs.lib,
 }:
 
-let
-  fileRollerWayland = pkgs.callPackage ./file-roller-wayland.nix { };
-in
 {
   antigravity = pkgs.callPackage ./antigravity.nix { };
   # nixpkgs ships Brave Origin without the Widevine CDM, so DRM streaming
@@ -24,7 +21,6 @@ in
   });
   codex = pkgs.callPackage ./codex.nix { };
   codex-desktop = pkgs.callPackage ./codex-desktop.nix { inherit inputs; };
-  file-roller-wayland = fileRollerWayland;
   grok = pkgs.callPackage ./grok.nix { };
   grok-bot = pkgs.callPackage ./grok-bot.nix { };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
@@ -42,13 +38,6 @@ in
     meta = pkgs.localsend.meta;
   };
   magpie = pkgs.callPackage ./magpie.nix { };
-  # nemo-fileroller embeds File Roller's absolute path at build time, so the
-  # extension must be rebuilt to make Nemo use the app-local GTK workaround.
-  nemo-with-extensions-wayland = pkgs.nemo-with-extensions.override {
-    nemo-fileroller = pkgs.nemo-fileroller.override {
-      file-roller = fileRollerWayland;
-    };
-  };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
   wiiu-downloader = pkgs.callPackage ./wiiu-downloader.nix { };
