@@ -360,6 +360,9 @@ rules:
 - DOMAIN-SUFFIX,az764295.vo.msecnd.net,Express
 - DOMAIN-SUFFIX,csgo.wmsj.cn,Steam
 - DOMAIN-SUFFIX,msecnd.net,Default Proxy
+# GEOSITE,mozilla lists crates.io, which would send cargo and Nix crate
+# fetches through Express; its balancer nodes reset TLS to crates.io's CDN.
+- DOMAIN-SUFFIX,crates.io,Developer
 # Chinese domains stay direct even when a service category lists them.
 - DOMAIN-SUFFIX,cn,DIRECT
 - GEOSITE,github,Developer
