@@ -9,8 +9,14 @@ let
 in
 {
   antigravity = pkgs.callPackage ./antigravity.nix { };
-  brave-origin = pkgs.callPackage ./brave-origin.nix { };
-  cc-switch = pkgs.callPackage ./cc-switch.nix { };
+  # nixpkgs ships Brave Origin without the Widevine CDM, so DRM streaming
+  # sites refuse to play.
+  brave-origin = pkgs.brave-origin.overrideAttrs (previous: {
+    postInstall = (previous.postInstall or "") + ''
+      ln -s ${pkgs.widevine-cdm}/share/google/chrome/WidevineCdm \
+        "$out/opt/brave.com/brave-origin/WidevineCdm"
+    '';
+  });
   celluloid-gl = pkgs.celluloid.overrideAttrs (previous: {
     preFixup = (previous.preFixup or "") + ''
       gappsWrapperArgs+=(--set GSK_RENDERER gl)
@@ -35,7 +41,6 @@ in
     '';
     meta = pkgs.localsend.meta;
   };
-  mactahoe-kde = pkgs.callPackage ./mactahoe-kde.nix { };
   magpie = pkgs.callPackage ./magpie.nix { };
   # nemo-fileroller embeds File Roller's absolute path at build time, so the
   # extension must be rebuilt to make Nemo use the app-local GTK workaround.
@@ -44,7 +49,6 @@ in
       file-roller = fileRollerWayland;
     };
   };
-  libreoffice-gtk-wayland = pkgs.callPackage ./libreoffice-gtk-wayland.nix { };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
   wiiu-downloader = pkgs.callPackage ./wiiu-downloader.nix { };

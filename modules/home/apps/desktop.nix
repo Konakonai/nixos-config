@@ -8,7 +8,6 @@
 let
   inherit (pkgs.lilya)
     antigravity
-    cc-switch
     file-roller-wayland
     grok-bot
     localsend-no-csd
@@ -80,10 +79,10 @@ in
 {
   home.packages = with pkgs; [
     antigravity
-    cc-switch
     claude-desktop
     file-roller-wayland
     foliate
+    gimp
     gnome-font-viewer
     grok-bot
     hyprpicker

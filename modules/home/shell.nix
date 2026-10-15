@@ -17,12 +17,37 @@ let
     export PATH="/run/wrappers/bin:$PATH"
     exec ${nh} os test ${hostProfile.user.nixosConfigPath} "$@"
   '';
+  # One entry point for everything flake.lock does not pin. Leaves the diff
+  # uncommitted for review; packages whose download URLs carry a build ID that
+  # no release feed exposes are listed for manual bumping.
+  update-pins = pkgs.writeShellApplication {
+    name = "update-pins";
+    runtimeInputs = [
+      pkgs.flatpak
+      pkgs.gh
+      pkgs.nix-update
+    ];
+    text = ''
+      cd ${hostProfile.user.nixosConfigPath}
+      nix flake update
+      nix-update --flake magpie
+      nix-update --flake wiiu-downloader
+      # Upstream's alpha tags crowd stable releases out of nix-update's feed.
+      nix-update --flake codex \
+        --version "$(gh release view -R openai/codex --json tagName -q '.tagName|ltrimstr("rust-v")')"
+      flatpak update --user --noninteractive
+      echo
+      echo "Bump by hand (URL has a build ID): antigravity grok grok-bot jetbrains-maple-mono"
+      git status --short
+    '';
+  };
 in
 
 {
   home.packages = [
     rebuild
     testbuild
+    update-pins
   ];
 
   # Fish Shell 配置

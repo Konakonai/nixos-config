@@ -11,7 +11,7 @@ let
   '';
 in
 {
-  home.packages = [ pkgs.lilya.libreoffice-gtk-wayland ];
+  home.packages = [ pkgs.libreoffice ];
 
   # Seed the Office-like tabbed interface once, while leaving later UI changes
   # under LibreOffice's ownership. Edit a temp copy, then replace the registry

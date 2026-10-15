@@ -38,7 +38,7 @@ testbuild        # nh os test，不写引导项
 nix fmt
 nix flake check --no-build --no-update-lock-file
 nix build .#checks.x86_64-linux.{configuration,lint,niri-config} --no-link
-nix-update --flake <name>   # 升级 pkgs/ 里手 pin 的二进制包（见 packages 输出）
+update-pins      # flake update + nix-update 手 pin 的包 + flatpak update，改动留给审阅
 ```
 
 ## 配置所有权

@@ -28,7 +28,6 @@
     officecli
 
     adwaita-icon-theme
-    lilya.mactahoe-kde
     qadwaitadecorations-qt6
     kdePackages.dolphin
     # Dolphin's embedded terminal panel is a KonsolePart plugin. External
