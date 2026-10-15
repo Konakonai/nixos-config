@@ -35,6 +35,7 @@ docs/                        仓库之外的手工状态（如音乐服务器）
 ```bash
 rebuild          # nh os switch
 testbuild        # nh os test，不写引导项
+bootbuild        # nh os boot，下次启动生效；glibc/systemd/PAM 升级时用它代替 rebuild
 nix fmt
 nix flake check --no-build --no-update-lock-file
 nix build .#checks.x86_64-linux.{configuration,lint,niri-config} --no-link

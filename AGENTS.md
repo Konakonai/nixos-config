@@ -11,7 +11,7 @@
 
 `main` 上每个提交都应是在本机 `rebuild` 过并确认可用的状态。`rebuild` 构建的是当前工作树，所以 wip 改动做完后保持该分支检出，交给用户 `rebuild`。
 
-- 系统切换和服务重启只由用户执行：agent 不运行 `rebuild` / `testbuild` / `nh os switch`，不 `systemctl start|stop|restart`（含 `--user`）。只构建，不激活。
+- 系统切换和服务重启只由用户执行：agent 不运行 `rebuild` / `testbuild` / `bootbuild` / `nh os switch|boot`，不 `systemctl start|stop|restart`（含 `--user`）。只构建，不激活。
 - Commit message 用简短英文祈使句（`add xxx to system packages`）。
 - 不推送 `wip/*`；`main` 按用户指示推送。
 

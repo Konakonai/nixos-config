@@ -17,6 +17,12 @@ let
     export PATH="/run/wrappers/bin:$PATH"
     exec ${nh} os test ${hostProfile.user.nixosConfigPath} "$@"
   '';
+  # For updates that swap glibc, systemd or PAM: a live switch leaves running
+  # processes unable to load the new PAM modules, so activate on reboot.
+  bootbuild = pkgs.writeShellScriptBin "bootbuild" ''
+    export PATH="/run/wrappers/bin:$PATH"
+    exec ${nh} os boot ${hostProfile.user.nixosConfigPath} "$@"
+  '';
   # One entry point for everything flake.lock does not pin. Leaves the diff
   # uncommitted for review; packages whose download URLs carry a build ID that
   # no release feed exposes are listed for manual bumping.
@@ -47,6 +53,7 @@ in
   home.packages = [
     rebuild
     testbuild
+    bootbuild
     update-pins
   ];
 
