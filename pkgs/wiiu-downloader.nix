@@ -2,10 +2,10 @@
 
 let
   pname = "wiiu-downloader";
-  version = "2.98";
+  version = "3.2";
   src = pkgs.fetchurl {
     url = "https://github.com/Xpl0itU/WiiUDownloader/releases/download/v${version}/WiiUDownloader-Linux-x86_64.AppImage";
-    hash = "sha256-9NDrEHMxweTleLcTakfceJEZvwGCzcxfIr2DOkmrAKg=";
+    hash = "sha256-4Nb9OiRLvgpJlJyOIq6ePnzIhCuRh+WOuuZjG+C4JtQ=";
   };
   icon = pkgs.fetchurl {
     url = "https://raw.githubusercontent.com/Xpl0itU/WiiUDownloader/v${version}/data/WiiUDownloader.svg";
