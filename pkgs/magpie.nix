@@ -13,11 +13,11 @@
 
 let
   pname = "magpie";
-  version = "0.1.1252";
+  version = "0.1.1275";
 
   src = fetchurl {
     url = "https://github.com/yetone/magpie-releases/releases/download/v${version}/magpie-linux-amd64";
-    hash = "sha256-FBWVkC/Cu1hNOLCF4yBShIXz2HnzoGeefaOUSrk23/o=";
+    hash = "sha256-VRZhJBtVpay8MOUwHNb62QaZmBuezt36ovgawsd+ooc=";
   };
 
   icon = fetchurl {
