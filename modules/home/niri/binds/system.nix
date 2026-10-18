@@ -2,10 +2,20 @@
 
 let
   killFocusedWindow = pkgs.writeShellScript "niri-kill-focused-window" ''
-    pid="$(${config.programs.niri.package}/bin/niri msg -j focused-window | ${pkgs.jq}/bin/jq -r '.pid // empty')"
+    niri=${config.programs.niri.package}/bin/niri
+    read -r id pid < <("$niri" msg -j focused-window | ${pkgs.jq}/bin/jq -r '"\(.id // "") \(.pid // "")"')
 
     case "$pid" in
       ""|*[!0-9]*) exit 0 ;;
+    esac
+
+    # X11 windows report xwayland-satellite's PID. Killing it takes down
+    # every X11 client, and fcitx5 does not reconnect to the new :0, so
+    # X11 apps fall back to their own unthemed candidate window.
+    case "$(${pkgs.coreutils}/bin/cat "/proc/$pid/comm" 2>/dev/null)" in
+      *xwayland-sat*)
+        exec "$niri" msg action close-window --id "$id"
+        ;;
     esac
 
     ${pkgs.coreutils}/bin/kill -TERM "$pid" 2>/dev/null || exit 0
