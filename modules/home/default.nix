@@ -9,6 +9,7 @@
 
     ./apps
     ./beets
+    ./claude-code
     ./cli-tools.nix
     ./codex.nix
     ./config-tools.nix

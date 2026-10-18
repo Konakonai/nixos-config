@@ -1,0 +1,15 @@
+{
+  "name": "token-band",
+  "version": "0.2.0",
+  "description": "Band above the prompt: token speed, TTFT, prompt cache hit rate and when the cache goes cold",
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "cacheTtl": {
+      "type": "string",
+      "title": "Prompt cache TTL",
+      "description": "How long the API keeps the prompt cache after the last request (1h on subscriptions, 5m on most API keys)",
+      "options": ["1h", "5m"],
+      "default": "1h"
+    }
+  }
+}
