@@ -18,6 +18,14 @@ in
       model = "0x1626";
       serial = "0x00006002";
       scale = 1.75;
+      # Narrowest eDP link that still carries 3200x2000@60 at 18 bpp
+      # (HBR2 x2 = 8.64 Gbps of payload); see display/edp-link.nix.
+      link = {
+        drmDevice = "0000:00:02.0";
+        connector = "eDP-1";
+        rate = 540000;
+        lanes = 2;
+      };
       # Match the physical layout: the laptop panel sits on the left.
       position = {
         x = -1829;
