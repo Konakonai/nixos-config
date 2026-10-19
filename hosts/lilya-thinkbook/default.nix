@@ -46,6 +46,26 @@ in
     };
   };
 
+  # Built-in USB devices that may runtime-suspend. External input devices
+  # stay awake through the HID rule in modules/system/power/device-rules.nix.
+  usb.internalDevices = [
+    {
+      # Integrated Camera
+      vendor = "04f2";
+      product = "b7b5";
+    }
+    {
+      # Goodix fingerprint reader (no driver bound)
+      vendor = "27c6";
+      product = "659a";
+    }
+    {
+      # Intel AX201 Bluetooth
+      vendor = "8087";
+      product = "0026";
+    }
+  ];
+
   kernel.blacklistedModules = [
     # This Legion/GameZone-specific WMI path probes on the ThinkBook but cannot
     # provide a platform profile. ideapad_laptop owns the working profile API.
