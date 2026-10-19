@@ -4,10 +4,12 @@ let
   inherit (hostProfile.display.internal) link;
   debugfs = "/sys/kernel/debug/dri/${link.drmDevice}/${link.connector}";
 
-  # i915 trains this panel's eDP link at HBR3 x4 (32.4 Gbps) although
-  # 3200x2000@60 at the 18 bpp the pipe uses needs about 7.9 Gbps. Forcing a
-  # narrower link measured 0.5 W less on battery (6 interleaved rounds, half of
-  # it in the SoC PHY). The debugfs knobs persist until reboot and apply to
+  # The panel reports seamless DRRS, so i915 sizes the eDP link for the
+  # 165 Hz mode's pixel clock even at 60 Hz: HBR3 x4 with the pipe cut to
+  # 18 bpp (6 bpc + dither). Capping the link makes i915 fall back to DSC
+  # instead (10 bpc in, 8 bpp on the wire), which both restores 10-bit color
+  # and measured 0.4 W less at idle on battery (4 interleaved rounds, 0.33 W of
+  # it in the package). The debugfs knobs persist until reboot and apply to
   # every later link training, including niri's modesets and lid reopen.
   # The 165 Hz mode does not fit this link; drop this module to use it.
   applyLink = pkgs.writeShellScript "edp-link" ''
