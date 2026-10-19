@@ -7,11 +7,12 @@
 | 改动类型 | 例子 | 流程 |
 |---|---|---|
 | 简单改动 | 增删包、改一个选项值、改注释或文档、改 mihomo 策略组成员 | 直接提交到 `main`。 |
-| 影响运行时行为或需要试错 | compositor / 驱动 / 会话 / 电源 / USB / 脚本 / 代理规则 / 主题所有权，任何要 `rebuild` 后观察的东西 | 提交到 `wip/<topic>`，可以多次提交。用户 `rebuild` 确认可用后 `git merge --ff-only` 进 `main`；放弃则删除分支。 |
+| 影响运行时行为或需要试错 | compositor / 驱动 / 会话 / 电源 / USB / 脚本 / 代理规则 / 主题所有权，任何要 `rebuild` 后观察的东西 | 提交到 `wip/<topic>`，可以多次提交。`rebuild` 后由用户确认可用，再 `git merge --ff-only` 进 `main`；放弃则删除分支。 |
 
-`main` 上每个提交都应是在本机 `rebuild` 过并确认可用的状态。`rebuild` 构建的是当前工作树，所以 wip 改动做完后保持该分支检出，交给用户 `rebuild`。
+`main` 上每个提交都应是在本机 `rebuild` 过并确认可用的状态。`rebuild` 构建的是当前工作树，所以 wip 改动要在该分支检出时 `rebuild`。
 
-- 系统切换和服务重启只由用户执行：agent 不运行 `rebuild` / `testbuild` / `bootbuild` / `nh os switch|boot`，不 `systemctl start|stop|restart`（含 `--user`）。只构建，不激活。
+- agent 可以自己运行 `rebuild` / `testbuild` / `bootbuild`（wheel 已免密 sudo）。glibc / systemd / PAM 升级只用 `bootbuild`：live switch 曾弄坏 PAM 导致无法登录。需要重启或注销时交给用户。
+- 不 `systemctl start|stop|restart`（含 `--user`），服务重启由用户执行。
 - Commit message 用简短英文祈使句（`add xxx to system packages`）。
 - 不推送 `wip/*`；`main` 按用户指示推送。
 
@@ -26,7 +27,6 @@
 | `modules/home/niri/` | 再加 `niri-config` |
 | mihomo 规则 | 另外 `mihomo -t` 校验生成的配置 |
 | `checks/` 本身 | 跑改动的那个 check |
-| wip 分支上交给用户 `rebuild` 之前 | `.#nixosConfigurations.nixos.config.system.build.toplevel`，确认整机能构建 |
 
 ## 编码规范
 
