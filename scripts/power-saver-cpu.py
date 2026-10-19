@@ -1,4 +1,4 @@
-"""Own and restore the CPU overrides used by battery power-saver mode."""
+"""Own and restore the turbo and PCIe overrides used by battery power-saver mode."""
 
 import asyncio
 import json
@@ -8,10 +8,8 @@ import sys
 
 CPU_ROOT = Path("/sys/devices/system/cpu")
 TURBO = CPU_ROOT / "intel_pstate/no_turbo"
-POLICY_ROOT = CPU_ROOT / "cpufreq"
 SAVED = Path("/run/power-saver-cpu/previous.json")
 PCIE_ASPM = Path("/sys/module/pcie_aspm/parameters/policy")
-MAX_FREQUENCY_KHZ = 1_800_000
 UPOWER = "org.freedesktop.UPower"
 PPD = "org.freedesktop.UPower.PowerProfiles"
 SERVICES = {UPOWER: "/org/freedesktop/UPower", PPD: "/org/freedesktop/UPower/PowerProfiles"}
@@ -31,11 +29,7 @@ def selected_choice(path):
     return match.group(1) if match else value
 
 
-def policies(policy_root=POLICY_ROOT):
-    return sorted(policy_root.glob("policy*"), key=lambda path: int(path.name.removeprefix("policy")))
-
-
-def restore(turbo=TURBO, policy_root=POLICY_ROOT, saved=SAVED, pcie_aspm=PCIE_ASPM):
+def restore(turbo=TURBO, saved=SAVED, pcie_aspm=PCIE_ASPM):
     if not saved.exists():
         return
 
@@ -43,47 +37,27 @@ def restore(turbo=TURBO, policy_root=POLICY_ROOT, saved=SAVED, pcie_aspm=PCIE_AS
     if previous["turbo"] not in ("0", "1"):
         raise ValueError("Invalid saved turbo state")
 
-    for name, limits in previous["policies"].items():
-        policy = policy_root / name
-        if not policy.is_dir():
-            continue
-        minimum, maximum = limits
-        # Raise the ceiling first so restoring a higher minimum cannot fail.
-        write(policy / "scaling_max_freq", maximum)
-        write(policy / "scaling_min_freq", minimum)
     write(turbo, previous["turbo"])
     if previous.get("pcie_aspm") is not None and pcie_aspm.exists():
         write(pcie_aspm, previous["pcie_aspm"])
     saved.unlink()
-    print("Restored the previous CPU and PCIe policy", flush=True)
+    print("Restored the previous turbo and PCIe policy", flush=True)
 
 
 def apply(
     on_battery,
     profile,
     turbo=TURBO,
-    policy_root=POLICY_ROOT,
     saved=SAVED,
     pcie_aspm=PCIE_ASPM,
 ):
     if not (on_battery and profile == "power-saver"):
-        restore(turbo, policy_root, saved, pcie_aspm)
+        restore(turbo, saved, pcie_aspm)
         return
-
-    current_policies = policies(policy_root)
-    if not current_policies:
-        raise FileNotFoundError("No CPU frequency policies found")
 
     if not saved.exists():
         previous = {
             "turbo": read(turbo),
-            "policies": {
-                policy.name: [
-                    int(read(policy / "scaling_min_freq")),
-                    int(read(policy / "scaling_max_freq")),
-                ]
-                for policy in current_policies
-            },
             "pcie_aspm": selected_choice(pcie_aspm) if pcie_aspm.exists() else None,
         }
         if previous["turbo"] not in ("0", "1"):
@@ -92,19 +66,16 @@ def apply(
         temporary.write_text(json.dumps(previous, sort_keys=True) + "\n")
         temporary.replace(saved)
 
+    # No frequency cap: battery history showed the 1.8 GHz limit saved nothing
+    # at idle, where the draw is set by package idle depth, while it slowed
+    # every burst. Turbo stays off because it caps the cost of sustained load.
     try:
         write(turbo, 1)
-        for policy in current_policies:
-            hardware_minimum = int(read(policy / "cpuinfo_min_freq"))
-            current_maximum = int(read(policy / "scaling_max_freq"))
-            target_maximum = min(MAX_FREQUENCY_KHZ, current_maximum)
-            write(policy / "scaling_min_freq", min(hardware_minimum, target_maximum))
-            write(policy / "scaling_max_freq", target_maximum)
         if pcie_aspm.exists():
             write(pcie_aspm, "powersupersave")
-        print("Applied 400-1800 MHz CPU limit, disabled turbo, and enabled PCIe power saving", flush=True)
+        print("Disabled turbo and enabled PCIe power saving", flush=True)
     except BaseException:
-        restore(turbo, policy_root, saved, pcie_aspm)
+        restore(turbo, saved, pcie_aspm)
         raise
 
 
