@@ -6,8 +6,11 @@ let
 in
 {
   systemd.services.power-saver-cpu = {
-    description = "Apply CPU and PCIe policy on battery in power-saver mode";
-    wantedBy = [ "multi-user.target" ];
+    description = "Apply turbo and PCIe policy on battery in power-saver mode";
+    # power-profiles-daemon orders itself after multi-user.target, so being
+    # wanted by (and thus before) multi-user.target formed a cycle and systemd
+    # dropped this unit at boot. Follow ppd onto graphical.target instead.
+    wantedBy = [ "graphical.target" ];
     wants = [
       "upower.service"
       "power-profiles-daemon.service"
