@@ -20,6 +20,9 @@
   };
 
   security.sudo.extraConfig = "Defaults pwfeedback";
+  # Single-user machine; lets agents rebuild and read root-only debug state
+  # (RAPL, i915 debugfs, turbostat) without a password prompt.
+  security.sudo.wheelNeedsPassword = false;
 
   # Home Manager activation already runs synchronously during every rebuild.
   # Reconcile the persisted generation after logins are enabled instead of
