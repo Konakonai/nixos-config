@@ -20,21 +20,19 @@ let
         mkdir -p "$out"
         tar -xzf "$src" --strip-components=1 -C "$out"
 
-        # Antigravity's loading overlay can size itself too early on this Wayland
-        # setup; trigger a few delayed bounds refreshes after window changes.
-        # Rechecked on 2.23.0: dropping this still mis-sizes the overlay.
+        # The loading overlay follows the window's 'resize' event, but on Wayland
+        # Electron emits it before getContentSize() reports the size niri
+        # configured, so the overlay stays at the initial 1400x900. The content
+        # view's 'bounds-changed' fires after the new size is applied.
+        # Checked on 2.23.0 / Electron 44.
         asar extract "$out/resources/app.asar" app
         substituteInPlace app/dist/loadingOverlay.js \
-          --replace-fail "    updateBounds();" "    updateBounds();
-        setTimeout(updateBounds, 0);
-        setTimeout(updateBounds, 100);
-        setTimeout(updateBounds, 500);" \
-          --replace-fail "    win.on('resize', updateBounds);" "    win.on('resize', updateBounds);
-        win.on('resized', updateBounds);
-        win.on('show', updateBounds);" \
-          --replace-fail "        win.off('resize', updateBounds);" "        win.off('resize', updateBounds);
-            win.off('resized', updateBounds);
-            win.off('show', updateBounds);"
+          --replace-fail "const [width, height] = win.getContentSize();" \
+                         "const { width, height } = win.contentView.getBounds();" \
+          --replace-fail "win.on('resize', updateBounds);" \
+                         "win.contentView.on('bounds-changed', updateBounds);" \
+          --replace-fail "win.off('resize', updateBounds);" \
+                         "win.contentView.off('bounds-changed', updateBounds);"
 
         # Antigravity already provides a draggable app title bar. Disable
         # Electron's native overlay so it does not add a mismatched control block.
