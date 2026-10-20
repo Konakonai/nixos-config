@@ -20,6 +20,8 @@ in
       lxgw-wenkai
       lxgw-wenkai-tc
       lxgw-wenkai-screen
+      # Foliate 英文正文。
+      literata
 
       # Keep Office documents close to their original Word pagination.
       corefonts
