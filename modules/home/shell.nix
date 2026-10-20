@@ -38,6 +38,7 @@ let
       nix flake update
       nix-update --flake magpie
       nix-update --flake wiiu-downloader
+      nix-update --flake genryumin
       # Upstream's alpha tags crowd stable releases out of nix-update's feed.
       nix-update --flake codex \
         --version "$(gh release view -R openai/codex --json tagName -q '.tagName|ltrimstr("rust-v")')"

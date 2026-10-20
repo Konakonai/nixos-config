@@ -2,8 +2,8 @@
 
 let
   # 中文书里这些标点要用中文字形：Literata 的省略号贴着基线、破折号偏低，文楷的居中。
-  # 连同汉字、假名、全角符号一起交给文楷，其余字符（拉丁字母、数字）用 Literata。
-  wenkaiRange = lib.concatStringsSep ", " [
+  # 连同汉字、假名、全角符号一起交给 CJK 字体，其余字符（拉丁字母、数字）用 Literata。
+  cjkRange = lib.concatStringsSep ", " [
     "U+00B7" # ·
     "U+2014-2015" # — ―
     "U+2018-2019" # ‘ ’
@@ -22,6 +22,79 @@ let
     "U+FF00-FFEF" # 全角
     "U+20000-3134F" # 扩展 B–G
   ];
+
+  # 一个 CSS 字体族：西文用 Literata，cjkRange 内的字符用 cjkFont。
+  # 后声明的 face 在 unicode-range 重叠时优先，所以 CJK face 放在后面。
+  compositeFamily =
+    family: cjkFont:
+    lib.concatMapStrings
+      (
+        {
+          font,
+          style,
+          range,
+        }:
+        ''
+          @font-face {
+            font-family: "${family}";
+            src: local("${font}");
+            font-weight: 100 900;
+            font-style: ${style};
+            ${lib.optionalString (range != null) "unicode-range: ${range};"}
+          }
+        ''
+      )
+      [
+        {
+          font = "Literata";
+          style = "normal";
+          range = null;
+        }
+        {
+          font = "Literata";
+          style = "italic";
+          range = null;
+        }
+        {
+          font = cjkFont;
+          style = "normal";
+          range = cjkRange;
+        }
+        {
+          font = cjkFont;
+          style = "italic";
+          range = cjkRange;
+        }
+      ];
+
+  # 书籍给标题、引文指定宋体 / 明体时，换成和文楷 TC 同为传承字形的源流明体，
+  # 而不是系统 fontconfig 别名指向的思源宋体简体字形。只在 Foliate 里生效。
+  mingFamilies = [
+    "宋体"
+    "宋體"
+    "SimSun"
+    "新宋体"
+    "NSimSun"
+    "华文宋体"
+    "STSong"
+    "华文中宋"
+    "STZhongsong"
+    "Songti SC"
+    "Songti TC"
+    "方正书宋_GBK"
+    "FZShuSong-Z01"
+    "思源宋体"
+    "Source Han Serif SC"
+    "Source Han Serif CN"
+    "Source Han Serif TC"
+    "Noto Serif CJK SC"
+    "Noto Serif CJK TC"
+    "明體"
+    "新細明體"
+    "細明體"
+    "PMingLiU"
+    "MingLiU"
+  ];
 in
 {
   # 书籍 CSS 只写通用族（serif / sans-serif）时由这里决定字体，两者都指向文楷 TC。
@@ -32,38 +105,14 @@ in
   };
 
   # Foliate 的设置每个通用族只能填一个字体，做不到「西文 Literata、中文文楷」，
-  # 所以在它启动时读取的用户样式表里按 unicode-range 拼一个复合字体。
+  # 所以在它启动时读取的用户样式表里按 unicode-range 拼复合字体。
   # 中文书（html lang=zh/ja，Foliate 会从元数据补上）用复合字体，标点走文楷；
   # 其他语言直接 Literata 优先，引号等保持西文字形，缺字回退文楷。
-  # 规则只挂在 html 上：书籍给元素指定的字体照样生效；开了「覆盖字体」后
+  # 正文规则只挂在 html 上：书籍给元素指定的字体照样生效；开了「覆盖字体」后
   # Foliate 把所有元素 revert 成继承，这里的 !important 让它们继承到复合字体。
   xdg.configFile."com.github.johnfactotum.Foliate/user-stylesheet.css".text = ''
-    @font-face {
-      font-family: "Reading ZH";
-      src: local("Literata");
-      font-weight: 100 900;
-      font-style: normal;
-    }
-    @font-face {
-      font-family: "Reading ZH";
-      src: local("Literata");
-      font-weight: 100 900;
-      font-style: italic;
-    }
-    @font-face {
-      font-family: "Reading ZH";
-      src: local("LXGW WenKai TC");
-      font-weight: 100 900;
-      font-style: normal;
-      unicode-range: ${wenkaiRange};
-    }
-    @font-face {
-      font-family: "Reading ZH";
-      src: local("LXGW WenKai TC");
-      font-weight: 100 900;
-      font-style: italic;
-      unicode-range: ${wenkaiRange};
-    }
+    ${compositeFamily "Reading ZH" "LXGW WenKai TC"}
+    ${lib.concatMapStrings (family: compositeFamily family "GenRyuMin2 TC") mingFamilies}
 
     html:lang(zh), html:lang(ja) {
       font-family: "Reading ZH", "LXGW WenKai TC", serif !important;

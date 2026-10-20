@@ -22,6 +22,8 @@ in
       lxgw-wenkai-screen
       # Foliate 英文正文。
       literata
+      # Foliate 里书籍指定的宋体、明体（标题、引文）。
+      pkgs.lilya.genryumin
 
       # Keep Office documents close to their original Word pagination.
       corefonts

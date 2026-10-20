@@ -21,6 +21,7 @@
   });
   codex = pkgs.callPackage ./codex.nix { };
   codex-desktop = pkgs.callPackage ./codex-desktop.nix { inherit inputs; };
+  genryumin = pkgs.callPackage ./genryumin.nix { };
   grok = pkgs.callPackage ./grok.nix { };
   grok-bot = pkgs.callPackage ./grok-bot.nix { };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
