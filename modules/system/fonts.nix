@@ -16,6 +16,11 @@ in
       noto-fonts-cjk-serif
       noto-fonts-color-emoji
 
+      # 霞鹜文楷：GB 字形、TC（繁体字形，阅读器用）、屏幕阅读版。
+      lxgw-wenkai
+      lxgw-wenkai-tc
+      lxgw-wenkai-screen
+
       # Keep Office documents close to their original Word pagination.
       corefonts
       vista-fonts
