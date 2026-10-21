@@ -11,6 +11,12 @@
     "ipv6.method" = "disabled";
   };
 
+  # Hotspot clients are routed into the mihomo TUN, and mihomo's replies come
+  # back in on that interface. Without forwarding on it the kernel drops them
+  # and clients get DHCP and DNS but no traffic. udev applies this when the
+  # TUN appears; enabling it on `all` would make the host route for any LAN.
+  boot.kernel.sysctl."net.ipv4.conf.mihomo.forwarding" = 1;
+
   networking.firewall = {
     enable = true;
     trustedInterfaces = [ "mihomo" ];
