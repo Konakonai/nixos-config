@@ -32,5 +32,17 @@
     ];
 
     # programs.kdeconnect owns its TCP/UDP port ranges.
+
+    # NetworkManager Wi-Fi hotspot (shared mode, LTE uplink): its dnsmasq
+    # serves DHCP and DNS on 10.42.0.1, and nixos-fw would drop both. Only
+    # that dnsmasq listens on these ports here, so nothing is exposed on
+    # other Wi-Fi networks while the hotspot is off.
+    interfaces.wlp0s20f3 = {
+      allowedTCPPorts = [ 53 ];
+      allowedUDPPorts = [
+        53
+        67
+      ];
+    };
   };
 }
