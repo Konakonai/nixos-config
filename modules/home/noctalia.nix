@@ -158,7 +158,11 @@ let
 
     # Attached panels inherit bar.main.background_opacity (0.0), which leaves
     # this one fully transparent. Name and password stay in the GUI layer.
-    plugin_settings."cleboost/hotspot".panel_placement = "floating";
+    plugin_settings."cleboost/hotspot" = {
+      panel_placement = "floating";
+      panel_position = "center";
+      panel_open_near_click = false;
+    };
 
     # Spotify's AppIndicator reports Passive while its window exists, so the
     # default hide_passive only flashes the icon at startup.
