@@ -158,7 +158,14 @@ in
           "wayland"
           "x11"
         ];
-        Context.filesystems = themeFilesystems;
+        # WeChat's Qt file dialog runs inside the sandbox instead of the
+        # portal, so "Save As" and file sending only reach folders listed
+        # here; Flathub grants Desktop/Documents/Pictures but not Videos or
+        # Downloads.
+        Context.filesystems = themeFilesystems ++ [
+          "xdg-videos"
+          "xdg-download"
+        ];
         # Stay on X11: Flathub enabled native Wayland for 4.1.13.9 and
         # reverted it the same day. Do not set QT_ENABLE_HIGHDPI_SCALING or
         # QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough on this xcb path;
