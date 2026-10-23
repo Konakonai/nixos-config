@@ -63,6 +63,11 @@ stdenv.mkDerivation {
     runHook preInstall
 
     install -Dm755 "$src" "$out/bin/magpie"
+    # patchelf 0.19 corrupts this binary when auto-patchelf sets the
+    # interpreter before the RUNPATH: the PHDR ends up outside its LOAD
+    # segment and ld.so segfaults before main. Growing the dynamic section
+    # first leaves room for both later edits to happen in place.
+    patchelf --set-rpath "$(printf 'x%.0s' {1..1024})" "$out/bin/magpie"
     install -Dm644 "${icon}" "$out/share/icons/hicolor/256x256/apps/magpie.png"
 
     runHook postInstall
@@ -79,6 +84,14 @@ stdenv.mkDerivation {
       --set-default WEBKIT_DISABLE_COMPOSITING_MODE 0
       --set-default WEBKIT_USE_SKIA_FOR_COMPOSITION 0
     )
+  '';
+
+  # Catch a broken ELF at build time instead of at login.
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    LD_TRACE_LOADED_OBJECTS=1 "$out/bin/.magpie-wrapped" >/dev/null
+    runHook postInstallCheck
   '';
 
   meta = {
