@@ -24,7 +24,7 @@ docs/                        仓库之外的手工状态（如音乐服务器）
 
 - **两层外观模型**：Nix 只写默认层，GUI 改动留在 Noctalia 的覆盖层，rebuild 不会改回去；调色板经 Noctalia 模板同步到 GTK、Qt、Niri、kitty。
 - **秘密用 agenix**：订阅链接与自建节点、控制 API secret、LAN 认证、GitHub token 全在 `secrets/*.age`。
-- **Mihomo TUN**：规则以 `GEOSITE` 类别为主，控制 API 同源限制，7890 对局域网开放但需认证，主机 IPv6 关闭以堵 WebRTC 泄漏。
+- **Mihomo TUN**：规则以 `GEOSITE` 类别为主，最前面是与手机 Box 相同的去广告（AWAvenue + `category-ads-all`，`Ad Block` 组可切 DIRECT），控制 API 同源限制，7890 对局域网开放但需认证，主机 IPv6 关闭以堵 WebRTC 泄漏。
 - **硬件恢复脚本**：USB-C PD 事件后的 mux 复位、电池省电模式下的 CPU/PCIe 限制，失败自动回滚，`SYSROOT` 可注入测试。
 - **外接 Windows 虚拟机**：libvirt 直通 USB 整盘，启动器先确认磁盘未挂载。
 - **音乐**：beets 按 Deezer 整理 `~/Music`，本地插件 `zhlyrics` 补中文歌词（网易云 + LRCLib，统一简体）；`music-sync` 镜像到上海服务器上的 Navidrome；`music-discover` 每周用网易云「我喜欢的音乐」做种子，汇总网易云、ListenBrainz、YouTube Music 的相似推荐生成发现页。见 [docs/music-server.md](docs/music-server.md)。
