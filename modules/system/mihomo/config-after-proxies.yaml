@@ -1,11 +1,14 @@
 # Subscription nodes come from the `glados` proxy-provider in the encrypted
-# fragment and are picked by the provider's name tags, so plan changes that
-# rename or re-address nodes need no edit here:
-#   Dedicated  bare-metal exit (JP-Dedicated currently exits in Los Angeles)
-#   IPv6       TW exit on Chunghwa business lines, the cleanest IPs we have
+# fragment and are picked by the provider's `<region>-<tag>-<n>` names, the
+# same scheme the subscription's own groups are built on, so plan changes
+# that re-address nodes need no edit here:
+#   Fixed          static exit IP per region (US, TW, JP)
 #   Fast/Balancer  cross-region clusters (no geo tag, exit country varies)
-#   D<n>       no rate limit      Netflix  Netflix unlock
-#   X<n>       n-times traffic billing, kept out of every group but Steam's X1
+#   X<n>           n-times traffic billing: X1 is the normal rate; JP-X5 is
+#                  only offered to the Google group
+# A filter that stops matching after an upstream rename leaves its group
+# with only COMPATIBLE, which dials DIRECT; check the group list in the
+# dashboard after the subscription changes its node names.
 # `filter` only applies to `use:` members; the static `proxies:` entries
 # (groups, the self-hosted IN-NexIP nodes, DIRECT) always come first.
 proxy-groups:
@@ -16,61 +19,65 @@ proxy-groups:
   - Express
   - TW Fixed IP
   - US Fixed IP
+  - JP Fixed IP
   - IN-NexIP-Sticky
   - IN-NexIP-Rotating
   - DIRECT
   use:
   - glados
-  filter: Dedicated|IPv6|^(Fast|Balancer)-
+  filter: -Fixed-|^(Fast|Balancer)-
 - name: Research + AI
   type: select
   proxies:
   - US Fixed IP
   - TW Fixed IP
+  - JP Fixed IP
   - IN-NexIP-Sticky
   - IN-NexIP-Rotating
   use:
   - glados
-  filter: Dedicated|IPv6
+  filter: -Fixed-
 - name: Grok
   type: select
   proxies:
   - TW Fixed IP
   use:
   - glados
-  filter: ^TW-IPv6-
+  filter: ^TW-Fixed-
 # One group for every Google-account domain: Google binds session tokens to
 # the client IP, so splitting accounts.google.com and the Gemini/Antigravity
-# APIs across exits fails with "<ip> != <ip>". US-Dedicated only: Antigravity
-# needs a US exit, and Google geolocates the JP-Dedicated and TW exits as
-# CN/HK, so Gemini answers "not supported in your country".
+# APIs across exits fails with "<ip> != <ip>". US first because Antigravity
+# needs a US exit; the JP and TW exits now geolocate correctly for Gemini.
 - name: Google
   type: select
   proxies:
-  - Google-US
+  - US Fixed IP
+  - JP Fixed IP
+  - TW Fixed IP
   use:
   - glados
-  filter: ^US-Dedicated-
+  filter: -Fixed-|^JP-X5-
+# The subscription no longer tags Netflix-unlock nodes.
 - name: Streaming
   type: select
   proxies:
-  - Netflix
   - Express
   - Download
   use:
   - glados
-  filter: Netflix|^US-Balancer-|Dedicated
+  filter: -Fixed-|^Balancer-
 # Deezer's search API answers with empty results from exits outside its
 # markets (TW, HK, CN, and DIRECT all return nothing); album lookups work
-# anywhere. The US/JP dedicated exits get full search results, which beets
-# needs when a download carries no UPC.
+# anywhere. The US/JP exits get full search results, which beets needs when
+# a download carries no UPC.
 - name: Deezer
   type: select
   proxies:
   - US Fixed IP
+  - JP Fixed IP
   use:
   - glados
-  filter: ^(US|JP)-Dedicated-
+  filter: ^(US|JP)-Fixed-
 - name: Developer
   type: select
   proxies:
@@ -80,7 +87,7 @@ proxy-groups:
   - IN-NexIP-Rotating
   use:
   - glados
-  filter: Dedicated|IPv6|^Fast-
+  filter: -Fixed-|^Fast-
 - name: Download
   type: select
   proxies:
@@ -91,7 +98,7 @@ proxy-groups:
   - DIRECT
   use:
   - glados
-  filter: -D\d-|^Fast-|Dedicated|IPv6
+  filter: ^(Fast|US-X1)-|-Fixed-
 - name: Steam
   type: select
   proxies:
@@ -100,7 +107,7 @@ proxy-groups:
   - Download
   use:
   - glados
-  filter: ^US-(X1|D\d)-
+  filter: ^US-X1-
 - name: Premium
   type: select
   proxies:
@@ -108,21 +115,21 @@ proxy-groups:
   - US Fixed IP
   use:
   - glados
-  filter: Dedicated|IPv6
+  filter: -Fixed-
 - name: Apple
   type: select
   proxies:
   - DIRECT
   use:
   - glados
-  filter: ^US-(Balancer|Netflix)-
+  filter: ^US-X1-
 - name: Microsoft
   type: select
   proxies:
   - DIRECT
   use:
   - glados
-  filter: ^US-(Balancer|Netflix)-
+  filter: ^US-X1-
 # Probe over HTTPS: unified-delay sends two requests, and nodes that hijack
 # plain HTTP fail the second HEAD ("failed to get the second response"),
 # marking a working node dead.
@@ -131,7 +138,7 @@ proxy-groups:
   hidden: true
   use:
   - glados
-  filter: ^(Fast|Balancer)-|^US-(Balancer|Netflix)-
+  filter: ^(Fast|Balancer)-
   url: https://www.gstatic.com/generate_204
   tolerance: 100
 - name: Express
@@ -139,42 +146,34 @@ proxy-groups:
   hidden: true
   use:
   - glados
-  filter: ^Balancer-|^US-X1-|Dedicated
-  url: https://www.gstatic.com/generate_204
-  tolerance: 100
-- name: Netflix
-  type: url-test
-  hidden: true
-  use:
-  - glados
-  filter: Netflix
+  filter: ^(Balancer|US-X1)-|-Fixed-
   url: https://www.gstatic.com/generate_204
   tolerance: 100
 # A group's `url` on provider nodes is only registered as an extra URL on the
 # provider's health check; interval, timeout and lazy come from the provider,
 # so these groups set no interval. Keep a separate provider for fixed-IP
 # groups so its own check probes Google over TLS every 120s: some shared exits
-# (e.g. behind TW-IPv6-P2-1/P1-4) answer plain HTTP but reset TLS to Google.
+# answer plain HTTP but reset TLS to Google.
 - name: US Fixed IP
   type: fallback
   hidden: true
   use:
   - glados-fixed-ip
-  filter: ^(US|JP)-Dedicated-
-  url: https://www.google.com/generate_204
-- name: Google-US
-  type: fallback
-  hidden: true
-  use:
-  - glados-fixed-ip
-  filter: ^US-Dedicated-
+  filter: ^US-Fixed-
   url: https://www.google.com/generate_204
 - name: TW Fixed IP
   type: fallback
   hidden: true
   use:
   - glados-fixed-ip
-  filter: ^TW-IPv6-
+  filter: ^TW-Fixed-
+  url: https://www.google.com/generate_204
+- name: JP Fixed IP
+  type: fallback
+  hidden: true
+  use:
+  - glados-fixed-ip
+  filter: ^JP-Fixed-
   url: https://www.google.com/generate_204
 - name: US
   type: url-test
@@ -183,20 +182,12 @@ proxy-groups:
   - glados
   filter: ^US-X1-
   url: https://www.gstatic.com/generate_204
-# Static members precede provider members, so the unthrottled nodes get their
-# own group to stay ahead of Auto in Download-Auto's fallback order.
-- name: Unthrottled
-  type: fallback
-  hidden: true
-  use:
-  - glados
-  filter: -D\d-
-  url: https://www.gstatic.com/generate_204
+# The subscription's own Download group uses the normal-rate US-X1 nodes.
 - name: Download-Auto
   type: fallback
   hidden: true
   proxies:
-  - Unthrottled
+  - US
   - Auto
   url: https://www.gstatic.com/generate_204
   interval: 180
@@ -212,9 +203,13 @@ dns:
   use-system-hosts: true
   # Foreign lookups follow proxy rules / #Default Proxy. CN policy stays DIRECT.
   respect-rules: true
+  # Nameservers are queried in parallel. The second rides Auto so DNS
+  # survives a Default Proxy selection that dials DIRECT: on 2026-10-23 a
+  # node rename emptied the selected TW Fixed IP, both resolvers timed out
+  # direct, and every foreign lookup failed.
   nameserver:
   - "https://1.1.1.1/dns-query#Default Proxy"
-  - "https://8.8.8.8/dns-query#Default Proxy"
+  - "https://8.8.8.8/dns-query#Auto"
   fallback: null
   fallback-filter:
     geoip: true

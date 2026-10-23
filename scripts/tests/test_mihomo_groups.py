@@ -37,15 +37,15 @@ class ProxyGroupTest(unittest.TestCase):
         for group in self.groups:
             if "use" in group:
                 provider = FIXED_IP_PROVIDER if group["name"] in {
-                    "US Fixed IP", "Google-US", "TW Fixed IP"
+                    "US Fixed IP", "TW Fixed IP", "JP Fixed IP"
                 } else PROVIDER
                 self.assertEqual(group["use"], [provider], group["name"])
                 re.compile(group["filter"])
             else:
                 self.assertNotIn("filter", group, group["name"])
 
-    def test_unthrottled_nodes_precede_auto_for_downloads(self):
-        self.assertEqual(self.by_name["Download-Auto"]["proxies"][0], "Unthrottled")
+    def test_normal_rate_us_nodes_precede_auto_for_downloads(self):
+        self.assertEqual(self.by_name["Download-Auto"]["proxies"][0], "US")
 
     def test_google_account_domains_share_one_exit(self):
         # Google binds session tokens to the client IP ("<ip> != <ip>").
