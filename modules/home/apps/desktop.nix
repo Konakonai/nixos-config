@@ -7,6 +7,7 @@
 
 let
   inherit (pkgs.lilya)
+    agy
     antigravity
     grok-bot
     localsend-no-csd
@@ -76,6 +77,7 @@ let
 in
 {
   home.packages = with pkgs; [
+    agy
     antigravity
     claude-desktop
     file-roller

@@ -5,6 +5,7 @@
 }:
 
 {
+  agy = pkgs.callPackage ./agy.nix { };
   antigravity = pkgs.callPackage ./antigravity.nix { };
   # nixpkgs ships Brave Origin without the Widevine CDM, so DRM streaming
   # sites refuse to play.

@@ -44,7 +44,7 @@ let
         --version "$(gh release view -R openai/codex --json tagName -q '.tagName|ltrimstr("rust-v")')"
       flatpak update --user --noninteractive
       echo
-      echo "Bump by hand (URL has a build ID): antigravity grok grok-bot jetbrains-maple-mono"
+      echo "Bump by hand (URL has a build ID): agy antigravity grok grok-bot jetbrains-maple-mono"
       git status --short
     '';
   };
