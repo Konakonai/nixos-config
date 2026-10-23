@@ -105,6 +105,23 @@ in
     force = true;
   };
 
+  # Magpie's "launch at login" writes the same kind of pinned path into its
+  # autostart entry, so every login brought back the tray of whatever version
+  # was installed when the toggle was flipped, and later launches only focused
+  # that instance. Own the entry and point it at the wrapped launcher.
+  xdg.configFile."autostart/magpie.desktop" = {
+    text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=Magpie
+      Exec=${lib.getExe magpie} tray
+      Icon=magpie
+      Terminal=false
+      X-GNOME-Autostart-enabled=true
+    '';
+    force = true;
+  };
+
   xdg.desktopEntries = {
     # The system vim package ships upstream launcher entries. vim is only used
     # from a shell, and gvim.desktop points at a GUI this build does not have.
