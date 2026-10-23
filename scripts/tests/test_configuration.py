@@ -27,7 +27,9 @@ class ConfigurationTest(unittest.TestCase):
     def test_geosite_categories_sit_between_pins_and_fallbacks(self):
         config = yaml.safe_load((ROOT / "modules/system/mihomo/config-after-proxies.yaml").read_text())
         rules = config["rules"]
-        first_geosite = next(i for i, r in enumerate(rules) if r.startswith("GEOSITE,"))
+        # Ad blocking deliberately precedes every pin.
+        self.assertEqual(rules[:2], ["RULE-SET,awavenue-ads,Ad Block", "GEOSITE,category-ads-all,Ad Block"])
+        first_geosite = next(i for i, r in enumerate(rules) if r.startswith("GEOSITE,") and not r.endswith(",Ad Block"))
         self.assertLess(rules.index("DOMAIN-SUFFIX,cn,DIRECT"), first_geosite)
         self.assertEqual(rules[-3:], ["GEOIP,CN,DIRECT", "GEOIP,PRIVATE,DIRECT", "MATCH,Default Proxy"])
         self.assertEqual(rules[-5:-3], ["GEOSITE,private,DIRECT", "GEOSITE,cn,DIRECT"])

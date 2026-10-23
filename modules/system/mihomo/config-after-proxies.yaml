@@ -191,6 +191,13 @@ proxy-groups:
   - Auto
   url: https://www.gstatic.com/generate_204
   interval: 180
+# Same ad blocking as the phone's Box config; switch to DIRECT in the
+# dashboard when a site breaks.
+- name: Ad Block
+  type: select
+  proxies:
+  - REJECT
+  - DIRECT
 sub-rules: null
 listeners: null
 hosts: {}
@@ -276,7 +283,20 @@ geox-url:
   geosite: https://github.com/MetaCubeX/meta-rules-dat/releases/download/latest/geosite.dat
 sniffer:
   enable: false
+rule-providers:
+  awavenue-ads:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/Filters/AWAvenue-Ads-Rule-Clash-Classical.yaml
+    path: ./rule_provider/awavenue-ads.yaml
+    interval: 86400
+    proxy: Default Proxy
 rules:
+# Ad lists come first so they win over the Google/CN routing below, as on
+# the phone.
+- RULE-SET,awavenue-ads,Ad Block
+- GEOSITE,category-ads-all,Ad Block
 # CN STUN servers (bilibili/miwifi/qq) are otherwise DIRECT and reflect the
 # real WAN IP into WebRTC srflx candidates.
 - DOMAIN-KEYWORD,stun,Default Proxy
