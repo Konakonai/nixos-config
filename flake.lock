@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1792776538,
-        "narHash": "sha256-ZQVk801fMX/vCP2MgDmr2o0JXHEGMna7aQuIlS2y104=",
+        "lastModified": 1792781814,
+        "narHash": "sha256-YV1rJ/+Cl8+H8oX0VmXXn8LFtEBG5odgxKzaQ+y0WNk=",
         "owner": "patrickjaja",
         "repo": "claude-desktop-extra",
-        "rev": "140d06a5f58259ef155241248c045b604d2a2bc9",
+        "rev": "2fe612cd62b69c5d24ca3dc681e00cc7f865bed9",
         "type": "github"
       },
       "original": {
