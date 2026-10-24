@@ -110,7 +110,9 @@ in
   # Magpie's "launch at login" writes the same kind of pinned path into its
   # autostart entry, so every login brought back the tray of whatever version
   # was installed when the toggle was flipped, and later launches only focused
-  # that instance. Own the entry and point it at the wrapped launcher.
+  # that instance. Own the entry and point it at the wrapped launcher. If Home
+  # Manager ever moves a replaced entry aside, delete the .backup copy:
+  # systemd's xdg-autostart generator still starts it.
   xdg.configFile."autostart/magpie.desktop" = {
     text = ''
       [Desktop Entry]
