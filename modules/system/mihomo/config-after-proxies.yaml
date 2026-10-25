@@ -295,6 +295,10 @@ rule-providers:
 rules:
 # Ad lists come first so they win over the Google/CN routing below, as on
 # the phone.
+# Exceptions go above them. Sponsored Taobao search results link through
+# this click redirect; geosite:category-ads-all rejects it, so those item
+# pages never open.
+- DOMAIN,click.mz.simba.taobao.com,DIRECT
 - RULE-SET,awavenue-ads,Ad Block
 - GEOSITE,category-ads-all,Ad Block
 # CN STUN servers (bilibili/miwifi/qq) are otherwise DIRECT and reflect the
