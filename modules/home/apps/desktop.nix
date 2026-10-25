@@ -86,6 +86,7 @@ in
     gnome-font-viewer
     grok-bot
     hyprpicker
+    jellyfin-desktop
     kdePackages.okular
     localsend-no-csd
     loupe

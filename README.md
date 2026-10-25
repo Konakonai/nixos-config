@@ -28,6 +28,7 @@ docs/                        仓库之外的手工状态（如音乐服务器）
 - **硬件恢复脚本**：USB-C PD 事件后的 mux 复位、电池省电模式下的 CPU/PCIe 限制，失败自动回滚，`SYSROOT` 可注入测试。
 - **外接 Windows 虚拟机**：libvirt 直通 USB 整盘，启动器先确认磁盘未挂载。
 - **音乐**：beets 按 Deezer 整理 `~/Music`，本地插件 `zhlyrics` 补中文歌词（网易云 + LRCLib，统一简体）；`music-sync` 镜像到上海服务器上的 Navidrome；`music-discover` 每周用网易云「我喜欢的音乐」做种子，汇总网易云、ListenBrainz、YouTube Music 的相似推荐生成发现页。见 [docs/music-server.md](docs/music-server.md)。
+- **影视**：夸克网盘经 OpenList → rclone 挂到 `~/Mounts/OpenList`，本机 Jellyfin（以用户身份运行，端口不对局域网开放）刮削 TMDB，用 Jellyfin Desktop 播放。
 - **Claude Code mod**：`modules/home/claude-code/token-band` 由 Home Manager 链到 `~/.claude/skills/`，在输入框上方显示 tok/s、TTFT、prompt 缓存命中率与缓存过期倒计时；改源码后在仓库目录跑 `claude plugin test modules/home/claude-code/token-band`。
 - **checks**：脚本单测与 Mihomo 规则可达性、statix/deadnix/nixfmt、Niri KDL 校验。
 
@@ -54,6 +55,7 @@ update-magpie    # 只升级 Magpie（不动 flake.lock），构建通过后直�
 | Noctalia `config.toml` / `settings.toml` | 默认层 / GUI 覆盖层（`~/.local/state/noctalia/`） |
 | Plasma 里 plasma-manager 声明的键 | 每次激活重写；其余由 Plasma 保存 |
 | Zed `settings.json`、LibreOffice 工具栏 | 首次种子，之后由应用保存 |
+| Jellyfin 媒体库与控制台设置 | 运行时状态（`/var/lib/jellyfin`）；扫描网盘挂载时关掉实时监控、章节图和 trickplay |
 | Flatpak 应用、Noctalia 插件 | 运行时安装，不由 flake.lock 固定 |
 
 `config-drift noctalia|zed` 显示 GUI 相对默认层的差量，想固化时抄进对应模块。Noctalia 模板没生效时运行 `noctalia msg templates-apply`。
