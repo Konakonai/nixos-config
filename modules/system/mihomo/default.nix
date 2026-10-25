@@ -68,6 +68,10 @@ in
       "mihomo-config.service"
     ];
     inherit restartTriggers;
+    # mihomo drops tun.inet6-address unless a GUA exists when it loads the
+    # config. Started on LTE (IPv4 only) it would then keep a v4-only TUN on
+    # campus Wi-Fi, where strict-route blackholes all IPv6 until a reload.
+    environment.SKIP_SYSTEM_IPV6_CHECK = "1";
     serviceConfig = {
       Restart = "on-failure";
       RestartSec = "2s";
