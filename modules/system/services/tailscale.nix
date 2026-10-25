@@ -13,4 +13,13 @@
     openFirewall = true;
     extraSetFlags = [ "--accept-dns=false" ];
   };
+
+  # The same fwmark bypass sends the control plane and DERP straight out, and
+  # controlplane.tailscale.com does not answer from here, so `tailscale up`
+  # hangs. tailscaled honours HTTPS_PROXY for those TCP connections; the
+  # mixed port skips auth for loopback. WireGuard UDP still goes direct.
+  systemd.services.tailscaled = {
+    after = [ "mihomo.service" ];
+    environment.HTTPS_PROXY = "http://127.0.0.1:7890";
+  };
 }
