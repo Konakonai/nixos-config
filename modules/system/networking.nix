@@ -46,6 +46,9 @@
 
     # programs.kdeconnect owns its TCP/UDP port ranges.
 
+    # Only Jellyfin is opened to the tailnet, for the phone away from home.
+    interfaces.tailscale0.allowedTCPPorts = [ 8096 ];
+
     # NetworkManager Wi-Fi hotspot (shared mode, LTE uplink): its dnsmasq
     # serves DHCP and DNS on 10.42.0.1, and nixos-fw would drop both. Only
     # that dnsmasq listens on 53/67 here, so they expose nothing on other
