@@ -4,6 +4,13 @@
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
 
+  # NixOS restarts polkit whenever system.path changes, and upstream
+  # ModemManager.service has Requires=polkit.service, so every rebuild that
+  # touched system packages stopped ModemManager too. Its MBIM teardown then
+  # hangs until the 90 s SIGKILL and LTE drops. Rules changes still reload
+  # polkit; a new polkit or new packages' actions take effect after a reboot.
+  systemd.services.polkit.restartIfChanged = false;
+
   # Campus Wi-Fi assigns a CERNET GUA. WebRTC advertises it as a host
   # candidate and bypasses the mihomo TUN. Keep host IPv6 off.
   networking.enableIPv6 = false;
