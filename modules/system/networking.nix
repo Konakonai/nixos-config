@@ -41,10 +41,17 @@
 
     # NetworkManager Wi-Fi hotspot (shared mode, LTE uplink): its dnsmasq
     # serves DHCP and DNS on 10.42.0.1, and nixos-fw would drop both. Only
-    # that dnsmasq listens on these ports here, so nothing is exposed on
-    # other Wi-Fi networks while the hotspot is off.
+    # that dnsmasq listens on 53/67 here, so they expose nothing on other
+    # Wi-Fi networks while the hotspot is off.
+    #
+    # Jellyfin (8096) is for the phone, which joins either the hotspot or the
+    # same Wi-Fi, so it is opened on the Wi-Fi interface only and stays closed
+    # on the LTE uplink.
     interfaces.wlp0s20f3 = {
-      allowedTCPPorts = [ 53 ];
+      allowedTCPPorts = [
+        53
+        8096
+      ];
       allowedUDPPorts = [
         53
         67

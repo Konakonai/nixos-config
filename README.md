@@ -28,7 +28,7 @@ docs/                        仓库之外的手工状态（如音乐服务器）
 - **硬件恢复脚本**：USB-C PD 事件后的 mux 复位、电池省电模式下的 CPU/PCIe 限制，失败自动回滚，`SYSROOT` 可注入测试。
 - **外接 Windows 虚拟机**：libvirt 直通 USB 整盘，启动器先确认磁盘未挂载。
 - **音乐**：beets 按 Deezer 整理 `~/Music`，本地插件 `zhlyrics` 补中文歌词（网易云 + LRCLib，统一简体）；`music-sync` 镜像到上海服务器上的 Navidrome；`music-discover` 每周用网易云「我喜欢的音乐」做种子，汇总网易云、ListenBrainz、YouTube Music 的相似推荐生成发现页。见 [docs/music-server.md](docs/music-server.md)。
-- **影视**：夸克网盘经 OpenList → rclone 挂到 `~/Mounts/OpenList`，本机 Jellyfin（以用户身份运行，端口不对局域网开放）刮削 TMDB，用 Jellyfin Desktop 播放。
+- **影视**：夸克网盘经 OpenList → rclone 挂到 `~/Mounts/OpenList`，本机 Jellyfin（以用户身份运行）刮削 TMDB，本机用 Jellyfin Desktop 播放；8096 只在 Wi-Fi 网卡上开放（热点或同一 Wi-Fi 下的手机），LTE 侧不开。
 - **Claude Code mod**：`modules/home/claude-code/token-band` 由 Home Manager 链到 `~/.claude/skills/`，在输入框上方显示 tok/s、TTFT、prompt 缓存命中率与缓存过期倒计时；改源码后在仓库目录跑 `claude plugin test modules/home/claude-code/token-band`。
 - **checks**：脚本单测与 Mihomo 规则可达性、statix/deadnix/nixfmt、Niri KDL 校验。
 

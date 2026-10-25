@@ -3,8 +3,8 @@
 {
   # Libraries point at the rclone mount of OpenList (~/Mounts/OpenList), a
   # FUSE mount owned by the user without allow_other, so Jellyfin has to run
-  # as that user to see it. Only the local client uses it: the port stays
-  # closed on the LAN.
+  # as that user to see it. The port is opened for the phone in
+  # networking.nix, on the Wi-Fi interface only.
   #
   # Scanning over the mount pulls real data from Quark, so real-time
   # monitoring, chapter images and trickplay are turned off in the dashboard
