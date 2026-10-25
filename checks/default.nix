@@ -16,9 +16,16 @@ in
 # fcitx5 plugin directory another module contributes.
 assert lib.hasInfix "fcitx5" (toString qtPluginPath);
 assert builtins.length qtPluginList > 1;
-# Host IPv6 stays off: Zen and WebRTC would otherwise leak a GUA past mihomo.
-assert !config.networking.enableIPv6;
-assert config.networking.networkmanager.connectionConfig."ipv6.method" == "disabled";
+# Host IPv6 is on, so every browser must keep the GUA out of WebRTC host
+# candidates.
+assert home.programs.zen-browser.profiles.default.settings."media.peerconnection.ice.no_host";
+assert
+  builtins.fromJSON config.environment.etc."chromium/policies/managed/webrtc.json".text == {
+    WebRtcIPHandlingPolicy = "default_public_interface_only";
+  };
+assert
+  config.environment.etc."brave/policies/managed/webrtc.json".text
+  == config.environment.etc."chromium/policies/managed/webrtc.json".text;
 {
   configuration =
     pkgs.runCommand "configuration-regressions"

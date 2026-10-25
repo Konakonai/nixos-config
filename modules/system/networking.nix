@@ -11,12 +11,22 @@
   # polkit; a new polkit or new packages' actions take effect after a reboot.
   systemd.services.polkit.restartIfChanged = false;
 
-  # Campus Wi-Fi assigns a CERNET GUA. WebRTC advertises it as a host
-  # candidate and bypasses the mihomo TUN. Keep host IPv6 off.
-  networking.enableIPv6 = false;
-  networking.networkmanager.connectionConfig = {
-    "ipv6.method" = "disabled";
-  };
+  # Host IPv6 is on so Tailscale can reach the phone directly over the LTE
+  # and campus GUAs (both sides sit behind symmetric IPv4 NAT). mihomo's TUN
+  # carries IPv6 like IPv4, so the remaining leak is WebRTC listing the GUA
+  # as a host candidate. Zen drops host candidates (modules/home/zen.nix);
+  # Chromium and Brave only expose the default-route interface, which is the
+  # TUN, and STUN is forced through the proxy by the mihomo rules.
+  environment.etc =
+    let
+      webrtcPolicy = builtins.toJSON {
+        WebRtcIPHandlingPolicy = "default_public_interface_only";
+      };
+    in
+    {
+      "chromium/policies/managed/webrtc.json".text = webrtcPolicy;
+      "brave/policies/managed/webrtc.json".text = webrtcPolicy;
+    };
 
   # Hotspot clients are routed into the mihomo TUN, and mihomo's replies come
   # back in on that interface. Without forwarding on it the kernel drops them
