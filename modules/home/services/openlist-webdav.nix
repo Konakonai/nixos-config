@@ -62,7 +62,10 @@ in
       ];
       ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p %h/Mounts/OpenList %h/.cache/rclone/openlist";
       ExecStart = "${pkgs.rclone}/bin/rclone mount openlist: %h/Mounts/OpenList --config %h/.config/rclone/rclone.conf --cache-dir %h/.cache/rclone/openlist --vfs-cache-mode full --vfs-cache-max-size 8G --vfs-cache-max-age 24h --vfs-cache-poll-interval 1m --dir-cache-time 30s --poll-interval 0 --umask 022 --log-level INFO";
-      ExecStop = "-/run/wrappers/bin/fusermount3 -u %h/Mounts/OpenList";
+      # A plain unmount fails with EBUSY while anything (Jellyfin, a player)
+      # holds a file open, leaving a dead mount that makes ExecStartPre's mkdir
+      # fail with "Transport endpoint is not connected". Detach lazily instead.
+      ExecStop = "-/run/wrappers/bin/fusermount3 -uz %h/Mounts/OpenList";
       Restart = "on-failure";
       RestartSec = "10s";
     };
