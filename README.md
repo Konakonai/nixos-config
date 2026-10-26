@@ -55,7 +55,7 @@ update-magpie    # 只升级 Magpie（不动 flake.lock），构建通过后直�
 | Noctalia `config.toml` / `settings.toml` | 默认层 / GUI 覆盖层（`~/.local/state/noctalia/`） |
 | Plasma 里 plasma-manager 声明的键 | 每次激活重写；其余由 Plasma 保存 |
 | Zed `settings.json`、LibreOffice 工具栏 | 首次种子，之后由应用保存 |
-| Jellyfin 媒体库与控制台设置 | 运行时状态（`/var/lib/jellyfin`）；扫描网盘挂载时关掉实时监控、章节图和 trickplay |
+| Jellyfin 媒体库与控制台设置 | 运行时状态（`/var/lib/jellyfin`，不在备份范围）；扫描网盘挂载时关掉实时监控、章节图和 trickplay；`fonts/` 是给网页 ASS 渲染用的备用字体（孤独摇滚字体包按字幕用字子集化，原包在夸克） |
 | Flatpak 应用、Noctalia 插件 | 运行时安装，不由 flake.lock 固定 |
 
 `config-drift noctalia|zed` 显示 GUI 相对默认层的差量，想固化时抄进对应模块。Noctalia 模板没生效时运行 `noctalia msg templates-apply`。
