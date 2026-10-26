@@ -35,6 +35,21 @@ let
           patchelf --add-rpath ${lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ]} "$pty"
         '';
       });
+  # 2.0.0 registers the NativeShell user script on the view, and the
+  # cross-origin hop from the bundled server picker to the server's web client
+  # moves the view to a new renderer that never gets it. jellyfin-web then
+  # reports itself as a plain browser and the server transcodes everything
+  # (mkv, HEVC, DTS) for the HTML player instead of handing it to mpv.
+  # Upstream fixed it after 2.0.0 by registering on the profile; drop this
+  # once a release includes jellyfin/jellyfin-desktop#1236.
+  jellyfin-desktop = pkgs.jellyfin-desktop.overrideAttrs (oldAttrs: {
+    patches = (oldAttrs.patches or [ ]) ++ [
+      (pkgs.fetchpatch {
+        url = "https://github.com/jellyfin/jellyfin-desktop/commit/cabddc60908283b78f523a709b8a3a295d2b9fab.patch";
+        hash = "sha256-3EKSfiDqwPZp2x8durPq7UWgq9jHaAWAoXe9wpHlhp0=";
+      })
+    ];
+  });
   fontMimeTypes = [
     "application/vnd.ms-opentype"
     "application/x-font-otf"
