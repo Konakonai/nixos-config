@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   steamFollow = pkgs.writeShellApplication {
@@ -85,8 +90,19 @@ in
     vulkan-tools
     wineWow64Packages.stableFull
     winetricks
+    lilya.minecraft-launcher
     lilya.wiiu-downloader
   ];
+
+  # The tarball ships no .desktop file or icon; the icon only appears once the
+  # bootstrap has downloaded the launcher into ~/.minecraft.
+  xdg.desktopEntries.minecraft-launcher = {
+    name = "Minecraft Launcher";
+    exec = lib.getExe pkgs.lilya.minecraft-launcher;
+    icon = "${config.home.homeDirectory}/.minecraft/launcher/icons/minecraft256.png";
+    categories = [ "Game" ];
+    terminal = false;
+  };
 
   xdg.configFile."MangoHud/MangoHud.conf".text = ''
     legacy_layout=false

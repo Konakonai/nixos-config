@@ -40,6 +40,7 @@
     meta = pkgs.localsend.meta;
   };
   magpie = pkgs.callPackage ./magpie.nix { };
+  minecraft-launcher = pkgs.callPackage ./minecraft-launcher.nix { };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
   wiiu-downloader = pkgs.callPackage ./wiiu-downloader.nix { };
