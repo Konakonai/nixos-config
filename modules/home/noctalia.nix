@@ -164,7 +164,10 @@ let
 
     # Attached panels inherit bar.main.background_opacity (0.0), which leaves
     # this one fully transparent. Name and password stay in the GUI layer.
+    # autostart (added upstream 2026-10-21, default true) brings the hotspot up
+    # on every shell start, which takes wlp0s20f3 off the Wi-Fi network.
     plugin_settings."cleboost/hotspot" = {
+      autostart = false;
       panel_placement = "floating";
       panel_position = "center";
       panel_open_near_click = false;
