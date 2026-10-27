@@ -16,60 +16,95 @@ let
     ;
   # Computer Use on niri drives whatever Wayland display wlroots-bridge
   # connects to, through virtual-pointer/keyboard rather than the real seat.
-  # Pointing it at a nested niri lets Claude click and type there without
+  # Pointing it at a headless sway lets Claude click and type there without
   # moving the user's cursor or focus. The bridge inherits the app's
   # environment, so this wrapper swaps WAYLAND_DISPLAY while claude-cu-desk is
   # running and falls back to the main session otherwise.
-  cuState = ''"$XDG_RUNTIME_DIR/claude-cu/env"'';
+  #
+  # The executor takes monitor geometry from Electron (the real outputs) and
+  # caches the bridge's output names for the life of the app, so the headless
+  # outputs mirror each real output's position and scale, and --display is
+  # translated between real and HEADLESS-n names in whichever direction the
+  # current target needs.
+  cuState = ''"$XDG_RUNTIME_DIR/claude-cu"'';
   cuBridge = pkgs.writeShellScript "claude-cu-bridge" ''
-    env=${cuState}
-    if [ -r "$env" ]; then
-      . "$env"
+    state=${cuState}
+    redirect=0
+    if [ -r "$state/env" ]; then
+      . "$state/env"
       if [ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]; then
         export WAYLAND_DISPLAY
+        redirect=1
       fi
     fi
-    exec "$CLAUDE_CU_REAL_BRIDGE" "$@"
-  '';
-  cuNiriConfig = pkgs.writeText "claude-cu-niri.kdl" ''
-    hotkey-overlay {
-        skip-at-startup
-    }
-    prefer-no-csd
-    screenshot-path null
-    layout {
-        gaps 0
-        default-column-width { proportion 1.0; }
-    }
-    binds {
-        Alt+Q { close-window; }
-        Alt+Left { focus-column-left; }
-        Alt+Right { focus-column-right; }
-    }
+    args=()
+    while [ $# -gt 0 ]; do
+      if [ "$1" = --display ] && [ $# -ge 2 ] && [ -r "$state/outputs" ]; then
+        name=$2
+        while read -r real headless; do
+          if [ $redirect = 1 ] && [ "$name" = "$real" ]; then name=$headless; fi
+          if [ $redirect = 0 ] && [ "$name" = "$headless" ]; then name=$real; fi
+        done < "$state/outputs"
+        args+=(--display "$name")
+        shift 2
+        continue
+      fi
+      args+=("$1")
+      shift
+    done
+    exec "$CLAUDE_CU_REAL_BRIDGE" "''${args[@]}"
   '';
   claude-cu-desk = pkgs.writeShellApplication {
     name = "claude-cu-desk";
-    runtimeInputs = [ config.programs.niri.package ];
+    runtimeInputs = [
+      config.programs.niri.package
+      pkgs.jq
+      pkgs.sway
+    ];
     text = ''
-      state="$XDG_RUNTIME_DIR/claude-cu"
+      state=${cuState}
       mkdir -p "$state"
-      trap 'rm -f "$state/env"' EXIT
-      # niri runs as a window inside the current session and gives the startup
-      # command its own WAYLAND_DISPLAY/DISPLAY; record them for the bridge
-      # wrapper and claude-cu-run.
-      # shellcheck disable=SC2016
-      niri -c ${cuNiriConfig} -- sh -c '
-        printf "WAYLAND_DISPLAY=%s\nDISPLAY=%s\n" "$WAYLAND_DISPLAY" "''${DISPLAY-}" \
-          > "$1/env.tmp" && mv "$1/env.tmp" "$1/env"
-      ' sh "$state"
+      if [ "''${1-}" = stop ]; then
+        [ -r "$state/pid" ] && kill "$(cat "$state/pid")"
+        exit 0
+      fi
+
+      outputs=$(niri msg -j outputs | jq -c '
+        [to_entries[] | select(.value.logical != null)] | sort_by(.key) | to_entries[]
+        | {real: .value.key, headless: "HEADLESS-\(.key + 1)", l: .value.value.logical,
+           mode: .value.value.modes[.value.value.current_mode]}')
+      : > "$state/outputs"
+      config="$state/sway.conf"
+      {
+        echo "default_border none"
+        echo "focus_follows_mouse no"
+        while read -r o; do
+          jq -r '"\(.real) \(.headless)"' <<<"$o" >> "$state/outputs"
+          jq -r '"output \(.headless) mode \(.mode.width)x\(.mode.height) position \(.l.x) \(.l.y) scale \(.l.scale) bg #303030 solid_color"' <<<"$o"
+        done <<<"$outputs"
+        # shellcheck disable=SC2016
+        printf '%s\n' "exec sh -c 'printf \"WAYLAND_DISPLAY=%s\\nDISPLAY=%s\\n\" \"\$WAYLAND_DISPLAY\" \"\''${DISPLAY-}\" > $state/env.tmp && mv $state/env.tmp $state/env'"
+      } > "$config"
+
+      trap 'rm -f "$state/env" "$state/pid"' EXIT
+      # Headless, so it keeps rendering with no window on the real desktop;
+      # pixman, so it never touches the dGPU (which must stay asleep on battery).
+      env -u WAYLAND_DISPLAY -u DISPLAY -u NIRI_SOCKET \
+        WLR_BACKENDS=headless \
+        WLR_HEADLESS_OUTPUTS="$(wc -l < "$state/outputs")" \
+        WLR_RENDERER=pixman \
+        WLR_LIBINPUT_NO_DEVICES=1 \
+        sway -c "$config" &
+      echo $! > "$state/pid"
+      wait
     '';
   };
   # open_application launches with the app's own environment and so lands on
-  # the main desktop; start programs for the nested display through this.
+  # the main desktop; start programs for the headless display through this.
   claude-cu-run = pkgs.writeShellApplication {
     name = "claude-cu-run";
     text = ''
-      env=${cuState}
+      env=${cuState}/env
       if [ ! -r "$env" ]; then
         echo "claude-cu-run: claude-cu-desk is not running" >&2
         exit 1
