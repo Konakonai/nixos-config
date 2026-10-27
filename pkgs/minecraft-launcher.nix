@@ -72,6 +72,12 @@ pkgs.buildFHSEnv {
       curl
       openssl
     ];
+  # The game's SDL falls back to XWayland when the compositor lacks fifo-v1
+  # (niri does), and NVIDIA Vulkan through xwayland-satellite tears even with
+  # VSync on. Force native Wayland, which presents through niri properly.
+  profile = ''
+    export SDL_VIDEO_DRIVER=wayland
+  '';
   runScript = "${launcher}/minecraft-launcher";
   meta = {
     description = "Official Minecraft launcher from Mojang";
