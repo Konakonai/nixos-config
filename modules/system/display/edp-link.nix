@@ -1,4 +1,10 @@
-{ hostProfile, pkgs, ... }:
+{
+  config,
+  hostProfile,
+  lib,
+  pkgs,
+  ...
+}:
 
 let
   inherit (hostProfile.display.internal) link;
@@ -29,8 +35,32 @@ let
     echo 1 > ${debugfs}/i915_dp_force_link_retrain 2>/dev/null || true
     echo "eDP link limited to ${toString link.rate} kHz x ${toString link.lanes}"
   '';
+
+  # KWin ignores the EDID's preferred 60 Hz mode and picks the highest refresh
+  # rate, so the SDDM greeter came up at 165 Hz on the capped link: FIFO
+  # underruns and an almost always black screen until login (niri uses the
+  # preferred mode). KWin rewrites its output config on exit, so pin the mode
+  # before every greeter start. A mode KWin can't match exactly falls back to
+  # its own choice, i.e. no worse than without this.
+  sddmOutputConfig = "${config.users.users.sddm.home}/.config/kwinoutputconfig.json";
+  pinGreeterMode = ''
+    if [ -f ${sddmOutputConfig} ]; then
+      tmp=$(mktemp ${sddmOutputConfig}.XXXXXX)
+      if ${lib.getExe pkgs.jq} --argjson mode ${lib.escapeShellArg (builtins.toJSON link.kwinMode)} \
+        '(.[] | select(.name == "outputs") | .data[] | select(.connectorName == "${link.connector}") | .mode) = $mode' \
+        ${sddmOutputConfig} > "$tmp"; then
+        chown sddm:sddm "$tmp"
+        chmod 644 "$tmp"
+        mv -f "$tmp" ${sddmOutputConfig}
+      else
+        rm -f "$tmp"
+      fi
+    fi
+  '';
 in
 {
+  systemd.services.display-manager.preStart = pinGreeterMode;
+
   systemd.services.edp-link = {
     description = "Train the internal eDP link at the narrowest config the panel mode needs";
     wantedBy = [ "multi-user.target" ];

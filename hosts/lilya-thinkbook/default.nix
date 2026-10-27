@@ -25,6 +25,25 @@ in
         connector = "eDP-1";
         rate = 540000;
         lanes = 2;
+        # EDID DTD 1 (3200x2000@60, the preferred mode) in KWin's modeline
+        # format; the greeter needs it spelled out, see display/edp-link.nix.
+        kwinMode = {
+          cvt = {
+            clock = 437070;
+            hdisplay = 3200;
+            hsyncStart = 3248;
+            hsyncEnd = 3280;
+            htotal = 3360;
+            hskew = 0;
+            vdisplay = 2000;
+            vsyncStart = 2003;
+            vsyncEnd = 2009;
+            vtotal = 2168;
+            vscan = 0;
+            flags = 10; # -hsync -vsync
+          };
+          flags = 1; # Preferred
+        };
       };
       # Match the physical layout: the laptop panel sits on the left.
       position = {
