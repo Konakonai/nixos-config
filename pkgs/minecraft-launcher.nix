@@ -77,6 +77,13 @@ pkgs.buildFHSEnv {
   # VSync on. Force native Wayland, which presents through niri properly.
   profile = ''
     export SDL_VIDEO_DRIVER=wayland
+    # On native Wayland, EGL follows the compositor onto the iGPU even though
+    # the game asks for the discrete one; PRIME offload pins both OpenGL and
+    # Vulkan to the RTX 4060.
+    export __NV_PRIME_RENDER_OFFLOAD=1
+    export __EGL_VENDOR_LIBRARY_FILENAMES=/run/opengl-driver/share/glvnd/egl_vendor.d/10_nvidia.json
+    export __GLX_VENDOR_LIBRARY_NAME=nvidia
+    export __VK_LAYER_NV_optimus=NVIDIA_only
   '';
   runScript = "${launcher}/minecraft-launcher";
   meta = {
