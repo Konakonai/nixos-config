@@ -1,4 +1,5 @@
 {
+  config,
   inputs,
   lib,
   pkgs,
@@ -13,6 +14,73 @@ let
     localsend-no-csd
     magpie
     ;
+  # Computer Use on niri drives whatever Wayland display wlroots-bridge
+  # connects to, through virtual-pointer/keyboard rather than the real seat.
+  # Pointing it at a nested niri lets Claude click and type there without
+  # moving the user's cursor or focus. The bridge inherits the app's
+  # environment, so this wrapper swaps WAYLAND_DISPLAY while claude-cu-desk is
+  # running and falls back to the main session otherwise.
+  cuState = ''"$XDG_RUNTIME_DIR/claude-cu/env"'';
+  cuBridge = pkgs.writeShellScript "claude-cu-bridge" ''
+    env=${cuState}
+    if [ -r "$env" ]; then
+      . "$env"
+      if [ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]; then
+        export WAYLAND_DISPLAY
+      fi
+    fi
+    exec "$CLAUDE_CU_REAL_BRIDGE" "$@"
+  '';
+  cuNiriConfig = pkgs.writeText "claude-cu-niri.kdl" ''
+    hotkey-overlay {
+        skip-at-startup
+    }
+    prefer-no-csd
+    screenshot-path null
+    layout {
+        gaps 0
+        default-column-width { proportion 1.0; }
+    }
+    binds {
+        Alt+Q { close-window; }
+        Alt+Left { focus-column-left; }
+        Alt+Right { focus-column-right; }
+    }
+  '';
+  claude-cu-desk = pkgs.writeShellApplication {
+    name = "claude-cu-desk";
+    runtimeInputs = [ config.programs.niri.package ];
+    text = ''
+      state="$XDG_RUNTIME_DIR/claude-cu"
+      mkdir -p "$state"
+      trap 'rm -f "$state/env"' EXIT
+      # niri runs as a window inside the current session and gives the startup
+      # command its own WAYLAND_DISPLAY/DISPLAY; record them for the bridge
+      # wrapper and claude-cu-run.
+      # shellcheck disable=SC2016
+      niri -c ${cuNiriConfig} -- sh -c '
+        printf "WAYLAND_DISPLAY=%s\nDISPLAY=%s\n" "$WAYLAND_DISPLAY" "''${DISPLAY-}" \
+          > "$1/env.tmp" && mv "$1/env.tmp" "$1/env"
+      ' sh "$state"
+    '';
+  };
+  # open_application launches with the app's own environment and so lands on
+  # the main desktop; start programs for the nested display through this.
+  claude-cu-run = pkgs.writeShellApplication {
+    name = "claude-cu-run";
+    text = ''
+      env=${cuState}
+      if [ ! -r "$env" ]; then
+        echo "claude-cu-run: claude-cu-desk is not running" >&2
+        exit 1
+      fi
+      set -a
+      # shellcheck disable=SC1090
+      . "$env"
+      set +a
+      exec "$@"
+    '';
+  };
   claude-desktop =
     (inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.override {
       # Upstream v2.2553.x is built against Electron 44; nixpkgs' default
@@ -22,7 +90,9 @@ let
       (oldAttrs: {
         postFixup = (oldAttrs.postFixup or "") + ''
           wrapProgram $out/bin/claude-desktop \
-            --set CHROME_DEVEL_SANDBOX "$out/lib/claude-desktop/chrome-sandbox"
+            --set CHROME_DEVEL_SANDBOX "$out/lib/claude-desktop/chrome-sandbox" \
+            --set WLROOTS_BRIDGE_BIN ${cuBridge} \
+            --set CLAUDE_CU_REAL_BRIDGE "$out/lib/claude-desktop/resources/wlroots-bridge"
 
           # The bundled node-pty binding links libstdc++, but Electron itself
           # ships a static libc++, so nothing in the process provides it and
@@ -94,6 +164,8 @@ in
   home.packages = with pkgs; [
     agy
     antigravity
+    claude-cu-desk
+    claude-cu-run
     claude-desktop
     file-roller
     foliate
