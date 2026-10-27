@@ -26,6 +26,7 @@
 
     lilya.codex
     officecli
+    zoom-us
 
     adwaita-icon-theme
     qadwaitadecorations-qt6
