@@ -26,6 +26,8 @@ rustPlatform.buildRustPackage {
   #   Wait for the compositor and give clients a moment first.
   # - wlroots does not derive modifier state from a virtual keyboard's keys, so
   #   `ctrl+c` arrived as `c`. Report the modifier mask explicitly.
+  # Drop this package once patrickjaja/wlroots-bridge#3 is in the bridge that
+  # claude-desktop-extra bundles.
   patches = [ ./wlroots-bridge-sway-input.patch ];
 
   meta = {
