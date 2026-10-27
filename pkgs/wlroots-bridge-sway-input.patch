@@ -1,0 +1,109 @@
+diff --git a/src/conn.rs b/src/conn.rs
+index 4721c3f..70e44f3 100644
+--- a/src/conn.rs
++++ b/src/conn.rs
+@@ -68,6 +68,10 @@ pub struct Globals {
+     pub outputs: Vec<BoundGlobal>,
+ }
+ 
++/// How long [`Conn::settle`] leaves clients to bind a newly added seat
++/// capability.
++const SETTLE_MS: u64 = 50;
++
+ /// Shared connection + a live registry + the discovered globals.
+ pub struct Conn {
+     pub conn: Connection,
+@@ -106,6 +110,21 @@ impl Conn {
+         })
+     }
+ 
++    /// Wait until the compositor has processed every request sent so far,
++    /// then give clients a moment to react. A freshly created virtual input
++    /// device can add a seat capability (sway drops pointer and keyboard
++    /// whenever no such device exists); clients only re-bind wl_pointer /
++    /// wl_keyboard after seeing it, so events sent in the same burst as the
++    /// device's creation reach nobody.
++    pub fn settle(&self) -> Result<()> {
++        let mut queue = self.conn.new_event_queue::<()>();
++        queue
++            .roundtrip(&mut ())
++            .context("failed the device settle roundtrip")?;
++        std::thread::sleep(std::time::Duration::from_millis(SETTLE_MS));
++        Ok(())
++    }
++
+     /// The list of advertised `wl_output` globals, most-recently-added last.
+     pub fn output_names(&self) -> &[BoundGlobal] {
+         &self.globals.outputs
+diff --git a/src/input/keyboard.rs b/src/input/keyboard.rs
+index 359125f..3efa738 100644
+--- a/src/input/keyboard.rs
++++ b/src/input/keyboard.rs
+@@ -15,6 +15,7 @@
+ //! `key` events carry Linux evdev codes (XKB keycode - 8), which is exactly what
+ //! `generate_keymap` returns in each placement's `evdev_code`.
+ 
++use std::cell::Cell;
+ use std::io::Write;
+ use std::os::fd::AsFd;
+ use std::thread;
+@@ -47,6 +48,8 @@ wayland_client::delegate_noop!(KeyboardState: ignore wayland_client::protocol::w
+ struct Keyboard {
+     kb: zwp_virtual_keyboard_v1::ZwpVirtualKeyboardV1,
+     keymap: GeneratedKeymap,
++    /// Depressed modifier mask last sent with `modifiers`.
++    mods: Cell<u32>,
+ }
+ 
+ impl Keyboard {
+@@ -62,13 +65,37 @@ impl Keyboard {
+         bytes.push(0); // xkbcommon expects a NUL terminator
+         let file = write_memfd(&bytes)?;
+         kb.keymap(XKB_V1, file.as_fd(), bytes.len() as u32);
++        conn.settle()?;
+ 
+-        Ok(Self { kb, keymap })
++        Ok(Self {
++            kb,
++            keymap,
++            mods: Cell::new(0),
++        })
+     }
+ 
+     fn key(&self, evdev_code: u32, pressed: bool) {
+         let state = if pressed { KEY_PRESSED } else { KEY_RELEASED };
+         self.kb.key(now_ms(), evdev_code, state);
++
++        // wlroots (sway, Hyprland) does not derive modifier state from a
++        // virtual keyboard's key events; the client has to report it, or
++        // `ctrl+c` arrives as a plain `c`. Real-modifier bits follow the
++        // generated keymap's modifier_map (Shift, Control, Mod1, Mod4).
++        let bit = match evdev_code {
++            c if c == self.keymap.shift_code => 1 << 0,
++            c if c == self.keymap.ctrl_code => 1 << 2,
++            c if c == self.keymap.alt_code => 1 << 3,
++            c if c == self.keymap.super_code => 1 << 6,
++            _ => return,
++        };
++        let mods = if pressed {
++            self.mods.get() | bit
++        } else {
++            self.mods.get() & !bit
++        };
++        self.mods.set(mods);
++        self.kb.modifiers(mods, 0, 0, 0);
+     }
+ }
+ 
+diff --git a/src/input/pointer.rs b/src/input/pointer.rs
+index cadc085..8ddcb4b 100644
+--- a/src/input/pointer.rs
++++ b/src/input/pointer.rs
+@@ -174,6 +174,7 @@ impl Pointer {
+         let manager = conn.bind_virtual_pointer_manager(qh)?;
+         // No seat hint: the compositor assigns a default seat.
+         let pointer = manager.create_virtual_pointer(None, qh, ());
++        conn.settle()?;
+         Ok(Self { pointer, layout })
+     }
+ 

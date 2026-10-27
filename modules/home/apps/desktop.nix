@@ -13,6 +13,7 @@ let
     grok-bot
     localsend-no-csd
     magpie
+    wlroots-bridge
     ;
   # Computer Use on niri drives whatever Wayland display wlroots-bridge
   # connects to, through virtual-pointer/keyboard rather than the real seat.
@@ -25,129 +26,9 @@ let
   # caches the bridge's output names for the life of the app, so the headless
   # outputs mirror each real output's position and scale, and --display is
   # translated between real and HEADLESS-n names in whichever direction the
-  # current target needs.
+  # current target needs. The bundled bridge loses input on sway, so the
+  # wrapper runs a patched build from source instead (see pkgs/wlroots-bridge.nix).
   cuState = ''"$XDG_RUNTIME_DIR/claude-cu"'';
-  # wlroots-bridge creates a fresh virtual keyboard per call and sends keys
-  # right after uploading its keymap; sway drops the first key of each such
-  # keyboard (`touch` arrives as `ouch`, a lone Return is lost). wtype waits
-  # for the compositor before typing, so keyboard actions on the headless
-  # display go through it. It speaks the bridge's CLI and JSON for the three
-  # keyboard subcommands, with key names from wlroots-bridge's CU_KEY_NAMES.
-  cuKeys = pkgs.writeShellApplication {
-    name = "claude-cu-keys";
-    runtimeInputs = [
-      pkgs.jq
-      pkgs.wtype
-    ];
-    text = ''
-      keysym() {
-        local t=''${1,,}
-        case ''${t//_/} in
-          enter | return) echo Return ;;
-          backspace) echo BackSpace ;;
-          delete) echo Delete ;;
-          escape | esc) echo Escape ;;
-          tab) echo Tab ;;
-          space) echo space ;;
-          up) echo Up ;;
-          down) echo Down ;;
-          left) echo Left ;;
-          right) echo Right ;;
-          home) echo Home ;;
-          end) echo End ;;
-          pageup) echo Prior ;;
-          pagedown) echo Next ;;
-          capslock) echo Caps_Lock ;;
-          ctrl | control) echo Control_L ;;
-          alt) echo Alt_L ;;
-          shift) echo Shift_L ;;
-          super | meta | cmd | command) echo Super_L ;;
-          -) echo minus ;;
-          *) echo "$1" ;;
-        esac
-      }
-      modifier() {
-        case ''${1,,} in
-          ctrl | control) echo ctrl ;;
-          alt) echo alt ;;
-          shift) echo shift ;;
-          super | meta | cmd | command) echo logo ;;
-          *) return 1 ;;
-        esac
-      }
-
-      cmd=$1
-      shift
-      text="" keys="" repeat=1 duration=0 delay=12 held=()
-      while [ $# -gt 0 ]; do
-        case $1 in
-          --text) text=$2 ;;
-          --keys) keys=$2 ;;
-          --repeat) repeat=$2 ;;
-          --key) held+=("$2") ;;
-          --duration-ms) duration=$2 ;;
-          --delay-ms) delay=$2 ;;
-        esac
-        shift 2
-      done
-
-      case $cmd in
-        type)
-          wtype -d "$delay" -- "$text"
-          jq -cn --arg t "$text" --argjson n "''${#text}" \
-            '{action: "type", text: $t, charCount: $n}'
-          ;;
-        key-sequence)
-          IFS=+ read -ra tokens <<<"$keys"
-          mods=() base=""
-          for t in "''${tokens[@]}"; do
-            if m=$(modifier "$t"); then mods+=("$m"); else base=$t; fi
-          done
-          if [ -z "$base" ]; then
-            base=''${tokens[-1]}
-            unset 'mods[-1]'
-          fi
-          once=()
-          for m in "''${mods[@]}"; do once+=(-M "$m"); done
-          # A literal character is typed as text so punctuation needs no
-          # keysym name; '-' would read as an option.
-          if [ ''${#base} = 1 ] && [ "$base" != - ]; then
-            once+=("$base")
-          else
-            once+=(-k "$(keysym "$base")")
-          fi
-          for ((i = ''${#mods[@]} - 1; i >= 0; i--)); do once+=(-m "''${mods[i]}"); done
-          wargs=()
-          for ((i = 0; i < repeat; i++)); do
-            ((i > 0)) && wargs+=(-s 8)
-            wargs+=("''${once[@]}")
-          done
-          wtype "''${wargs[@]}"
-          jq -cn --arg k "$keys" --argjson r "$repeat" \
-            '{action: "key", keys: [$k], repeat: $r}'
-          ;;
-        hold-key)
-          press=() release=()
-          for spec in "''${held[@]}"; do
-            IFS=+ read -ra tokens <<<"$spec"
-            for t in "''${tokens[@]}"; do
-              if m=$(modifier "$t"); then
-                press+=(-M "$m")
-                release=(-m "$m" "''${release[@]}")
-              else
-                s=$(keysym "$t")
-                press+=(-P "$s")
-                release=(-p "$s" "''${release[@]}")
-              fi
-            done
-          done
-          wtype "''${press[@]}" -s "$duration" "''${release[@]}"
-          printf '%s\n' "''${held[@]}" | jq -cRn --argjson d "$duration" \
-            '{action: "hold-key", keys: [inputs], duration_ms: $d}'
-          ;;
-      esac
-    '';
-  };
   cuBridge = pkgs.writeShellScript "claude-cu-bridge" ''
     state=${cuState}
     redirect=0
@@ -157,11 +38,6 @@ let
         export WAYLAND_DISPLAY
         redirect=1
       fi
-    fi
-    if [ $redirect = 1 ]; then
-      case $1 in
-        type | key-sequence | hold-key) exec ${lib.getExe cuKeys} "$@" ;;
-      esac
     fi
     args=()
     while [ $# -gt 0 ]; do
@@ -186,7 +62,6 @@ let
       config.programs.niri.package
       pkgs.jq
       pkgs.sway
-      pkgs.wtype
     ];
     text = ''
       state=${cuState}
@@ -209,11 +84,8 @@ let
           jq -r '"\(.real) \(.headless)"' <<<"$o" >> "$state/outputs"
           jq -r '"output \(.headless) mode \(.mode.width)x\(.mode.height) position \(.l.x) \(.l.y) scale \(.l.scale) bg #303030 solid_color"' <<<"$o"
         done <<<"$outputs"
-        # The seat has no keyboard until the first virtual one appears, and
-        # the first key a client sees after that is lost; spend it on Shift
-        # before anyone types.
         # shellcheck disable=SC2016
-        printf '%s\n' "exec sh -c 'wtype -k Shift_L; printf \"WAYLAND_DISPLAY=%s\\nDISPLAY=%s\\n\" \"\$WAYLAND_DISPLAY\" \"\''${DISPLAY-}\" > $state/env.tmp && mv $state/env.tmp $state/env'"
+        printf '%s\n' "exec sh -c 'printf \"WAYLAND_DISPLAY=%s\\nDISPLAY=%s\\n\" \"\$WAYLAND_DISPLAY\" \"\''${DISPLAY-}\" > $state/env.tmp && mv $state/env.tmp $state/env'"
       } > "$config"
 
       trap 'rm -f "$state/env" "$state/pid"' EXIT
@@ -257,7 +129,7 @@ let
           wrapProgram $out/bin/claude-desktop \
             --set CHROME_DEVEL_SANDBOX "$out/lib/claude-desktop/chrome-sandbox" \
             --set WLROOTS_BRIDGE_BIN ${cuBridge} \
-            --set CLAUDE_CU_REAL_BRIDGE "$out/lib/claude-desktop/resources/wlroots-bridge"
+            --set CLAUDE_CU_REAL_BRIDGE ${lib.getExe wlroots-bridge}
 
           # The bundled node-pty binding links libstdc++, but Electron itself
           # ships a static libc++, so nothing in the process provides it and
