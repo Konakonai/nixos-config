@@ -1,5 +1,4 @@
 {
-  config,
   inputs,
   lib,
   pkgs,
@@ -13,56 +12,17 @@ let
     grok-bot
     localsend-no-csd
     magpie
-    wlroots-bridge
     ;
-  # Computer Use on niri drives whatever Wayland display wlroots-bridge
-  # connects to, through virtual-pointer/keyboard rather than the real seat.
-  # Pointing it at a headless sway lets Claude click and type there without
-  # moving the user's cursor or focus. The bridge inherits the app's
-  # environment, so this wrapper swaps WAYLAND_DISPLAY while claude-cu-desk is
-  # running and falls back to the main session otherwise.
-  #
-  # The executor takes monitor geometry from Electron (the real outputs) and
-  # caches the bridge's output names for the life of the app, so the headless
-  # outputs mirror each real output's position and scale, and --display is
-  # translated between real and HEADLESS-n names in whichever direction the
-  # current target needs. The bundled bridge loses input on sway, so the
-  # wrapper runs a patched build from source instead (see pkgs/wlroots-bridge.nix).
+  # Display 2 for claude-desktop-extra's "Computer Use on a background
+  # display": Claude clicks and types there through the bundled bridge without
+  # touching the user's cursor or focus. Headless, so it needs no window on the
+  # real desktop; pixman, so it never wakes the dGPU (which must stay asleep on
+  # battery). Pick its wayland-N socket on the setup page (Settings -> Extra ->
+  # Community Features); sway takes the lowest free number, so normally wayland-2.
   cuState = ''"$XDG_RUNTIME_DIR/claude-cu"'';
-  cuBridge = pkgs.writeShellScript "claude-cu-bridge" ''
-    state=${cuState}
-    redirect=0
-    if [ -r "$state/env" ]; then
-      . "$state/env"
-      if [ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]; then
-        export WAYLAND_DISPLAY
-        redirect=1
-      fi
-    fi
-    args=()
-    while [ $# -gt 0 ]; do
-      if [ "$1" = --display ] && [ $# -ge 2 ] && [ -r "$state/outputs" ]; then
-        name=$2
-        while read -r real headless; do
-          if [ $redirect = 1 ] && [ "$name" = "$real" ]; then name=$headless; fi
-          if [ $redirect = 0 ] && [ "$name" = "$headless" ]; then name=$real; fi
-        done < "$state/outputs"
-        args+=(--display "$name")
-        shift 2
-        continue
-      fi
-      args+=("$1")
-      shift
-    done
-    exec "$CLAUDE_CU_REAL_BRIDGE" "''${args[@]}"
-  '';
   claude-cu-desk = pkgs.writeShellApplication {
     name = "claude-cu-desk";
-    runtimeInputs = [
-      config.programs.niri.package
-      pkgs.jq
-      pkgs.sway
-    ];
+    runtimeInputs = [ pkgs.sway ];
     text = ''
       state=${cuState}
       mkdir -p "$state"
@@ -71,29 +31,18 @@ let
         exit 0
       fi
 
-      outputs=$(niri msg -j outputs | jq -c '
-        [to_entries[] | select(.value.logical != null)] | sort_by(.key) | to_entries[]
-        | {real: .value.key, headless: "HEADLESS-\(.key + 1)", l: .value.value.logical,
-           mode: .value.value.modes[.value.value.current_mode]}')
-      : > "$state/outputs"
       config="$state/sway.conf"
       {
         echo "default_border none"
         echo "focus_follows_mouse no"
-        while read -r o; do
-          jq -r '"\(.real) \(.headless)"' <<<"$o" >> "$state/outputs"
-          jq -r '"output \(.headless) mode \(.mode.width)x\(.mode.height) position \(.l.x) \(.l.y) scale \(.l.scale) bg #303030 solid_color"' <<<"$o"
-        done <<<"$outputs"
+        echo "output HEADLESS-1 mode 1920x1200 scale 1.25 bg #303030 solid_color"
         # shellcheck disable=SC2016
         printf '%s\n' "exec sh -c 'printf \"WAYLAND_DISPLAY=%s\\nDISPLAY=%s\\n\" \"\$WAYLAND_DISPLAY\" \"\''${DISPLAY-}\" > $state/env.tmp && mv $state/env.tmp $state/env'"
       } > "$config"
 
       trap 'rm -f "$state/env" "$state/pid"' EXIT
-      # Headless, so it keeps rendering with no window on the real desktop;
-      # pixman, so it never touches the dGPU (which must stay asleep on battery).
       env -u WAYLAND_DISPLAY -u DISPLAY -u NIRI_SOCKET \
         WLR_BACKENDS=headless \
-        WLR_HEADLESS_OUTPUTS="$(wc -l < "$state/outputs")" \
         WLR_RENDERER=pixman \
         WLR_LIBINPUT_NO_DEVICES=1 \
         sway -c "$config" &
@@ -101,8 +50,8 @@ let
       wait
     '';
   };
-  # open_application launches with the app's own environment and so lands on
-  # the main desktop; start programs for the headless display through this.
+  # Start a program on display 2 from a shell (Claude's own open_application
+  # already targets it).
   claude-cu-run = pkgs.writeShellApplication {
     name = "claude-cu-run";
     text = ''
@@ -127,9 +76,7 @@ let
       (oldAttrs: {
         postFixup = (oldAttrs.postFixup or "") + ''
           wrapProgram $out/bin/claude-desktop \
-            --set CHROME_DEVEL_SANDBOX "$out/lib/claude-desktop/chrome-sandbox" \
-            --set WLROOTS_BRIDGE_BIN ${cuBridge} \
-            --set CLAUDE_CU_REAL_BRIDGE ${lib.getExe wlroots-bridge}
+            --set CHROME_DEVEL_SANDBOX "$out/lib/claude-desktop/chrome-sandbox"
 
           # The bundled node-pty binding links libstdc++, but Electron itself
           # ships a static libc++, so nothing in the process provides it and
@@ -206,6 +153,7 @@ in
     claude-desktop
     file-roller
     foliate
+    foot
     gimp
     gnome-font-viewer
     grok-bot

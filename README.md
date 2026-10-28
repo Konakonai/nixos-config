@@ -30,7 +30,7 @@ docs/                        仓库之外的手工状态（如音乐服务器）
 - **音乐**：beets 按 Deezer 整理 `~/Music`，本地插件 `zhlyrics` 补中文歌词（网易云 + LRCLib，统一简体）；`music-sync` 镜像到上海服务器上的 Navidrome；`music-discover` 每周用网易云「我喜欢的音乐」做种子，汇总网易云、ListenBrainz、YouTube Music 的相似推荐生成发现页。见 [docs/music-server.md](docs/music-server.md)。
 - **影视**：夸克网盘经 OpenList → rclone 挂到 `~/Mounts/OpenList`，本机 Jellyfin（以用户身份运行）刮削 TMDB，本机用 Jellyfin Desktop 播放；8096 只在 Wi-Fi 网卡（热点或同一 Wi-Fi 下的手机）和 `tailscale0`（手机在外面时）上开放；LTE 是运营商内网地址，无法直连。
 - **Claude Code mod**：`modules/home/claude-code/token-band` 由 Home Manager 链到 `~/.claude/skills/`，在输入框上方显示 tok/s、TTFT、prompt 缓存命中率与缓存过期倒计时；改源码后在仓库目录跑 `claude plugin test modules/home/claude-code/token-band`。
-- **后台 Computer Use**：`claude-cu-desk` 起一个 headless sway（pixman 渲染，不唤醒独显），按真实显示器的位置和缩放一一镜像输出；它运行时 Claude Desktop 的 Computer Use 只操作这块虚拟屏，不动真实光标和焦点，`claude-cu-desk stop` 后回到主桌面。应用用 `claude-cu-run <命令>` 开到虚拟屏上（终端用 foot，kitty 在那里收不到输入）；不要给 Computer Use 写剪贴板权限，多行输入会经主桌面的剪贴板粘贴。sway 上的输入要靠 `pkgs/wlroots-bridge.nix` 的补丁版 bridge。
+- **后台 Computer Use**：claude-desktop-extra 的「Computer Use on a background display」（Settings → Extra → Community Features）的第二块屏由 `claude-cu-desk` 提供：headless sway，pixman 渲染不唤醒独显，在设置页选它的 `wayland-N`（通常是 `wayland-2`）。开关打开时第二块屏没运行，Computer Use 会直接拒绝，不会回落到主桌面；`claude-cu-desk stop` 停掉它。从 shell 往上面开程序用 `claude-cu-run <命令>`；终端用 foot，kitty 在那里收不到输入。
 - **checks**：脚本单测与 Mihomo 规则可达性、statix/deadnix/nixfmt、Niri KDL 校验。
 
 ## 使用
