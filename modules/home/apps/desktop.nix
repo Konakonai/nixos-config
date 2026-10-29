@@ -133,6 +133,7 @@ in
   home.packages = with pkgs; [
     agy
     antigravity
+    calibre
     claude-cu-desk
     claude-cu-run
     claude-desktop
