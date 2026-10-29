@@ -4,8 +4,9 @@
 # that re-address nodes need no edit here:
 #   Fixed          static exit IP per region (US, TW, JP)
 #   Fast/Balancer  cross-region clusters (no geo tag, exit country varies)
-#   X<n>           n-times traffic billing: X1 is the normal rate; JP-X5 is
-#                  only offered to the Google group
+#   X<n>           n-times traffic billing: X1 is the normal rate; the
+#                  JP-Express-X5 nodes are only offered to Google and
+#                  Anna's Archive
 # A filter that stops matching after an upstream rename leaves its group
 # with only COMPATIBLE, which dials DIRECT; check the group list in the
 # dashboard after the subscription changes its node names.
@@ -56,7 +57,7 @@ proxy-groups:
   - TW Fixed IP
   use:
   - glados
-  filter: -Fixed-|^JP-X5-
+  filter: -Fixed-|^JP-Express-X5-
 # The subscription no longer tags Netflix-unlock nodes.
 - name: Streaming
   type: select
@@ -78,6 +79,17 @@ proxy-groups:
   use:
   - glados
   filter: ^(US|JP)-Fixed-
+# DDoS-Guard sends every Anna's Archive search through its JS check, and
+# rejects that check (the /mark/ POST returns 503, then the manual captcha)
+# from every Fixed/Fast/Balancer/X1 exit; tested 2026-10-30 with a fresh
+# browser per exit. The JP-Express-X5 exits are AWS Tokyo addresses and pass.
+# check.ddos-guard.net does not need to share the exit, so it stays on the
+# MATCH rule. Only page loads go here; file downloads use partner domains.
+- name: Anna's Archive
+  type: select
+  proxies:
+  - JP Express
+  - Default Proxy
 - name: Developer
   type: select
   proxies:
@@ -182,6 +194,14 @@ proxy-groups:
   - glados
   filter: ^US-X1-
   url: https://www.gstatic.com/generate_204
+- name: JP Express
+  type: url-test
+  hidden: true
+  use:
+  - glados
+  filter: ^JP-Express-X5-
+  url: https://www.gstatic.com/generate_204
+  tolerance: 100
 # The subscription's own Download group uses the normal-rate US-X1 nodes.
 - name: Download-Auto
   type: fallback
@@ -525,6 +545,8 @@ rules:
 - GEOSITE,disney,Streaming
 - DOMAIN-SUFFIX,deezer.com,Deezer
 - DOMAIN-SUFFIX,dzcdn.net,Deezer
+# Mirrors rotate between TLDs (.gl, .pk, .gd, ...).
+- DOMAIN-KEYWORD,annas-archive,Anna's Archive
 - GEOSITE,spotify,Streaming
 - GEOSITE,twitch,Streaming
 - GEOSITE,netflix,Streaming
