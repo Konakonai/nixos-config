@@ -12,7 +12,7 @@
 `main` 上每个提交都应是在本机 `rebuild` 过并确认可用的状态。`rebuild` 构建的是当前工作树，所以 wip 改动要在该分支检出时 `rebuild`。
 
 - agent 可以自己运行 `rebuild` / `testbuild` / `bootbuild`（wheel 已免密 sudo）。glibc / systemd / PAM 升级只用 `bootbuild`：live switch 曾弄坏 PAM 导致无法登录。需要重启或注销时交给用户。
-- 不 `systemctl start|stop|restart`（含 `--user`），服务重启由用户执行。
+- 可以自己 `systemctl start|stop|restart`（含 `--user`）非关键服务：OpenList、rclone 挂载、Jellyfin、restic 备份、普通用户应用服务等，挂了也只影响该服务本身。关键服务仍交给用户：网络与代理（mihomo、NetworkManager、ModemManager、Tailscale）、会话与显示（niri、Noctalia、SDDM、portal）、音频（PipeWire）、D-Bus、登录 / PAM 相关；拿不准就按关键处理。
 - Commit message 用简短英文祈使句（`add xxx to system packages`）。
 - 不推送 `wip/*`；`main` 按用户指示推送。
 
