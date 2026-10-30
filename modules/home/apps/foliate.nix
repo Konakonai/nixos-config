@@ -108,17 +108,18 @@ in
   # 所以在它启动时读取的用户样式表里按 unicode-range 拼复合字体。
   # 中文书（html lang=zh/ja，Foliate 会从元数据补上）用复合字体，标点走文楷；
   # 其他语言直接 Literata 优先，引号等保持西文字形，缺字回退文楷。
-  # 正文规则只挂在 html 上：书籍给元素指定的字体照样生效；开了「覆盖字体」后
-  # Foliate 把所有元素 revert 成继承，这里的 !important 让它们继承到复合字体。
+  # 正文规则只是兜底：:where() 把特异度降到 0 且不加 !important，书籍自己给
+  # html 或元素指定的字体（含双字体排版）都优先；书没指定时才用复合字体。
+  # 开了「覆盖字体」后 Foliate 把所有元素 revert，这时用的是设置里的默认字体。
   xdg.configFile."com.github.johnfactotum.Foliate/user-stylesheet.css".text = ''
     ${compositeFamily "Reading ZH" "LXGW WenKai TC"}
     ${lib.concatMapStrings (family: compositeFamily family "GenRyuMin2 TC") mingFamilies}
 
-    html:lang(zh), html:lang(ja) {
-      font-family: "Reading ZH", "LXGW WenKai TC", serif !important;
+    :where(html:lang(zh), html:lang(ja)) {
+      font-family: "Reading ZH", "LXGW WenKai TC", serif;
     }
-    html:not(:lang(zh)):not(:lang(ja)) {
-      font-family: "Literata", "LXGW WenKai TC", serif !important;
+    :where(html:not(:lang(zh)):not(:lang(ja))) {
+      font-family: "Literata", "LXGW WenKai TC", serif;
     }
   '';
 }
