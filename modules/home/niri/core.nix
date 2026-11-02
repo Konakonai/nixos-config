@@ -26,15 +26,10 @@ let
 in
 {
   programs.niri.settings = {
+    # niri-flake treats non-store include paths as optional by default.
     includes = [
-      {
-        path = "gpu.kdl";
-        optional = true;
-      }
-      {
-        path = "noctalia.kdl";
-        optional = true;
-      }
+      "gpu.kdl"
+      "noctalia.kdl"
     ];
 
     prefer-no-csd = true;
