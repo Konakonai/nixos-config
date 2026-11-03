@@ -22,7 +22,7 @@
 
 另外：`system.@system[0].cronloglevel=9`，免得 cron 每分钟写一行日志；上面三个文件已加进 `/etc/sysupgrade.conf`，attended sysupgrade 升级时会保留。
 
-- 查看日志：`logread -e campus-login`。只记录登录成功、失败（带 portal 返回的 `msg`）和配置错误，在线时不写日志。
+- 查看日志：`logread -e campus-login`。只记录状态变化：登录成功、「online again」，以及失败（带 portal 返回内容）和配置错误。在线时不写日志；同一个失败原因连续出现只记第一次（存在 `/tmp/campus-login.fail`），所以夜间断网时段每分钟重试也不会刷满日志。
 - 强制登录：`campus-login --force`（跳过在线检查）。
 - 改密码：编辑 `/etc/campus-login.conf` 的 `CAMPUS_PASS`。运营商后缀 `CAMPUS_ISP` 取 `@telecom` / `@cmcc` / `@unicom`，选「校园网」时留空。
 
@@ -37,19 +37,31 @@
 PORTAL=10.2.5.251
 CONF=/etc/campus-login.conf
 TAG=campus-login
+# Last failure message. Retries run every minute (e.g. through the nightly
+# cut-off), so a failure is logged only when it differs from the previous one.
+STATE=/tmp/campus-login.fail
 
 exec 9>/var/lock/campus-login.lock
 flock -n 9 || exit 0
 
-[ -r "$CONF" ] || { logger -t $TAG "missing $CONF"; exit 1; }
+fail() {
+	[ "$(cat $STATE 2>/dev/null)" = "$1" ] || { logger -t $TAG "$1"; echo "$1" > $STATE; }
+	exit 1
+}
+
+[ -r "$CONF" ] || fail "missing $CONF"
 . "$CONF"
-[ -n "$CAMPUS_USER" ] && [ -n "$CAMPUS_PASS" ] || { logger -t $TAG "CAMPUS_USER/CAMPUS_PASS not set"; exit 1; }
+[ -n "$CAMPUS_USER" ] && [ -n "$CAMPUS_PASS" ] || fail "CAMPUS_USER/CAMPUS_PASS not set"
 
 # The portal root serves the logout page (Dr.COMWebLoginID_1) while this IP is
 # authenticated, and the login page otherwise.
 if [ "$1" != "--force" ]; then
-	page=$(wget -q -T 5 -O- "http://$PORTAL/" 2>/dev/null) || { logger -t $TAG "portal unreachable"; exit 1; }
-	case "$page" in *Dr.COMWebLoginID_1.htm*) exit 0 ;; esac
+	page=$(wget -q -T 5 -O- "http://$PORTAL/" 2>/dev/null) || fail "portal unreachable"
+	case "$page" in *Dr.COMWebLoginID_1.htm*)
+		# Online again without our login (manual login, or the cut-off ended).
+		[ -e $STATE ] && { logger -t $TAG "online again"; rm -f $STATE; }
+		exit 0 ;;
+	esac
 fi
 
 urlencode() {
@@ -68,7 +80,7 @@ urlencode() {
 . /usr/share/libubox/jshn.sh
 json_load "$(ubus call network.interface.wan status)"
 json_select ipv4-address && json_select 1 && json_get_var ip address
-[ -n "$ip" ] || { logger -t $TAG "wan has no IPv4 address"; exit 1; }
+[ -n "$ip" ] || fail "wan has no IPv4 address"
 
 # Mirrors login_portal() in the portal's a42.js: login_method=1, no account
 # prefix, ISP suffix (@telecom/@cmcc/@unicom, empty for 校园网) appended.
@@ -80,8 +92,9 @@ case "$resp" in
 	*'"result":"1"'* | *'"result":1'*) logger -t $TAG "logged in as $CAMPUS_USER$CAMPUS_ISP ($ip)" ;;
 	# ret_code 2: this IP is already authenticated (seen with --force while online).
 	*'"ret_code":"2"'* | *'"ret_code":2'*) logger -t $TAG "already online ($ip)" ;;
-	*) logger -t $TAG "login failed: $resp"; exit 1 ;;
+	*) fail "login failed: $resp" ;;
 esac
+rm -f $STATE
 ```
 
 ## IPv6
