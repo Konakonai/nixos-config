@@ -36,4 +36,4 @@
 - **敏感信息**：密钥、令牌、代理节点只进 `secrets/*.age`，不进日志、注释或提交说明。
 - 每个 workaround 写清"为什么"；没有原因的规则会在下次审计时被删。
 - 改了 README 描述的东西（布局、亮点、所有权、备份范围），同步更新 README。
-- `docs/` 记录不归 Nix 管理的外部机器状态（`music-server.md`：上海 Navidrome）；改了那边的配置要同步更新文档。
+- `docs/` 记录不归 Nix 管理的外部机器状态（`music-server.md`：上海 Navidrome；`campus-router.md`：宿舍 OpenWrt 路由器）；改了那边的配置要同步更新文档。

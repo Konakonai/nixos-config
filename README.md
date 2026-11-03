@@ -15,7 +15,7 @@ pkgs/                        本地包与上游包的局部覆盖，导出为 pk
 scripts/ + scripts/tests/    独立脚本与回归测试
 checks/                      flake checks
 assets/ patches/ secrets/    静态资源、上游补丁、age 密文
-docs/                        仓库之外的手工状态（如音乐服务器）的记录与重建步骤
+docs/                        仓库之外的手工状态（音乐服务器、宿舍路由器）的记录与重建步骤
 ```
 
 导入都是显式列出的；没有 `lib/`，没有目录扫描。
