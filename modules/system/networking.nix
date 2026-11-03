@@ -66,10 +66,12 @@
     #
     # Jellyfin (8096) is for the phone, which joins either the hotspot or the
     # same Wi-Fi, so it is opened on the Wi-Fi interface only and stays closed
-    # on the LTE uplink.
+    # on the LTE uplink. The Calibre content server (8080) follows the same
+    # rule: it has no authentication by default.
     interfaces.wlp0s20f3 = {
       allowedTCPPorts = [
         53
+        8080
         8096
       ];
       allowedUDPPorts = [
