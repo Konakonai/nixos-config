@@ -6,10 +6,12 @@
 
 let
   pname = "grok-bot";
-  version = "0.47.0";
+  # The commit in the URL comes from the update feed:
+  #   curl -fsSL https://api2.cursor.sh/updates/api/update/linux-x64/sand/<version>/<commit>/stable
+  version = "0.78.4";
   src = fetchurl {
-    url = "https://downloads.cursor.com/grokbot/stable/c1e7d7a46549956d25f53e9c0b9f59666e03aa3a/linux/x64/Grok_Bot_${version}.AppImage";
-    hash = "sha256-wIL9qSgMQBtHy7/gEveytc79jZbBKR+A7shWGtbbSvM=";
+    url = "https://downloads.cursor.com/grokbot/stable/5a890c0d0fc9c678c5a339eb86b31dcfbd0b4730/linux/x64/Grok_Bot_${version}.AppImage";
+    hash = "sha256-J8x+kdqPykZahQpmwG8TeOMIACZsRCJDjFhYPK2NW1A=";
   };
   appimageContents = appimageTools.extract {
     inherit pname version src;
@@ -27,7 +29,7 @@ appimageTools.wrapType2 {
   extraInstallCommands = ''
     install -Dm444 ${appimageContents}/grok-bot.desktop -t $out/share/applications/
     substituteInPlace $out/share/applications/grok-bot.desktop \
-      --replace-fail 'Exec=AppRun --no-sandbox %U' 'Exec=grok-bot %U'
+      --replace-fail 'Exec=AppRun --no-sandbox -- %U' 'Exec=grok-bot -- %U'
     cp -r ${appimageContents}/usr/share/icons $out/share/
   '';
 

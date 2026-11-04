@@ -1,6 +1,8 @@
 { pkgs, ... }:
 
 let
+  # The build ID in the URL comes from the release list:
+  #   curl -fsSL https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/releases
   src = pkgs.fetchurl {
     url = "https://storage.googleapis.com/antigravity-public/antigravity-hub/2.29.0-5723181030440960/linux-x64/Antigravity.tar.gz";
     hash = "sha256-OmdXBLmzowcOBsDVDTUzBDr1RSHNFcZUlOnNwr8YlmQ=";
