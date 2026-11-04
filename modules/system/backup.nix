@@ -1,6 +1,7 @@
 {
   config,
   hostProfile,
+  lib,
   pkgs,
   ...
 }:
@@ -9,6 +10,14 @@ let
   home = hostProfile.user.homeDirectory;
   openlistDir = hostProfile.services.openlistDataDir;
   noctaliaDir = "${home}/.local/state/noctalia";
+
+  # The module only runs `unlock` before `forget --prune`, after the backup, so
+  # a lock left by an interrupted prune made every later backup fail first and
+  # never reach it (both repos stuck 2026-10-20 to 11-04). `unlock` without
+  # --remove-all only drops stale locks, so a live run is left alone.
+  unlockStale = extraOptions: ''
+    ${lib.getExe pkgs.restic}${lib.concatMapStrings (o: " -o ${o}") extraOptions} unlock
+  '';
 
   # Only irreplaceable state that lives outside Git (README「不在 Git 里的状态」
   # plus SSH/GPG keys). Everything else is declared here or disposable.
@@ -59,7 +68,8 @@ in
 
   services.restic.backups = {
     # SFTP-only account chrooted to /srv/restic on the server.
-    seoul = common // {
+    seoul = common // rec {
+      backupPrepareCommand = unlockStale extraOptions;
       repositoryFile = config.age.secrets.restic-seoul-repository.path;
       extraOptions = [
         "sftp.args='-i ${config.age.secrets.restic-seoul-ssh-key.path} -o IdentitiesOnly=yes -o HostKeyAlias=restic-seoul -o BatchMode=yes'"
@@ -68,6 +78,7 @@ in
 
     # The gdrive remote is authorised interactively by the user (drive.file scope).
     gdrive = common // {
+      backupPrepareCommand = unlockStale [ ];
       repository = "rclone:gdrive:restic/thinkbook";
       rcloneConfigFile = "${home}/.config/rclone/rclone.conf";
     };
