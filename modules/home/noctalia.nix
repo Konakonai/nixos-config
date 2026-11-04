@@ -95,7 +95,9 @@ let
       scale = 1.0;
       shadow = false;
       auto_hide = false;
-      reserve_space = false;
+      # Reserve space so windows maximized to edges stop below the bar; niri
+      # struts do not apply to them (see layout in niri/core.nix).
+      reserve_space = true;
       capsule = false;
       start = [
         "launcher"
@@ -144,7 +146,8 @@ let
 
     dock = {
       background_opacity = 0.0;
-      reserve_space = false;
+      # Same reason as bar.main.reserve_space.
+      reserve_space = true;
     };
 
     plugins = {
