@@ -84,11 +84,14 @@ in
     };
 
     layout = {
-      # No struts: the Noctalia bar and dock reserve their own exclusive zones.
-      # Struts only shrink tiled columns, while windows maximized to edges
-      # (titlebar maximize button) fill the output minus exclusive zones, so
-      # with struts they slid under the bar and dock.
+      # The Noctalia bar and dock reserve their own exclusive zones. Struts only
+      # shrink tiled columns, while windows maximized to edges (titlebar
+      # maximize button) fill the output minus exclusive zones, so struts alone
+      # let those slide under the bar and dock. The dock's zone (64 + 8 margin)
+      # is larger than the gap tiled windows need above its visible pill, so a
+      # negative bottom strut keeps them ending just above it.
       gaps = 18;
+      struts.bottom = -16;
       center-focused-column = "never";
       background-color = "transparent";
 
