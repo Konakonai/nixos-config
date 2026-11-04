@@ -46,8 +46,10 @@ let
       "--keep-weekly 5"
       "--keep-monthly 12"
     ];
+    # Campus network is down 23:30-07:00 on weekdays, which the old midnight
+    # schedule hit. Evening keeps a few hours of retries before the cutoff.
     timerConfig = {
-      OnCalendar = "daily";
+      OnCalendar = "*-*-* 19:00:00";
       Persistent = true;
       RandomizedDelaySec = "1h";
     };
@@ -86,11 +88,28 @@ in
 
   # Backups only read /home. Read-only also stops rclone, running as root, from
   # replacing the user-owned rclone.conf when it refreshes the OAuth token.
-  systemd.services = {
-    restic-backups-seoul.serviceConfig.ProtectHome = "read-only";
-    restic-backups-gdrive = {
-      path = [ pkgs.rclone ];
-      serviceConfig.ProtectHome = "read-only";
+  #
+  # Both repos go through the mihomo proxy, whose upstream node times out now
+  # and then. Retry hourly instead of losing the day: 1 run + 3 retries fits
+  # between 19:00 and the 23:30 campus cutoff.
+  systemd.services =
+    let
+      serviceOverrides = {
+        unitConfig = {
+          StartLimitIntervalSec = "6h";
+          StartLimitBurst = 4;
+        };
+        serviceConfig = {
+          ProtectHome = "read-only";
+          Restart = "on-failure";
+          RestartSec = "1h";
+        };
+      };
+    in
+    {
+      restic-backups-seoul = serviceOverrides;
+      restic-backups-gdrive = serviceOverrides // {
+        path = [ pkgs.rclone ];
+      };
     };
-  };
 }
