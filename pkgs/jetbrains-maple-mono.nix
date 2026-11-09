@@ -9,7 +9,7 @@ pkgs.stdenvNoCC.mkDerivation rec {
     # Not the API asset URL: anonymous API calls share a 60/hour quota per
     # exit IP, which the proxy exhausts.
     url = "https://github.com/SpaceTimee/Fusion-JetBrainsMapleMono/releases/download/${version}/JetBrainsMapleMono-XX-XX-XX-HT.zip";
-    hash = "sha256-J0wbty9flOAI2cmywNHEIg7A86KpCRq289HhF4KDq/8=";
+    hash = "sha256-1rWoD1AkwVifwa6Y+swaF5g27rwCQKxZaB41U68Dhcg=";
   };
 
   nativeBuildInputs = [ pkgs.unzip ];
