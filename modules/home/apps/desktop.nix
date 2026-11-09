@@ -154,7 +154,11 @@ in
     obsidian
     pavucontrol
     resources
-    splayer-next
+    # nixpkgs' cargoSetupHook now sets AWS_LC_SYS_USE_SYSTEM=1, but
+    # splayer-next does not provide aws-lc. Drop once nixpkgs fixes it.
+    (splayer-next.overrideAttrs (previous: {
+      buildInputs = previous.buildInputs ++ [ aws-lc ];
+    }))
     thunderbird
   ];
 
