@@ -5,7 +5,18 @@
     aria2
     zip
     sshfs
-    python3Packages.ddgs
+    # nixpkgs' primp 2.0.1 fails to build: its vendored zstd-sys probes
+    # libzstd via pkg-config, and aws-lc-sys is told to use a system AWS-LC,
+    # but the derivation provides none of them. Drop once nixpkgs fixes it.
+    (python3Packages.ddgs.override {
+      primp = python3Packages.primp.overridePythonAttrs (previous: {
+        nativeBuildInputs = previous.nativeBuildInputs ++ [ pkg-config ];
+        buildInputs = (previous.buildInputs or [ ]) ++ [
+          zstd
+          aws-lc
+        ];
+      });
+    })
     nh
     nvd
     nix-update
