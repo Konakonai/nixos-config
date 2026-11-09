@@ -7,14 +7,7 @@
 {
   agy = pkgs.callPackage ./agy.nix { };
   antigravity = pkgs.callPackage ./antigravity.nix { };
-  # nixpkgs ships Brave Origin without the Widevine CDM, so DRM streaming
-  # sites refuse to play.
-  brave-origin = pkgs.brave-origin.overrideAttrs (previous: {
-    postInstall = (previous.postInstall or "") + ''
-      ln -s ${pkgs.widevine-cdm}/share/google/chrome/WidevineCdm \
-        "$out/opt/brave.com/brave-origin/WidevineCdm"
-    '';
-  });
+  brave-origin = pkgs.callPackage ./brave-origin.nix { };
   celluloid-gl = pkgs.celluloid.overrideAttrs (previous: {
     preFixup = (previous.preFixup or "") + ''
       gappsWrapperArgs+=(--set GSK_RENDERER gl)
