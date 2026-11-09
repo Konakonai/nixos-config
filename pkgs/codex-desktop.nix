@@ -18,7 +18,7 @@ let
     flake-utils = inputs.flake-utils;
   };
 
-  codexDesktopBase = codexDesktopFlake.packages.${system}.codex-desktop.override {
+  codexDesktopUnpatched = codexDesktopFlake.packages.${system}.codex-desktop.override {
     linuxFeatureIds = [
       "computer-use-linux"
       # Replace the upstream Parcel Git watcher with a watcher whose
@@ -27,6 +27,15 @@ let
       "frameless-titlebar"
     ];
   };
+  # Node 24.22 / 26 fs.cpSync keeps the source's directory modes, so the
+  # watchbound feature copies store files as 0555 and its own rmSync of the
+  # staging root fails with EACCES. Node 22 still copies them writable.
+  # Drop once codex-desktop-linux restores write permission after copying.
+  codexDesktopBase = codexDesktopUnpatched.overrideAttrs (previous: {
+    nativeBuildInputs = map (
+      input: if input == pkgs.nodejs then pkgs.nodejs_22 else input
+    ) previous.nativeBuildInputs;
+  });
 
   codexDesktop = pkgs.symlinkJoin {
     name = "${codexDesktopBase.name}-codex-cli-path";
