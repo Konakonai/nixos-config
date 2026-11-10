@@ -41,6 +41,14 @@ let
         substituteInPlace app/dist/utils.js \
           --replace-fail "titleBarOverlay: isMacOS()" "titleBarOverlay: true"
 
+        # Closing the last window quits the app (and drops the tray icon) unless
+        # app_storage.json has runInBackground = "true"; the default is macOS-only.
+        # The key went missing from our storage around 2.29, so make the default
+        # keep running in the tray. An explicit toggle in Settings still wins.
+        substituteInPlace app/dist/services/settingsService.js \
+          --replace-fail "[SettingKey.RUN_IN_BACKGROUND, process.platform === 'darwin']" \
+                         "[SettingKey.RUN_IN_BACKGROUND, true]"
+
         asar pack app "$out/resources/app.asar"
       '';
 
