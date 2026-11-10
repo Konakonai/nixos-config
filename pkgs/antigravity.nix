@@ -4,8 +4,8 @@ let
   # The build ID in the URL comes from the release list:
   #   curl -fsSL https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/releases
   src = pkgs.fetchurl {
-    url = "https://storage.googleapis.com/antigravity-public/antigravity-hub/2.29.0-5723181030440960/linux-x64/Antigravity.tar.gz";
-    hash = "sha256-OmdXBLmzowcOBsDVDTUzBDr1RSHNFcZUlOnNwr8YlmQ=";
+    url = "https://storage.googleapis.com/antigravity-public/antigravity-hub/2.30.0-6386428939206656/linux-x64/Antigravity.tar.gz";
+    hash = "sha256-72ff6hoKjy2Yzhkl+uMTLUewXBp+jUsKH3YdBghae98=";
   };
 
   antigravity-src =
@@ -26,7 +26,7 @@ let
         # Electron emits it before getContentSize() reports the size niri
         # configured, so the overlay stays at the initial 1400x900. The content
         # view's 'bounds-changed' fires after the new size is applied.
-        # Checked on 2.29.0 / Electron 44.
+        # Checked on 2.30.0 / Electron 44.
         asar extract "$out/resources/app.asar" app
         substituteInPlace app/dist/loadingOverlay.js \
           --replace-fail "const [width, height] = win.getContentSize();" \
