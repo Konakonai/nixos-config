@@ -10,13 +10,13 @@
 
 let
   pname = "antigravity";
-  version = "2.30.0";
+  version = "2.31.1";
 
   # The build ID in the URL comes from the release list:
   #   curl -fsSL https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/releases
   src = fetchurl {
-    url = "https://storage.googleapis.com/antigravity-public/antigravity-hub/${version}-6386428939206656/linux-x64/Antigravity.tar.gz";
-    hash = "sha256-72ff6hoKjy2Yzhkl+uMTLUewXBp+jUsKH3YdBghae98=";
+    url = "https://storage.googleapis.com/antigravity-public/antigravity-hub/${version}-6044591015723008/linux-x64/Antigravity.tar.gz";
+    hash = "sha256-Cayq/V/NiFoRN3lUHSIX35eALHIk3qEkieKM5AmVA8w=";
   };
 
   context-viewer-src = fetchFromGitHub {
