@@ -8,6 +8,13 @@ let
     hash = "sha256-72ff6hoKjy2Yzhkl+uMTLUewXBp+jUsKH3YdBghae98=";
   };
 
+  context-viewer-src = pkgs.fetchFromGitHub {
+    owner = "elviscjn-cjn";
+    repo = "antigravity-context-viewer";
+    rev = "0b94e963e33e033d01a3cc456d022f553f141ee9";
+    hash = "sha256-7yrprhueo8V86QQ+WjW80ATWMlCcw20pWM0JOjlvI3g=";
+  };
+
   antigravity-src =
     pkgs.runCommand "antigravity-src"
       {
@@ -15,6 +22,7 @@ let
           pkgs.gnutar
           pkgs.gzip
           pkgs.asar
+          pkgs.nodejs
         ];
         inherit src;
       }
@@ -50,6 +58,16 @@ let
                          "[SettingKey.RUN_IN_BACKGROUND, true]"
 
         asar pack app "$out/resources/app.asar"
+
+        # Inject antigravity-context-viewer into app.asar.
+        cp -r ${context-viewer-src} context-viewer
+        chmod -R u+w context-viewer
+        substituteInPlace context-viewer/local-api.js \
+          --replace-fail "process.env.APPDATA + '/Antigravity/DevToolsActivePort'" \
+                         "require('path').join(process.env.APPDATA || (process.platform === 'darwin' ? require('path').join(require('os').homedir(), 'Library', 'Application Support') : (process.env.XDG_CONFIG_HOME || require('path').join(require('os').homedir(), '.config'))), 'Antigravity', 'DevToolsActivePort')"
+        export HOME="$TMPDIR"
+        export AG_METER_STATE_DIR="$TMPDIR/meter-state"
+        node context-viewer/cli.js install --path "$out/resources/app.asar"
       '';
 
   launcher = pkgs.writeShellScript "antigravity-launcher" ''
