@@ -10,11 +10,11 @@ stdenv.mkDerivation rec {
   pname = "agy";
   # The build ID in the URL comes from the release manifest:
   #   curl -fsSL https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json
-  version = "1.5.1";
+  version = "1.5.6";
 
   src = fetchurl {
-    url = "https://storage.googleapis.com/antigravity-public/antigravity-cli/${version}-4523430503120896/linux-x64/cli_linux_x64.tar.gz";
-    hash = "sha256-KmTM/F9mecJTdp8HYGFK9d4E2Nwe7uybl1K6TI3ZIlA=";
+    url = "https://storage.googleapis.com/antigravity-public/antigravity-cli/${version}-6212266538958848/linux-x64/cli_linux_x64.tar.gz";
+    hash = "sha256-QI+QLab85aRe93fCRsGC9u8mPrFVzCZUi5EM28eS39k=";
   };
 
   sourceRoot = ".";
