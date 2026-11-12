@@ -57,7 +57,6 @@ stdenv.mkDerivation rec {
     mkdir -p $out/bin
     zstd -dc $src > $out/bin/grok
     chmod +x $out/bin/grok
-    ln -s grok $out/bin/agent
 
     $out/bin/grok completions bash > grok.bash
     $out/bin/grok completions zsh > _grok
