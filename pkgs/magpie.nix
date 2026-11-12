@@ -63,11 +63,6 @@ stdenv.mkDerivation {
     runHook preInstall
 
     install -Dm755 "$src" "$out/bin/magpie"
-    # patchelf 0.19 corrupts this binary when auto-patchelf sets the
-    # interpreter before the RUNPATH: the PHDR ends up outside its LOAD
-    # segment and ld.so segfaults before main. Growing the dynamic section
-    # first leaves room for both later edits to happen in place.
-    patchelf --set-rpath "$(printf 'x%.0s' {1..1024})" "$out/bin/magpie"
     install -Dm644 "${icon}" "$out/share/icons/hicolor/256x256/apps/magpie.png"
 
     runHook postInstall
@@ -90,7 +85,11 @@ stdenv.mkDerivation {
   doInstallCheck = true;
   installCheckPhase = ''
     runHook preInstallCheck
-    LD_TRACE_LOADED_OBJECTS=1 "$out/bin/.magpie-wrapped" >/dev/null
+    trace=$(LD_TRACE_LOADED_OBJECTS=1 "$out/bin/.magpie-wrapped" 2>&1)
+    if grep -q "not found" <<<"$trace"; then
+      echo "$trace" >&2
+      exit 1
+    fi
     runHook postInstallCheck
   '';
 
