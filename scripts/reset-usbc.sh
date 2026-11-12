@@ -29,7 +29,7 @@ if [ -n "$sysroot" ]; then
   bounce_wait=0
   ucsi_wait=0
 else
-  settle=2
+  settle=8
   bounce_wait=0.3
   ucsi_wait=1
 fi
@@ -183,13 +183,18 @@ if attached; then
   exit 0
 fi
 
-# Partner add: wait briefly for SuperSpeed to train before touching anything.
+# Partner add: give the device time to enumerate before touching anything.
+# A Type-C monitor's hub shows up about 6.5 s after its partner, with or
+# without this script. A 2 s wait bounced the port and reloaded UCSI in the
+# middle of that normal attach (measured 2026-11-12).
 if [ -d "$typec/$typec_port-partner" ]; then
-  sleep "$settle"
-  if attached; then
-    log "device appeared while waiting, skip"
-    exit 0
-  fi
+  for ((i = 0; i < settle; i++)); do
+    sleep 1
+    if attached; then
+      log "device appeared while waiting, skip"
+      exit 0
+    fi
+  done
 fi
 
 if [ "$mode" = rearm ]; then
