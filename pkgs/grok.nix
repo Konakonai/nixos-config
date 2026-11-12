@@ -20,7 +20,7 @@ stdenv.mkDerivation rec {
 
   icon = fetchurl {
     url = "https://media.x.ai/v1/website/spacexai-symbol-white-transparent-0c31957f.png";
-    sha256 = "1iklav19hr1d97ghh2ha9ndmpml37am1yvwsq941h6rhm02qzqin";
+    hash = "sha256-NuKPBagwGxhIwppvH6o6g9Zbm00KCgjfSS1kmMJWdMY=";
   };
 
   desktopItems = [
