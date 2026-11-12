@@ -29,6 +29,22 @@ def selected_choice(path):
     return match.group(1) if match else value
 
 
+def match_rules():
+    # Scoped to the two services. An unfiltered PropertiesChanged match woke
+    # this process for every property change on the system bus.
+    rules = []
+    for name, path in SERVICES.items():
+        rules.append(
+            "type='signal',interface='org.freedesktop.DBus.Properties',"
+            f"member='PropertiesChanged',path='{path}'"
+        )
+        rules.append(
+            "type='signal',interface='org.freedesktop.DBus',"
+            f"member='NameOwnerChanged',arg0='{name}'"
+        )
+    return rules
+
+
 def restore(turbo=TURBO, saved=SAVED, pcie_aspm=PCIE_ASPM):
     if not saved.exists():
         return
@@ -105,10 +121,7 @@ async def main():
                 changed.set()
 
     bus.add_message_handler(event)
-    for rule in [
-        "type='signal',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged'",
-        "type='signal',interface='org.freedesktop.DBus',member='NameOwnerChanged'",
-    ]:
+    for rule in match_rules():
         await call(
             Message(
                 destination="org.freedesktop.DBus",

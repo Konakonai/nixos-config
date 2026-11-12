@@ -42,6 +42,13 @@ class CpuPolicyTest(unittest.TestCase):
         self.assertEqual(self.pcie_aspm.read_text().strip(), "default")
         self.assertFalse(self.saved.exists())
 
+    def test_match_rules_are_scoped_to_the_two_services(self):
+        rules = cpu_policy.match_rules()
+        self.assertEqual(len(rules), 2 * len(cpu_policy.SERVICES))
+        for name, path in cpu_policy.SERVICES.items():
+            self.assertTrue(any(f"path='{path}'" in rule for rule in rules))
+            self.assertTrue(any(f"arg0='{name}'" in rule for rule in rules))
+
     def test_mode_change_restores(self):
         self.apply(True, "power-saver")
         self.apply(True, "balanced")
