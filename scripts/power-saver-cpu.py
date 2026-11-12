@@ -29,6 +29,16 @@ def selected_choice(path):
     return match.group(1) if match else value
 
 
+def write_pcie_aspm(path, value):
+    # Firmware can lock the ASPM policy, and the write then fails with EPERM.
+    # That must not undo the turbo override or keep restore() from finishing:
+    # an exception there left previous.json behind and the service restarting.
+    try:
+        write(path, value)
+    except OSError as error:
+        print(f"PCIe ASPM policy left unchanged: {error}", flush=True)
+
+
 def match_rules():
     # Scoped to the two services. An unfiltered PropertiesChanged match woke
     # this process for every property change on the system bus.
@@ -55,7 +65,7 @@ def restore(turbo=TURBO, saved=SAVED, pcie_aspm=PCIE_ASPM):
 
     write(turbo, previous["turbo"])
     if previous.get("pcie_aspm") is not None and pcie_aspm.exists():
-        write(pcie_aspm, previous["pcie_aspm"])
+        write_pcie_aspm(pcie_aspm, previous["pcie_aspm"])
     saved.unlink()
     print("Restored the previous turbo and PCIe policy", flush=True)
 
@@ -88,7 +98,7 @@ def apply(
     try:
         write(turbo, 1)
         if pcie_aspm.exists():
-            write(pcie_aspm, "powersupersave")
+            write_pcie_aspm(pcie_aspm, "powersupersave")
         print("Disabled turbo and enabled PCIe power saving", flush=True)
     except BaseException:
         restore(turbo, saved, pcie_aspm)

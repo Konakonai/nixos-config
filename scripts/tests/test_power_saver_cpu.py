@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 spec = importlib.util.spec_from_file_location(
     "cpu_policy", Path(__file__).resolve().parents[1] / "power-saver-cpu.py"
@@ -48,6 +49,22 @@ class CpuPolicyTest(unittest.TestCase):
         for name, path in cpu_policy.SERVICES.items():
             self.assertTrue(any(f"path='{path}'" in rule for rule in rules))
             self.assertTrue(any(f"arg0='{name}'" in rule for rule in rules))
+
+    def test_locked_aspm_policy_does_not_block_turbo(self):
+        real_write = cpu_policy.write
+
+        def write(path, value):
+            if path == self.pcie_aspm:
+                raise PermissionError("locked by firmware")
+            real_write(path, value)
+
+        with mock.patch.object(cpu_policy, "write", write):
+            self.apply(True, "power-saver")
+            self.assertEqual(self.turbo.read_text(), "1\n")
+            self.assertTrue(self.saved.exists())
+            self.apply(False, "power-saver")
+        self.assertEqual(self.turbo.read_text(), "0\n")
+        self.assertFalse(self.saved.exists())
 
     def test_mode_change_restores(self):
         self.apply(True, "power-saver")
