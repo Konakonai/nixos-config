@@ -325,6 +325,40 @@ class NetEaseResolveTest(unittest.TestCase):
         self.assertEqual(kept[0].netease_id, 3)
         self.assertIs(kept[1].on_netease, False)
 
+    def test_resolved_artist_shown_on_the_left_is_dropped(self):
+        hebe = {
+            "result": {
+                "artists": [
+                    {"id": 9548, "name": "田馥甄", "alias": ["Hebe Tien", "Tian Fuzhen"]}
+                ]
+            }
+        }
+        netease = FakeNetEase(
+            {
+                (SEARCH, "Hebe Tien"): hebe,
+                (SEARCH, "Tian Fuzhen"): hebe,
+                (SEARCH, "Liked Alias"): {
+                    "result": {"artists": [{"id": 7, "name": "Liked Alias"}]}
+                },
+                (SEARCH, "Yo La Tengo"): {
+                    "result": {"artists": [{"id": 3, "name": "Yo La Tengo"}]}
+                },
+            }
+        )
+        ranked = [
+            discover.Candidate(n, "u")
+            for n in ("Hebe Tien", "Liked Alias", "Yo La Tengo")
+        ]
+        kept = discover.resolve_on_netease(
+            netease, self.names, set(), ranked, skip_ids={9548, 7}
+        )
+        self.assertEqual([c.name for c in kept], ["Yo La Tengo"])
+
+        # Two spellings of one NetEase artist are kept once.
+        ranked = [discover.Candidate(n, "u") for n in ("Hebe Tien", "Tian Fuzhen")]
+        kept = discover.resolve_on_netease(netease, self.names, set(), ranked)
+        self.assertEqual([c.netease_id for c in kept], [9548])
+
 
 class CircuitBreakerTest(unittest.TestCase):
     @patch.object(discover.time, "sleep")

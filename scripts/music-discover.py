@@ -842,11 +842,19 @@ def collect_further(
 
 
 def resolve_on_netease(
-    netease, names, known, ranked, limit: int = PER_COLUMN + HEADROOM
+    netease,
+    names,
+    known,
+    ranked,
+    limit: int = PER_COLUMN + HEADROOM,
+    skip_ids=frozenset(),
 ) -> list[Candidate]:
     """Look the top "further" picks up on NetEase: flag the ones it lacks,
     link the rest to their NetEase page, and drop artists that turn out to be
-    known under their NetEase name ("Hebe Tien" is 田馥甄)."""
+    known under their NetEase name ("Hebe Tien" is 田馥甄), or whose NetEase
+    id is in `skip_ids` or already kept (the NetEase column may show 田馥甄
+    under a name no key of "Hebe Tien" matches)."""
+    seen_ids = set(skip_ids)
     kept: list[Candidate] = []
     for c in ranked:
         if len(kept) == limit:
@@ -860,9 +868,10 @@ def resolve_on_netease(
         c.on_netease = found is not None
         if found:
             artist_id, netease_name = found
-            if is_known(names, netease_name, known):
-                log(f"  {c.name} is {netease_name}, already known")
+            if artist_id in seen_ids or is_known(names, netease_name, known):
+                log(f"  {c.name} is {netease_name}, already known or shown")
                 continue
+            seen_ids.add(artist_id)
             if names.key(netease_name) != names.key(c.name):
                 c.name = f"{netease_name}（{c.name}）"
             c.url = netease_artist_url(artist_id)
@@ -1026,8 +1035,10 @@ def main() -> int:
             {k: c for k, c in candidates.items() if k not in shown},
             limit=len(candidates),
         )
+        shown_ids = known_ids | {c.netease_id for c in netease_top if c.netease_id}
         further_top = finish_column(
-            netease, resolve_on_netease(netease, names, known, ranked)
+            netease,
+            resolve_on_netease(netease, names, known, ranked, skip_ids=shown_ids),
         )
     except Exception as exc:
         further_error = f"{type(exc).__name__}: {exc}"
