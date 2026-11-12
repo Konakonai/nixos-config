@@ -46,8 +46,7 @@ let
   '';
 
   niriLogin = pkgs.writeShellScriptBin "Niri" ''
-    ${lib.getExe niriGpuProbe} || true
-    export NIRI_CONFIG="$HOME/.config/niri/config.kdl"
+    export NIRI_CONFIG="''${XDG_CONFIG_HOME:-$HOME/.config}/niri/config.kdl"
     exec ${niriSession} "$@"
   '';
   # niri-flake registers its own niri.desktop; this session wraps niri-session
@@ -96,7 +95,9 @@ in
     overrideStrategy = "asDropin";
     text = ''
       [Service]
-      ExecStartPre=${lib.getExe niriGpuProbe}
+      # "-": a failed probe leaves the previous gpu.kdl in place, which is
+      # better than refusing to start the session.
+      ExecStartPre=-${lib.getExe niriGpuProbe}
     '';
   };
 
