@@ -7,6 +7,16 @@ let
     pkgs.coreutils
     pkgs.util-linux
   ];
+  # ADP0 is only the barrel jack. Type-C PD (the Thunderbolt monitor) stays
+  # online while ADP0 reads 0, and the watch service must keep running then.
+  onExternalPower = "${pkgs.bash}/bin/bash ${../../scripts/external-power.sh}";
+  watchOnAc = pkgs.writeShellScript "tb-usbc-watch-ac" ''
+    set -eu
+    if ${onExternalPower}; then
+      exec ${pkgs.systemd}/bin/systemctl start --no-block tb-usbc-watch.service
+    fi
+    exec ${pkgs.systemd}/bin/systemctl stop --no-block tb-usbc-watch.service
+  '';
 in
 {
   # The 10 Gbps Type-C port is PCH xHCI SS01 (usb4-port1) / HS02, UCSI port1.
@@ -66,8 +76,9 @@ in
     description = "Poll-bounce Thunderbolt USB2 when UCSI omits the partner";
     wantedBy = [ "multi-user.target" ];
     after = [ "tb-usbc-prepare.service" ];
-    # The condition covers boot and rebuilds; the udev rules below start and
-    # stop it when the charger is plugged or pulled.
+    # The condition covers boot and rebuilds (systemd already treats USB PD
+    # as AC). The udev rules start and stop it when any external supply
+    # appears or disappears, not only the barrel jack.
     unitConfig.ConditionACPower = true;
     path = resetPath;
     serviceConfig = {
@@ -99,7 +110,7 @@ in
     ACTION=="add|remove", SUBSYSTEM=="typec", KERNEL=="port0-partner", TAG+="systemd", ENV{SYSTEMD_WANTS}="tb-usbc-reset.service"
     ACTION=="change", SUBSYSTEM=="typec", KERNEL=="port0", TAG+="systemd", ENV{SYSTEMD_WANTS}="tb-usbc-reset.service"
     ACTION=="remove", SUBSYSTEM=="usb", KERNEL=="3-1", TAG+="systemd", ENV{SYSTEMD_WANTS}="tb-usbc-rearm.service"
-    ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="1", RUN+="${pkgs.systemd}/bin/systemctl start --no-block tb-usbc-watch.service"
-    ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ADP0", ATTR{online}=="0", RUN+="${pkgs.systemd}/bin/systemctl stop --no-block tb-usbc-watch.service"
+    ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ADP0", RUN+="${watchOnAc}"
+    ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ucsi-source-psy-*", RUN+="${watchOnAc}"
   '';
 }

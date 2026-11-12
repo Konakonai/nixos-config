@@ -13,15 +13,16 @@ let
   # Waking the dGPU from runtime D3 takes ~1.5 s and whatever touched it blocks
   # for that long (see Smithay/smithay#2178 for the compositor case). On mains
   # the saved power is not worth those stalls, so keep the GPU awake there and
-  # only let it sleep on battery. Runs after the fine-grained rules from the
-  # NixOS nvidia module because RUN programs execute once all rules are done.
+  # only let it sleep on battery. "Mains" is any non-battery supply: ADP0 is
+  # only the barrel jack, and a Type-C monitor can source PD while ADP0 reads
+  # 0 (measured 2026-11-13). Runs after the fine-grained rules from the NixOS
+  # nvidia module because RUN programs execute once all rules are done.
+  onExternalPower = "${pkgs.bash}/bin/bash ${../../../scripts/external-power.sh}";
   applyPolicy = pkgs.writeShellScript "dgpu-runtime-pm" ''
     set -eu
     control=/sys/bus/pci/devices/${pciAddress}/power/control
     [ -w "$control" ] || exit 0
-    online=0
-    read -r online < /sys/class/power_supply/ADP0/online || true
-    if [ "$online" = 1 ]; then
+    if ${onExternalPower}; then
       echo on > "$control"
     else
       echo auto > "$control"
@@ -29,11 +30,13 @@ let
   '';
 in
 {
-  # udev re-evaluates on driver bind and AC plug/unplug; the oneshot applies
-  # the policy at boot and on every rebuild, when no such event is replayed.
+  # udev re-evaluates on driver bind and on any external-supply change; the
+  # oneshot applies the policy at boot and on every rebuild, when no such
+  # event is replayed.
   services.udev.extraRules = ''
     ACTION=="bind", SUBSYSTEM=="pci", KERNEL=="${pciAddress}", RUN+="${applyPolicy}"
     ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ADP0", RUN+="${applyPolicy}"
+    ACTION=="change", SUBSYSTEM=="power_supply", KERNEL=="ucsi-source-psy-*", RUN+="${applyPolicy}"
   '';
 
   systemd.services.dgpu-runtime-pm = {
