@@ -12,6 +12,13 @@
 # Both: skip a port that already has a device, give a fresh partner a moment
 # to train, bounce the idle xHCI ports, and only then reload UCSI.
 #
+# The ports share one UCSI device. Reloading it re-registers the other port
+# too, and the udev events from that start the other port's service, which
+# finds its port idle and reloads UCSI in turn. With a lock per port the two
+# services kept doing that every ~17 s for minutes (2026-10-27, 2026-11-12).
+# So both take one lock, and a reload is skipped when either port did one
+# within the last $ucsi_cooldown seconds.
+#
 # usage: reset-usbc.sh pch|tb [reset|rearm|watch|prepare]
 # rearm, watch and prepare exist for tb only. SYSROOT overrides sysfs for tests.
 set -euo pipefail
@@ -58,7 +65,9 @@ esac
 typec=${sysroot}/sys/class/typec/$typec_port
 ucsi_drv=${sysroot}/sys/bus/platform/drivers/ucsi_acpi
 ucsi_dev=USBC000:00
-lock=${sysroot}/run/$name-usbc-reset.lock
+lock=${sysroot}/run/usbc-reset.lock
+ucsi_stamp=${sysroot}/run/usbc-reset.ucsi-reload
+ucsi_cooldown=30
 
 log() {
   echo "$name-usbc-reset: $*" >&2
@@ -122,6 +131,16 @@ reload_ucsi() {
     log "UCSI sysfs missing, skip reload"
     return 0
   fi
+  # Uptime, not wall time: the clock can jump when NTP syncs after boot.
+  local now last
+  read -r now _ < /proc/uptime
+  now=${now%.*}
+  last=$(cat "$ucsi_stamp" 2>/dev/null || echo "-$ucsi_cooldown")
+  if [ $((now - last)) -lt "$ucsi_cooldown" ]; then
+    log "UCSI was reloaded $((now - last)) s ago, skip reload"
+    return 0
+  fi
+  printf '%s\n' "$now" > "$ucsi_stamp"
   printf '%s\n' "$ucsi_dev" > "$ucsi_drv/unbind" 2>/dev/null || true
   sleep "$ucsi_wait"
   printf '%s\n' "$ucsi_dev" > "$ucsi_drv/bind" 2>/dev/null || true

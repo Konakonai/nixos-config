@@ -17,6 +17,10 @@ in
   # PD sinks can leave either mux charging-only; bounce the matching xHCI
   # ports after a partner, connector-change, or HS01 unplug. USB4 runtime PM
   # also parks 00:0d.0, so keep that controller on.
+  #
+  # The PCH xHCI (00:14.0) has been pinned on since the first PCH recovery
+  # without a recorded reason. Whether recovery still works with it on `auto`,
+  # and what the pin and the watch service cost on battery, is unmeasured.
   services.hardware.bolt.enable = true;
 
   systemd.services.pch-usbc-reset = {

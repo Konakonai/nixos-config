@@ -75,6 +75,22 @@ class TbUsbcResetTest(unittest.TestCase):
         self.assertEqual((self.typec / "port0.0/active").read_text(), "0\n")
         self.assertIn("reload UCSI", result.stderr)
 
+    def test_skips_a_second_ucsi_reload_within_the_cooldown(self):
+        self.assertEqual(self.run_script().returncode, 0)
+        self._write(self.ucsi / "unbind", "")
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((self.ucsi / "unbind").read_text(), "")
+        self.assertIn("skip reload", result.stderr)
+        # The idle ports are still bounced.
+        self.assertIn("done", result.stderr)
+
+    def test_reloads_ucsi_again_after_the_cooldown(self):
+        self._write(self.root / "run/usbc-reset.ucsi-reload", "-1000\n")
+        result = self.run_script()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((self.ucsi / "unbind").read_text(), "USBC000:00\n")
+
     def test_wakes_pci_even_when_idle_without_partner(self):
         result = self.run_script()
         self.assertEqual(result.returncode, 0, result.stderr)
