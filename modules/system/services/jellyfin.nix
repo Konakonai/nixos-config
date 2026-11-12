@@ -15,4 +15,24 @@
     inherit (hostProfile.user) group;
     openFirewall = false;
   };
+
+  # The module already forbids privilege escalation. Jellyfin listens on the
+  # Wi-Fi and the tailnet as the login user, so also keep it away from the
+  # rest of that account: home is read-only (it only reads the library mount
+  # there), /run/user is hidden because the user bus would let it start a
+  # process outside this sandbox, and the credential stores are hidden. The
+  # last part is a denylist; anything else under $HOME stays readable.
+  systemd.services.jellyfin.serviceConfig = {
+    ProtectHome = "read-only";
+    InaccessiblePaths = [
+      "-/run/user"
+    ]
+    ++ map (path: "-${hostProfile.user.homeDirectory}/${path}") [
+      ".ssh"
+      ".gnupg"
+      ".config/age"
+      ".config/rclone"
+      ".config/openlist"
+    ];
+  };
 }
