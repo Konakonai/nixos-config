@@ -35,6 +35,7 @@ import random
 import re
 import sqlite3
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -282,7 +283,8 @@ class NetEase(Paced):
         self.headers = dict(self.HEADERS)
         if cookie:
             # MUSIC_U is the web login session (see modules/home/music-discover.nix).
-            self.headers["Cookie"] = f"MUSIC_U={cookie}"
+            value = cookie.strip().removeprefix("MUSIC_U=").strip()
+            self.headers["Cookie"] = f"MUSIC_U={value}"
 
     def get(self, path: str, **params) -> dict:
         if self.blocked:
@@ -593,7 +595,8 @@ def rank(
 def library_artists(db: Path) -> list[str]:
     if not db.exists():
         return []
-    with contextlib.closing(sqlite3.connect(f"file:{db}?mode=ro", uri=True)) as conn:
+    uri = f"file:{urllib.parse.quote(str(db))}?mode=ro"
+    with contextlib.closing(sqlite3.connect(uri, uri=True)) as conn:
         rows = conn.execute(
             "select distinct artist from items union select distinct albumartist from items"
         )
@@ -738,6 +741,25 @@ def load_json(path: Path, default):
         return json.loads(path.read_text())
     except (FileNotFoundError, json.JSONDecodeError):
         return default
+
+
+def write_json(path: Path, data, **kwargs) -> None:
+    """Replace path atomically: load_json treats a torn file as empty, so an
+    interrupted plain write would silently drop the whole cache."""
+    with tempfile.NamedTemporaryFile(
+        "w", dir=path.parent, prefix=f".{path.name}.", delete=False
+    ) as handle:
+        tmp = Path(handle.name)
+        try:
+            json.dump(data, handle, ensure_ascii=False, **kwargs)
+        except BaseException:
+            tmp.unlink()
+            raise
+    try:
+        tmp.replace(path)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
 
 
 def collect_netease(
@@ -951,7 +973,7 @@ def main() -> int:
 
     log("reading liked songs")
     liked = netease.liked(args.playlist, song_cache)
-    songs_path.write_text(json.dumps(song_cache, ensure_ascii=False))
+    write_json(songs_path, song_cache)
     known = known_artists(names, liked, library_artists(args.library_db))
     known_ids = {artist_id for s in liked for artist_id, _ in s.artists}
     if logged_in:
@@ -968,7 +990,7 @@ def main() -> int:
     try:
         tag_artists(listenbrainz, names, liked, artist_info, args.tag_budget)
     finally:
-        artists_path.write_text(json.dumps(artist_info, ensure_ascii=False))
+        write_json(artists_path, artist_info)
     genres = {a: genre_of(info.get("tags") or [], a) for a, info in artist_info.items()}
     # Same seeds for reruns within a week.
     netease_seeds, mix = pick_seeds(
@@ -1011,13 +1033,13 @@ def main() -> int:
         further_error = f"{type(exc).__name__}: {exc}"
         log(f"further failed: {further_error}")
     finally:
-        artists_path.write_text(json.dumps(artist_info, ensure_ascii=False))
+        write_json(artists_path, artist_info)
 
     for c in netease_top + further_top:
         key = names.key(c.name)
         c.seen_before = history.get(key, week) != week
         history.setdefault(key, week)
-    history_path.write_text(json.dumps(history, ensure_ascii=False, indent=0))
+    write_json(history_path, history, indent=0)
 
     page = render(
         now,

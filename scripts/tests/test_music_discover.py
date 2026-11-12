@@ -436,6 +436,42 @@ class LibraryTest(unittest.TestCase):
     def test_missing_db(self):
         self.assertEqual(discover.library_artists(Path("/nonexistent/library.db")), [])
 
+    def test_path_with_uri_characters(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            db = Path(tmp) / "a b?#%20" / "library.db"
+            db.parent.mkdir()
+            with contextlib.closing(sqlite3.connect(db)) as conn, conn:
+                conn.execute("create table items (artist text, albumartist text)")
+                conn.execute("insert into items values ('a', 'b')")
+            self.assertEqual(sorted(discover.library_artists(db)), ["a", "b"])
+
+
+class WriteJsonTest(unittest.TestCase):
+    def test_replaces_file_and_leaves_no_temp_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "songs.json"
+            path.write_text('{"old": 1}')
+            discover.write_json(path, {"新": [1, 2]})
+            self.assertEqual(discover.load_json(path, None), {"新": [1, 2]})
+            self.assertEqual([p.name for p in Path(tmp).iterdir()], ["songs.json"])
+
+    def test_failed_write_keeps_old_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "songs.json"
+            path.write_text('{"old": 1}')
+            with self.assertRaises(TypeError):
+                discover.write_json(path, {"bad": object()})
+            self.assertEqual(discover.load_json(path, None), {"old": 1})
+            self.assertEqual([p.name for p in Path(tmp).iterdir()], ["songs.json"])
+
+
+class CookieTest(unittest.TestCase):
+    def test_prefix_and_whitespace_are_tolerated(self):
+        for cookie in ("abc", " abc\n", "MUSIC_U=abc", "  MUSIC_U= abc \n"):
+            self.assertEqual(
+                discover.NetEase(cookie).headers["Cookie"], "MUSIC_U=abc", cookie
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
