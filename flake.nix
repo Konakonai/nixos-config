@@ -55,9 +55,17 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    millennium-src = {
+      url = "github:SteamClientHomebrew/Millennium";
+      flake = false;
+    };
     millennium = {
       url = "git+https://github.com/SteamClientHomebrew/Millennium.git?dir=packages/nix";
       inputs.nixpkgs.follows = "nixpkgs";
+      # Upstream edits packages/nix/millennium.nix on main between releases
+      # while leaving packages/nix/flake.nix's millennium-src pinned to the
+      # last tag, so build flags drift ahead of the source tree.
+      inputs.millennium-src.follows = "millennium-src";
     };
 
     spicetify-nix = {
