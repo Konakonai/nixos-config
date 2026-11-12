@@ -11,6 +11,9 @@ def strip_jsonc(text):
     n = len(text)
     in_str = False
     escape = False
+    # Index in out of a comma that only whitespace (or dropped comments) has
+    # followed so far; removed if a closing bracket comes next.
+    comma = None
     while i < n:
         char = text[i]
         if in_str:
@@ -25,6 +28,7 @@ def strip_jsonc(text):
             continue
         if char == '"':
             in_str = True
+            comma = None
             out.append(char)
             i += 1
             continue
@@ -36,8 +40,17 @@ def strip_jsonc(text):
             i += 2
             while i + 1 < n and not (text[i] == "*" and text[i + 1] == "/"):
                 i += 1
+            if i + 1 >= n:
+                raise ValueError("unterminated block comment")
             i += 2
             continue
+        if char in "}]" and comma is not None:
+            del out[comma]
+            comma = None
+        elif char == ",":
+            comma = len(out)
+        elif not char.isspace():
+            comma = None
         out.append(char)
         i += 1
     return "".join(out)
