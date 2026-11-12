@@ -123,7 +123,6 @@ in
     after = [
       "external-windows-device-permissions.service"
       "libvirtd.service"
-      "systemd-udev-settle.service"
     ];
     restartTriggers = [ domainXml ];
     serviceConfig = {
