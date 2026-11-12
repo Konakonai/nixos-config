@@ -20,8 +20,12 @@ role_color() {
 
 hex_to_rgb() {
   local hex="${1#\#}"
+  local fallback="$2"
+  if [ "${#hex}" -eq 8 ]; then
+    hex="${hex:2}"
+  fi
   if [ "${#hex}" -ne 6 ]; then
-    printf '229,205,204'
+    printf '%s' "$fallback"
     return
   fi
   printf '%d,%d,%d' "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}"
@@ -29,8 +33,8 @@ hex_to_rgb() {
 
 [ -f "$qt_scheme" ] || exit 0
 
-selection_bg="$(hex_to_rgb "$(role_color 13)")"
-selection_fg="$(hex_to_rgb "$(role_color 14)")"
+selection_bg="$(hex_to_rgb "$(role_color 13)" '229,205,204')"
+selection_fg="$(hex_to_rgb "$(role_color 14)" '30,30,46')"
 
 patch_colors() {
   local file="$1"
