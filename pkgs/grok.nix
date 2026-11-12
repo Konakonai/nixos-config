@@ -11,11 +11,11 @@
 stdenv.mkDerivation rec {
   pname = "grok";
   # Latest stable version: curl -fsSL https://x.ai/cli/stable
-  version = "1.0.70";
+  version = "1.0.77";
 
   src = fetchurl {
     url = "https://x.ai/cli/grok-${version}-linux-x86_64.zst";
-    hash = "sha256-51G2FJSdhFhwI2ew4PMzkExYJYrT5DGnImsUpCt0+Ec=";
+    hash = "sha256-m8wiJqSGUUUgeC3mm7C6LCstygw1htmhxz+KMHfMyyA=";
   };
 
   icon = fetchurl {

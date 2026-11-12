@@ -9,11 +9,11 @@ let
   # The commit in the URL comes from the update feed, which answers with the
   # latest release (HTTP 204 when already current); update-pins rewrites it:
   #   curl -fsSL https://api2.cursor.sh/updates/api/update/linux-x64/sand/<version>/<commit>/stable
-  version = "0.78.4";
-  commit = "5a890c0d0fc9c678c5a339eb86b31dcfbd0b4730";
+  version = "1.0.1";
+  commit = "7eb488cd12ea2e65065a6b227f3ab49160b618bd";
   src = fetchurl {
     url = "https://downloads.cursor.com/grokbot/stable/${commit}/linux/x64/Grok_Bot_${version}.AppImage";
-    hash = "sha256-J8x+kdqPykZahQpmwG8TeOMIACZsRCJDjFhYPK2NW1A=";
+    hash = "sha256-rlLK6iUomHp7qiSf8qWsjiECyeXDvubtMI+Xe5GoMtI=";
   };
   appimageContents = appimageTools.extract {
     inherit pname version src;
