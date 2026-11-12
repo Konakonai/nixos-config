@@ -1,15 +1,7 @@
 { lib, pkgs, ... }:
 
 let
-  refresh = pkgs.writeShellApplication {
-    name = "kdeconnect-refresh";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.gnugrep
-      pkgs.kdePackages.kdeconnect-kde
-    ];
-    text = builtins.readFile ../../../scripts/kdeconnect-refresh.sh;
-  };
+  refresh = pkgs.lilya.kdeconnect-refresh;
 in
 {
   xdg.desktopEntries."kdeconnect-browser" = {

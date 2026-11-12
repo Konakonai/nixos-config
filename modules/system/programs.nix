@@ -8,35 +8,20 @@
 let
   askPass = lib.getExe' pkgs.kdePackages.ksshaskpass "ksshaskpass";
   userName = hostProfile.user.userName;
-  kdeconnectRefresh = pkgs.writeShellApplication {
-    name = "kdeconnect-refresh";
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.gnugrep
-      pkgs.kdePackages.kdeconnect-kde
-    ];
-    text = builtins.readFile ../../scripts/kdeconnect-refresh.sh;
-  };
+  # Only re-arms the timer below and returns: the dispatcher runs its scripts
+  # one event at a time, and a connect fires several of these events in a row.
   kdeconnectNmHook = pkgs.writeShellScript "kdeconnect-nm-refresh" ''
-    set -euo pipefail
     case "''${2:-}" in
       up|vpn-up|connectivity-change|dhcp4-change|dhcp6-change) ;;
       *) exit 0 ;;
     esac
-
-    uid="$(${pkgs.coreutils}/bin/id -u ${lib.escapeShellArg userName})"
-    bus="/run/user/$uid/bus"
-    if [ ! -S "$bus" ]; then
-      exit 0
-    fi
-
-    # DHCP/Wi-Fi association can finish before the phone is reachable again.
-    ${pkgs.coreutils}/bin/sleep 2
-    ${pkgs.util-linux}/bin/runuser -u ${lib.escapeShellArg userName} -- \
-      ${pkgs.coreutils}/bin/env \
-        XDG_RUNTIME_DIR="/run/user/$uid" \
-        DBUS_SESSION_BUS_ADDRESS="unix:path=$bus" \
-        ${lib.getExe kdeconnectRefresh} always
+    exec ${pkgs.systemd}/bin/systemctl restart --no-block kdeconnect-nm-refresh.timer
+  '';
+  kdeconnectNmRefresh = pkgs.writeShellScript "kdeconnect-nm-refresh-run" ''
+    runtime="/run/user/$(${pkgs.coreutils}/bin/id -u)"
+    [ -S "$runtime/bus" ] || exit 0
+    export XDG_RUNTIME_DIR="$runtime" DBUS_SESSION_BUS_ADDRESS="unix:path=$runtime/bus"
+    exec ${lib.getExe pkgs.lilya.kdeconnect-refresh} always
   '';
 in
 {
@@ -69,6 +54,22 @@ in
       type = "basic";
     }
   ];
+  # Each event restarts the timer, so a burst of them ends in one refresh. The
+  # 2 s also covers DHCP/Wi-Fi association finishing before the phone is
+  # reachable again.
+  systemd.timers.kdeconnect-nm-refresh.timerConfig = {
+    OnActiveSec = "2s";
+    AccuracySec = "100ms";
+    RemainAfterElapse = false;
+  };
+  systemd.services.kdeconnect-nm-refresh = {
+    description = "Refresh KDE Connect discovery after a network change";
+    serviceConfig = {
+      Type = "oneshot";
+      User = userName;
+      ExecStart = kdeconnectNmRefresh;
+    };
+  };
   programs.fish.enable = true;
   programs.vim = {
     enable = true;

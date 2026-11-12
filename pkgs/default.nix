@@ -19,6 +19,17 @@
   grok = pkgs.callPackage ./grok.nix { };
   grok-bot = pkgs.callPackage ./grok-bot.nix { };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
+  # Shared by the NetworkManager hook (modules/system/programs.nix) and the
+  # user timer (modules/home/desktop/kdeconnect.nix).
+  kdeconnect-refresh = pkgs.writeShellApplication {
+    name = "kdeconnect-refresh";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.gnugrep
+      pkgs.kdePackages.kdeconnect-kde
+    ];
+    text = builtins.readFile ../scripts/kdeconnect-refresh.sh;
+  };
   localsend-no-csd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";
     paths = [ pkgs.localsend ];
