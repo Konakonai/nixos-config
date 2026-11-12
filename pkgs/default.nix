@@ -36,9 +36,13 @@
     nativeBuildInputs = [ pkgs.makeWrapper ];
     # niri does not draw server-side decorations, while KWin does. Keep the
     # Flutter CSD workaround scoped to niri so Plasma can provide its title bar.
+    # The upstream wrapper sets LD_LIBRARY_PATH to the Flutter plugin dir,
+    # which is searched before RUNPATH, so libflutter_linux_gtk.so cannot
+    # find libz.so.1 and the app exits on launch.
     postBuild = ''
       rm "$out/bin/localsend_app"
       makeWrapper ${lib.getExe pkgs.localsend} "$out/bin/localsend_app" \
+        --prefix LD_LIBRARY_PATH : ${lib.makeLibraryPath [ pkgs.zlib ]} \
         --run 'case "''${XDG_CURRENT_DESKTOP:-}:''${XDG_SESSION_DESKTOP:-}" in *niri*) export GTK_CSD=0 ;; esac'
     '';
     meta = pkgs.localsend.meta;
