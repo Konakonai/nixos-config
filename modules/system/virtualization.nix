@@ -101,8 +101,11 @@ in
 
   # Grant only libvirt's unprivileged QEMU account access to this exact USB
   # disk. The serial match applies to the disk and its partitions.
+  # UDISKS_AUTO=0 keeps desktop automounters off it: the launcher refuses to
+  # start while the disk is mounted, and a host mount under a running guest
+  # would corrupt the Windows volume. Mounting by hand still works.
   services.udev.extraRules = ''
-    ACTION=="add|change", SUBSYSTEM=="block", ENV{ID_SERIAL_SHORT}=="${cfg.diskSerial}", GROUP="qemu-libvirtd", MODE="0660"
+    ACTION=="add|change", SUBSYSTEM=="block", ENV{ID_SERIAL_SHORT}=="${cfg.diskSerial}", GROUP="qemu-libvirtd", MODE="0660", ENV{UDISKS_AUTO}="0"
   '';
 
   environment.systemPackages = [
