@@ -39,20 +39,9 @@
     trustedInterfaces = [ "mihomo" ];
     checkReversePath = false;
 
-    # OpenList, LocalSend and the Mihomo mixed port are intentionally reachable
-    # on the LAN. The mixed port requires the `authentication` credentials kept
-    # in the encrypted proxies fragment.
-    allowedTCPPorts = [
-      5244
-      7890
-      53317
-    ];
-
-    # LocalSend multicast discovery and the Mihomo mixed port.
-    allowedUDPPorts = [
-      7890
-      53317
-    ];
+    # Nothing is opened on every interface: the LTE uplink has a public IPv6
+    # address (see above), so a globally allowed port is reachable from the
+    # internet there. LAN services are listed under the Wi-Fi interface below.
 
     # programs.kdeconnect owns its TCP/UDP port ranges.
 
@@ -68,15 +57,25 @@
     # same Wi-Fi, so it is opened on the Wi-Fi interface only and stays closed
     # on the LTE uplink. The Calibre content server (8080) follows the same
     # rule: it has no authentication by default.
+    #
+    # OpenList (5244), LocalSend (53317, UDP for its multicast discovery) and
+    # the Mihomo mixed port (7890) are for other devices on the same Wi-Fi or
+    # the hotspot. The mixed port requires the `authentication` credentials
+    # kept in the encrypted proxies fragment.
     interfaces.wlp0s20f3 = {
       allowedTCPPorts = [
         53
+        5244
+        7890
         8080
         8096
+        53317
       ];
       allowedUDPPorts = [
         53
         67
+        7890
+        53317
       ];
     };
   };
