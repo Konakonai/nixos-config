@@ -37,6 +37,18 @@ in
       Restart = "always";
       User = hostProfile.user.userName;
       Group = hostProfile.user.group;
+
+      # OpenList listens on the LAN and runs as the login user, who has
+      # passwordless sudo, so a compromised web process would be one `sudo`
+      # away from root and could read every key under $HOME. All it needs is
+      # its data directory (config, database, temp and log live there; the
+      # storages are cloud drives). ProtectHome also hides /run/user, whose
+      # user bus would let it start a process outside this sandbox.
+      NoNewPrivileges = true;
+      RestrictSUIDSGID = true;
+      ProtectHome = "tmpfs";
+      BindPaths = [ hostProfile.services.openlistDataDir ];
+      PrivateTmp = true;
     };
   };
 }
