@@ -8,6 +8,9 @@
     earlySetup = false;
     font = null;
     packages = [ ];
+    # kmscon ignores these. They become vt.default_* kernel parameters and
+    # theme the kernel console shown before kmscon takes over (early boot,
+    # emergency shell).
     colors = [
       "2e3440"
       "bf616a"
