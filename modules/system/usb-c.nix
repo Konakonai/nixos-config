@@ -7,8 +7,8 @@ let
     pkgs.coreutils
     pkgs.util-linux
   ];
-  # ADP0 is only the barrel jack. Type-C PD (the Thunderbolt monitor) stays
-  # online while ADP0 reads 0, and the watch service must keep running then.
+  # A Type-C PD contract is visible on ucsi-source-psy-* immediately;
+  # ADP0 follows about 5 s later. The watch service must not stop in that gap.
   onExternalPower = "${pkgs.bash}/bin/bash ${../../scripts/external-power.sh}";
   watchOnAc = pkgs.writeShellScript "tb-usbc-watch-ac" ''
     set -eu

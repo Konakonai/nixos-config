@@ -48,6 +48,7 @@ class ExternalPowerTest(unittest.TestCase):
         self.assertEqual(self.run_script().returncode, 0)
 
     def test_true_when_only_usb_pd_is_online(self):
+        # The ~5 s window after a barrel unplug, before the EC sets ADP0.
         self.add_supply("ADP0", "Mains", "0")
         self.add_supply("ucsi-source-psy-USBC000:001", "USB", "1")
         self.add_supply("ucsi-source-psy-USBC000:002", "USB", "0")

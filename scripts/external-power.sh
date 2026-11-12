@@ -1,8 +1,10 @@
 # Exit 0 if any non-battery power supply is online.
 #
-# ADP0 is only the barrel jack. A Type-C PD source (the Thunderbolt
-# monitor) keeps ucsi-source-psy-USBC000:001 online while ADP0 reads 0
-# (measured 2026-11-13: barrel unplug with the monitor still attached).
+# ADP0 is the ACPI AC adapter. A Type-C PD contract shows up on
+# ucsi-source-psy-* immediately, but the EC only marks ADP0 online about
+# 5 s later (measured 2026-11-13: barrel unplug with the Thunderbolt
+# monitor still attached; ADP0 dropped, then returned to 1 and stayed
+# there). Checking every non-battery supply covers that gap.
 # SYSROOT overrides sysfs for tests.
 set -euo pipefail
 
