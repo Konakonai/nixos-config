@@ -15,6 +15,7 @@
   });
   codex = pkgs.callPackage ./codex.nix { };
   codex-desktop = pkgs.callPackage ./codex-desktop.nix { inherit inputs; };
+  computer-use-linux = pkgs.callPackage ./computer-use-linux.nix { };
   genryumin = pkgs.callPackage ./genryumin.nix { };
   grok = pkgs.callPackage ./grok.nix { };
   grok-bot = pkgs.callPackage ./grok-bot.nix { };

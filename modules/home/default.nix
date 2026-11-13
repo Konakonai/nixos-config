@@ -12,6 +12,7 @@
     ./claude-code
     ./cli-tools.nix
     ./codex.nix
+    ./computer-use.nix
     ./config-tools.nix
     ./desktop
     ./dev.nix
