@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794427820,
-        "narHash": "sha256-dL4ph8xEJi6RlaHgETPDVSFbN8oXvOI3M7VK8t345tc=",
+        "lastModified": 1794573683,
+        "narHash": "sha256-7TQ27xYmDflD4ZK/iP+JYgt7/gc+WZeU37zIDZ6voDo=",
         "owner": "patrickjaja",
         "repo": "claude-desktop-extra",
-        "rev": "229fed17be9a1af2a494e476e24ce3678614e0b4",
+        "rev": "9b06d263cec333edea8c9c337792d89318c7fa0f",
         "type": "github"
       },
       "original": {
@@ -44,11 +44,11 @@
     "codex-desktop-linux": {
       "flake": false,
       "locked": {
-        "lastModified": 1794463428,
-        "narHash": "sha256-jtkGc23LsrgpgBQ0ijtMioT3K2/yanssxYqg2+Tf+CA=",
+        "lastModified": 1794587654,
+        "narHash": "sha256-xBb6cuSwjW/A5P4jFtI8Ge7meESqkWMrwU3f+vjg3yk=",
         "owner": "ilysenko",
         "repo": "codex-desktop-linux",
-        "rev": "685ef54d05ae054bce932566399a79fa8282b43d",
+        "rev": "952d165bb76227672078bc0310c7e18b2616d9d1",
         "type": "github"
       },
       "original": {
@@ -126,11 +126,11 @@
       },
       "locked": {
         "dir": "packages/nix",
-        "lastModified": 1794431387,
-        "narHash": "sha256-1taDNNWvgnxHK4F3oFZ/+eOa+k04cJFQQYSMeMcC7Qg=",
+        "lastModified": 1794588209,
+        "narHash": "sha256-uiIbZXWQ4sfr4Y3MvDiUw94UbXsyXEnmH5WSsRX79NM=",
         "ref": "refs/heads/main",
-        "rev": "dee8e60f689b4f42b04eea0a4f4f063ecd8609aa",
-        "revCount": 3774,
+        "rev": "6522c24e8bd3de41a7601ceb4e78a619930f1704",
+        "revCount": 3786,
         "type": "git",
         "url": "https://github.com/SteamClientHomebrew/Millennium.git"
       },
@@ -143,11 +143,11 @@
     "millennium-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1794431387,
-        "narHash": "sha256-1taDNNWvgnxHK4F3oFZ/+eOa+k04cJFQQYSMeMcC7Qg=",
+        "lastModified": 1794588209,
+        "narHash": "sha256-uiIbZXWQ4sfr4Y3MvDiUw94UbXsyXEnmH5WSsRX79NM=",
         "owner": "SteamClientHomebrew",
         "repo": "Millennium",
-        "rev": "dee8e60f689b4f42b04eea0a4f4f063ecd8609aa",
+        "rev": "6522c24e8bd3de41a7601ceb4e78a619930f1704",
         "type": "github"
       },
       "original": {
@@ -168,11 +168,11 @@
         "xwayland-satellite-unstable": "xwayland-satellite-unstable"
       },
       "locked": {
-        "lastModified": 1794505742,
-        "narHash": "sha256-myPxch10nBgPElXdeUyeiqPUIgQOTygNjmvbZ1LrdBM=",
+        "lastModified": 1794622293,
+        "narHash": "sha256-CpS3jKmeFaayR9jJSNnumQl5ebrnXkLtABEG8y6Ib+Y=",
         "owner": "epireyn",
         "repo": "niri-flake",
-        "rev": "3e3dc12e56a7d2bf235a08169a9f3137e8694e99",
+        "rev": "1afb4e9b58e0e0b21926938c09d43750ab7d8dad",
         "type": "github"
       },
       "original": {
@@ -201,11 +201,11 @@
     "niri-unstable": {
       "flake": false,
       "locked": {
-        "lastModified": 1794481461,
-        "narHash": "sha256-2vZitM4q2Me89AEt/zciPsVs8ZUAszfLnHhTWxA+7GM=",
+        "lastModified": 1794546138,
+        "narHash": "sha256-NlfZt7tUe4GQHa29UJ59XXVR/d0qc+DweeO71HakCgM=",
         "owner": "niri-wm",
         "repo": "niri",
-        "rev": "589bc406b45c8b89f69f9071a61d90d77336089f",
+        "rev": "73a04441fccc78294c3899af8f8cdd2a1e38fa33",
         "type": "github"
       },
       "original": {
@@ -264,11 +264,11 @@
     },
     "nixpkgs-stable": {
       "locked": {
-        "lastModified": 1794165970,
-        "narHash": "sha256-XuAV2cUwaod3Bt4XFVqiXz3v1w2ex16W6Sv4S7EWres=",
+        "lastModified": 1794552581,
+        "narHash": "sha256-qXFIqA6FCcx7XeDzw0ZNlkDT9UiCzrNDwK8RuU8RcHM=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "ac588ef1c914865dad517b337ea0eb9694a4021c",
+        "rev": "f1e5c356f35d07e7b71a6b5e6c9338e0b029e0c0",
         "type": "github"
       },
       "original": {
@@ -285,11 +285,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794499611,
-        "narHash": "sha256-TfYWXx/stcWuJIS61ud0nIxdq+sKd9CK7a5Oy+P5aCU=",
+        "lastModified": 1794626679,
+        "narHash": "sha256-6CcXjs7GWM9C1asbHSAmfM++ut9jM77nHIXz3FM3hHg=",
         "owner": "noctalia-dev",
         "repo": "noctalia",
-        "rev": "b487b30fb1bd8e0fa73a26ec8546272b0cb5b124",
+        "rev": "4933674079ecf7545cc23cd5f1cd77c3e74f8e09",
         "type": "github"
       },
       "original": {
