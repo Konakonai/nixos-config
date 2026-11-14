@@ -97,7 +97,7 @@ test('formatTokens formats compact units cleanly', () => {
   assert.equal(core.formatTokens(1450000), '1.45M');
 });
 
-test('renderer and main stay inline and lightweight without history or titlebar widgets', () => {
+test('renderer and main stay inline and lightweight without history, native titles, or titlebar widgets', () => {
   const rendererSrc = fs.readFileSync(path.join(__dirname, '..', 'renderer.js'), 'utf8');
   const mainSrc = fs.readFileSync(path.join(__dirname, '..', 'main.js'), 'utf8');
 
@@ -105,6 +105,15 @@ test('renderer and main stay inline and lightweight without history or titlebar 
   assert.equal(rendererSrc.includes('实际统计'), false);
   assert.equal(rendererSrc.includes('历史用量'), false);
   assert.equal(rendererSrc.includes('contextMeterAPI'), false);
+  assert.equal(rendererSrc.includes('.title ='), false);
+  assert.equal(rendererSrc.includes('justify-content: center'), true);
+
+  const order = ['id="cm-tps"', 'id="cm-cache"', 'id="cm-out"', 'id="cm-ctx"', 'id="cm-ttft"'];
+  const indices = order.map((marker) => rendererSrc.indexOf(marker));
+  for (let i = 1; i < indices.length; i++) {
+    assert.ok(indices[i - 1] >= 0 && indices[i] > indices[i - 1], `expected ${order[i - 1]} before ${order[i]}`);
+  }
+
   assert.equal(mainSrc.includes('ipcMain'), false);
   assert.equal(mainSrc.includes('collector'), false);
 });

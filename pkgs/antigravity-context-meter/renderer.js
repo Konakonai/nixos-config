@@ -19,6 +19,10 @@
       '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
     output:
       '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>',
+    info:
+      '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+    spark:
+      '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.5 3 8 8l-5 1.5L8 11l1.5 5L11 11l5-1.5L11 8 9.5 3Z"/><path d="M18 14l-.75 2.25L15 17l2.25.75L18 20l.75-2.25L21 17l-2.25-.75L18 14Z"/></svg>',
     alert:
       '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>',
   };
@@ -33,13 +37,18 @@
       font-size: 11.5px;
       line-height: 1.35;
 
-      --cm-fg: var(--foreground, #ececef);
+      --cm-fallback-bg: #1e1e24;
+      --cm-fallback-fg: #ececef;
+      --cm-bg: var(--popover, var(--card, var(--background, var(--cm-fallback-bg))));
+      --cm-fg: var(--popover-foreground, var(--foreground, var(--cm-fallback-fg)));
       --cm-muted: var(--muted-foreground, var(--secondary-foreground, color-mix(in srgb, var(--cm-fg) 58%, transparent)));
       --cm-border: var(--border, color-mix(in srgb, var(--cm-fg) 12%, transparent));
+      --cm-hover: var(--accent, var(--secondary, color-mix(in srgb, var(--cm-fg) 6%, transparent)));
       --cm-track: color-mix(in srgb, var(--cm-fg) 15%, transparent);
       --cm-primary: var(--primary, #7c5cfa);
       --cm-warn: #f59e0b;
       --cm-danger: var(--destructive, #ef4444);
+      --cm-shadow: 0 10px 28px rgba(0, 0, 0, 0.34), 0 2px 8px rgba(0, 0, 0, 0.16);
 
       color: var(--cm-muted);
       color-scheme: dark;
@@ -50,9 +59,11 @@
     }
 
     :host([data-tone="light"]) {
-      --cm-fg: var(--foreground, #18181b);
+      --cm-fallback-bg: #ffffff;
+      --cm-fallback-fg: #18181b;
       --cm-warn: #d97706;
       --cm-danger: var(--destructive, #dc2626);
+      --cm-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
       color-scheme: light;
     }
 
@@ -61,7 +72,7 @@
     .cm-strip {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       flex-wrap: wrap;
       gap: 4px 12px;
       padding: 0 6px;
@@ -69,19 +80,20 @@
       font-variant-numeric: tabular-nums;
     }
 
-    .cm-group {
-      display: inline-flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 4px 10px;
-      min-width: 0;
-    }
-
     .cm-item {
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      padding: 2px 5px;
+      border-radius: 6px;
       white-space: nowrap;
+      cursor: default;
+      transition: background-color 120ms ease, color 120ms ease;
+    }
+
+    .cm-item:hover {
+      background: var(--cm-hover);
+      color: var(--cm-fg);
     }
 
     .cm-item[hidden] {
@@ -137,22 +149,70 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 1px 6px;
+      padding: 1px 7px;
       border-radius: 999px;
       font-size: 11px;
       font-weight: 500;
       color: var(--cm-danger);
       background: color-mix(in srgb, var(--cm-danger) 12%, transparent);
       border: 1px solid color-mix(in srgb, var(--cm-danger) 28%, transparent);
+      cursor: default;
     }
 
     .cm-err[hidden] {
       display: none !important;
     }
 
-    :host([data-width="compact"]) .cm-hide-compact,
-    :host([data-width="tight"]) .cm-hide-compact {
-      display: none !important;
+    .cm-tooltip {
+      position: fixed;
+      z-index: 2147483000;
+      pointer-events: none;
+      min-width: 170px;
+      max-width: 280px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--cm-bg);
+      color: var(--cm-fg);
+      border: 1px solid var(--cm-border);
+      box-shadow: var(--cm-shadow);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 110ms ease, transform 110ms ease;
+    }
+
+    .cm-tooltip[data-visible="true"] {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .cm-tip-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--cm-fg);
+      line-height: 1.35;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cm-tip-rows {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .cm-tip-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--cm-muted);
+      line-height: 1.35;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cm-tip-row svg {
+      flex-shrink: 0;
+      opacity: 0.78;
     }
 
     :host([data-width="tight"]) .cm-hide-tight {
@@ -162,37 +222,42 @@
 
   const TEMPLATE = `
     <div class="cm-strip">
-      <div class="cm-group">
-        <span id="cm-ctx" class="cm-item cm-ctx" data-level="normal">
-          <svg class="cm-ring" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-            <circle class="cm-ring-track" cx="7" cy="7" r="${RING_R}" fill="none" stroke-width="1.8"></circle>
-            <circle id="cm-ring-fill" class="cm-ring-fill" cx="7" cy="7" r="${RING_R}" fill="none" stroke-width="1.8" stroke-linecap="round" transform="rotate(-90 7 7)" stroke-dasharray="${RING_C.toFixed(2)}" stroke-dashoffset="${RING_C.toFixed(2)}"></circle>
-          </svg>
-          <span id="cm-used" class="cm-strong">—</span>
-          <span id="cm-budget"></span>
-          <span id="cm-pct" class="cm-pct"></span>
-        </span>
-        <span id="cm-err" class="cm-err" hidden>${ICONS.alert}<span id="cm-err-text"></span></span>
-      </div>
+      <span id="cm-tps" class="cm-item" data-tip="speed" hidden>
+        ${ICONS.speed}
+        <span id="cm-tps-val" class="cm-strong">—</span>
+      </span>
 
-      <div class="cm-group">
-        <span id="cm-cache" class="cm-item" hidden>
-          ${ICONS.cache}
-          <span>缓存 <span id="cm-cache-val" class="cm-strong">—</span></span>
-        </span>
-        <span id="cm-tps" class="cm-item" hidden>
-          ${ICONS.speed}
-          <span id="cm-tps-val" class="cm-strong">—</span>
-        </span>
-        <span id="cm-ttft" class="cm-item cm-hide-tight" hidden>
-          ${ICONS.clock}
-          <span id="cm-ttft-val">—</span>
-        </span>
-        <span id="cm-out" class="cm-item cm-hide-compact" hidden>
-          ${ICONS.output}
-          <span>输出 <span id="cm-out-val" class="cm-strong">—</span></span>
-        </span>
-      </div>
+      <span id="cm-cache" class="cm-item" data-tip="cache" hidden>
+        ${ICONS.cache}
+        <span>缓存 <span id="cm-cache-val" class="cm-strong">—</span></span>
+      </span>
+
+      <span id="cm-out" class="cm-item cm-hide-tight" data-tip="output" hidden>
+        ${ICONS.output}
+        <span>输出 <span id="cm-out-val" class="cm-strong">—</span></span>
+      </span>
+
+      <span id="cm-ctx" class="cm-item cm-ctx" data-tip="ctx" data-level="normal">
+        <svg class="cm-ring" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <circle class="cm-ring-track" cx="7" cy="7" r="${RING_R}" fill="none" stroke-width="1.8"></circle>
+          <circle id="cm-ring-fill" class="cm-ring-fill" cx="7" cy="7" r="${RING_R}" fill="none" stroke-width="1.8" stroke-linecap="round" transform="rotate(-90 7 7)" stroke-dasharray="${RING_C.toFixed(2)}" stroke-dashoffset="${RING_C.toFixed(2)}"></circle>
+        </svg>
+        <span id="cm-used" class="cm-strong">—</span>
+        <span id="cm-budget"></span>
+        <span id="cm-pct" class="cm-pct"></span>
+      </span>
+
+      <span id="cm-ttft" class="cm-item cm-hide-tight" data-tip="timing" hidden>
+        ${ICONS.clock}
+        <span id="cm-ttft-val">—</span>
+      </span>
+
+      <span id="cm-err" class="cm-err" data-tip="err" hidden>${ICONS.alert}<span id="cm-err-text"></span></span>
+    </div>
+
+    <div id="cm-tooltip" class="cm-tooltip" role="tooltip" data-visible="false">
+      <div id="cm-tip-title" class="cm-tip-title"></div>
+      <div id="cm-tip-rows" class="cm-tip-rows"></div>
     </div>
   `;
 
@@ -215,6 +280,7 @@
     generation: 0,
     controllers: new Set(),
     card: null,
+    hoveredItem: null,
     disposed: false,
   };
 
@@ -304,8 +370,6 @@
 
       if (!bestEditor) return null;
 
-      // Walk up from the active chat editor to the outer rounded composer container
-      // without climbing into the tall conversation scroll pane.
       let card = bestEditor.parentElement || bestEditor;
       let cur = bestEditor.parentElement;
       for (let i = 0; i < 8 && cur && cur !== document.body; i++) {
@@ -361,8 +425,7 @@
     host.style.marginLeft = `${leftOffset}px`;
     host.style.marginBottom = `${Math.max(0, Math.round(6 - rowGap))}px`;
 
-    const w = cardRect.width;
-    host.setAttribute('data-width', w < 360 ? 'tight' : w < 490 ? 'compact' : 'full');
+    host.setAttribute('data-width', cardRect.width < 360 ? 'tight' : 'full');
   }
 
   function dockHost() {
@@ -372,6 +435,7 @@
       state.card = null;
       host.removeAttribute('data-dock');
       if (host.isConnected) host.hidden = true;
+      hideTooltip();
       return;
     }
 
@@ -391,6 +455,7 @@
         layoutObserver = new ResizeObserver(() => {
           if (!state.disposed && state.card && parent.isConnected) {
             alignToCard(parent, state.card);
+            if (state.hoveredItem) positionTooltip(state.hoveredItem);
           }
         });
         layoutObserver.observe(card);
@@ -399,6 +464,158 @@
     }
 
     alignToCard(parent, card);
+  }
+
+  function buildTooltipData(kind) {
+    const d = state.latest;
+    if (kind === 'err') {
+      if (d?.errorInfo && d.errorInfo.kind !== 'none') {
+        return {
+          title: d.errorInfo.label,
+          rows: d.errorInfo.detail ? [{ icon: ICONS.alert, text: d.errorInfo.detail }] : [],
+        };
+      }
+      if (state.requestError) {
+        return {
+          title: '连接状态异常',
+          rows: [{ icon: ICONS.alert, text: state.requestError }],
+        };
+      }
+      return null;
+    }
+    if (!d) return null;
+
+    if (kind === 'speed') {
+      const sp = d.speed;
+      if (!sp) return null;
+      const primary = sp.tps ?? sp.streamingTps;
+      const rows = [];
+      if (sp.streamingTps != null) rows.push({ icon: ICONS.speed, text: `流式速率 ${sp.streamingTps} tok/s` });
+      if (sp.duration != null) rows.push({ icon: ICONS.clock, text: `耗时 ${sp.duration}s` });
+      if (sp.outputTokens > 0) rows.push({ icon: ICONS.output, text: `本轮输出 ${formatFull(sp.outputTokens)} tok` });
+      return {
+        title: `输出速度 ${primary != null ? `${primary} tok/s` : '—'}`,
+        rows,
+      };
+    }
+
+    if (kind === 'cache') {
+      if (d.cacheHit == null) return null;
+      const rows = [];
+      if (d.promptTokens != null && d.cacheReadTokens != null) {
+        rows.push({
+          icon: ICONS.cache,
+          text: `命中 ${formatFull(d.cacheReadTokens)} / ${formatFull(d.promptTokens)} tok`,
+        });
+        const uncached = Math.max(0, d.promptTokens - d.cacheReadTokens);
+        rows.push({
+          icon: ICONS.info,
+          text: `未缓存输入 ${formatFull(uncached)} tok`,
+        });
+      }
+      return {
+        title: `缓存命中 ${d.cacheHit}%`,
+        rows,
+      };
+    }
+
+    if (kind === 'output') {
+      const sp = d.speed;
+      if (!sp || !(sp.outputTokens > 0)) return null;
+      const rows = [];
+      if (sp.thinkingTokens > 0) {
+        rows.push({ icon: ICONS.spark, text: `含思考 ${formatFull(sp.thinkingTokens)} tok` });
+      }
+      if (sp.streamingTps != null) {
+        rows.push({ icon: ICONS.speed, text: `流式速度 ${sp.streamingTps} tok/s` });
+      }
+      return {
+        title: `本轮输出 ${formatFull(sp.outputTokens)} tok`,
+        rows,
+      };
+    }
+
+    if (kind === 'ctx') {
+      const rows = [];
+      if (d.remaining != null) {
+        const pctPart = d.percent != null ? `（已用 ${d.percent.toFixed(1)}%）` : '';
+        rows.push({ icon: ICONS.info, text: `剩余可用 ${formatTokens(d.remaining)} tok${pctPart}` });
+      }
+      if (d.model) {
+        rows.push({ icon: ICONS.spark, text: d.model });
+      }
+      return {
+        title: d.used != null
+          ? `上下文 ${formatFull(d.used)}${d.budget ? ` / ${formatFull(d.budget)}` : ''} tok`
+          : '上下文占用',
+        rows,
+      };
+    }
+
+    if (kind === 'timing') {
+      const sp = d.speed;
+      if (!sp || (sp.ttft == null && sp.duration == null)) return null;
+      const rows = [];
+      if (sp.ttft != null) rows.push({ icon: ICONS.clock, text: `首字延迟 ${sp.ttft}s` });
+      if (sp.streamingSec != null) rows.push({ icon: ICONS.speed, text: `流式生成 ${sp.streamingSec}s` });
+      return {
+        title: sp.duration != null ? `耗时 ${sp.duration}s` : `首字延迟 ${sp.ttft}s`,
+        rows,
+      };
+    }
+
+    return null;
+  }
+
+  function positionTooltip(anchor) {
+    const tip = el('cm-tooltip');
+    if (!tip || !anchor || !anchor.isConnected) return;
+    const rect = anchor.getBoundingClientRect();
+    const tw = tip.offsetWidth || 200;
+    const th = tip.offsetHeight || 68;
+    const left = Math.max(8, Math.min(window.innerWidth - tw - 8, rect.left + rect.width / 2 - tw / 2));
+    let top = rect.top - th - 8;
+    if (top < 8) top = Math.min(window.innerHeight - th - 8, rect.bottom + 8);
+    tip.style.left = `${Math.round(left)}px`;
+    tip.style.top = `${Math.round(top)}px`;
+  }
+
+  function updateTooltipContent(anchor) {
+    const tip = el('cm-tooltip');
+    if (!tip || !anchor) return false;
+    const kind = anchor.getAttribute('data-tip');
+    const data = buildTooltipData(kind);
+    if (!data) {
+      hideTooltip();
+      return false;
+    }
+
+    el('cm-tip-title').textContent = data.title;
+    const rowsEl = el('cm-tip-rows');
+    rowsEl.textContent = '';
+    rowsEl.hidden = data.rows.length === 0;
+    for (const row of data.rows) {
+      const div = document.createElement('div');
+      div.className = 'cm-tip-row';
+      div.innerHTML = `${row.icon}<span></span>`;
+      div.querySelector('span').textContent = row.text;
+      rowsEl.appendChild(div);
+    }
+
+    positionTooltip(anchor);
+    return true;
+  }
+
+  function showTooltip(anchor) {
+    state.hoveredItem = anchor;
+    if (updateTooltipContent(anchor)) {
+      el('cm-tooltip').setAttribute('data-visible', 'true');
+    }
+  }
+
+  function hideTooltip() {
+    state.hoveredItem = null;
+    el('cm-tooltip')?.setAttribute('data-visible', 'false');
   }
 
   function render() {
@@ -411,7 +628,10 @@
       Boolean(d || state.requestError);
 
     host.hidden = !shouldShow;
-    if (!shouldShow) return;
+    if (!shouldShow) {
+      hideTooltip();
+      return;
+    }
 
     const ctxEl = el('cm-ctx');
     const ringEl = el('cm-ring-fill');
@@ -422,6 +642,32 @@
     const errTextEl = el('cm-err-text');
 
     if (d) {
+      const sp = d.speed;
+      const tpsEl = el('cm-tps');
+      const primaryTps = sp ? sp.tps ?? sp.streamingTps : null;
+      if (primaryTps != null) {
+        tpsEl.hidden = false;
+        el('cm-tps-val').textContent = `${primaryTps} tok/s`;
+      } else {
+        tpsEl.hidden = true;
+      }
+
+      const cacheEl = el('cm-cache');
+      if (d.cacheHit != null) {
+        cacheEl.hidden = false;
+        el('cm-cache-val').textContent = `${d.cacheHit}%`;
+      } else {
+        cacheEl.hidden = true;
+      }
+
+      const outEl = el('cm-out');
+      if (sp && sp.outputTokens > 0) {
+        outEl.hidden = false;
+        el('cm-out-val').textContent = formatTokens(sp.outputTokens);
+      } else {
+        outEl.hidden = true;
+      }
+
       const level = d.exceeded
         ? 'danger'
         : d.percent >= 90
@@ -444,47 +690,6 @@
         pctEl.textContent = d.percent != null ? `(${d.percent.toFixed(1)}%)` : '';
       }
 
-      const ctxTipParts = [];
-      if (d.used != null) ctxTipParts.push(`精确 ${formatFull(d.used)} tok`);
-      if (d.budget) ctxTipParts.push(`上限 ${formatFull(d.budget)} tok`);
-      if (d.remaining != null) ctxTipParts.push(`剩余 ${formatTokens(d.remaining)}`);
-      ctxEl.title = ctxTipParts.join(' · ');
-
-      if (d.errorInfo && d.errorInfo.kind !== 'none') {
-        errEl.hidden = false;
-        errTextEl.textContent = d.errorInfo.label;
-        errEl.title = d.errorInfo.detail || d.errorInfo.label;
-      } else {
-        errEl.hidden = true;
-        errEl.title = '';
-      }
-
-      const cacheEl = el('cm-cache');
-      if (d.cacheHit != null) {
-        cacheEl.hidden = false;
-        el('cm-cache-val').textContent = `${d.cacheHit}%`;
-        cacheEl.title =
-          d.promptTokens != null && d.cacheReadTokens != null
-            ? `缓存命中 ${formatTokens(d.cacheReadTokens)} / ${formatTokens(d.promptTokens)}`
-            : '';
-      } else {
-        cacheEl.hidden = true;
-      }
-
-      const sp = d.speed;
-      const tpsEl = el('cm-tps');
-      const primaryTps = sp ? sp.tps ?? sp.streamingTps : null;
-      if (primaryTps != null) {
-        tpsEl.hidden = false;
-        el('cm-tps-val').textContent = `${primaryTps} tok/s`;
-        const speedTips = [];
-        if (sp.tps != null) speedTips.push(`平均 ${sp.tps} tok/s`);
-        if (sp.streamingTps != null) speedTips.push(`流式 ${sp.streamingTps} tok/s`);
-        tpsEl.title = speedTips.join(' · ');
-      } else {
-        tpsEl.hidden = true;
-      }
-
       const ttftEl = el('cm-ttft');
       if (sp && (sp.ttft != null || sp.duration != null)) {
         ttftEl.hidden = false;
@@ -492,43 +697,35 @@
         if (sp.ttft != null) parts.push(`首字 <span class="cm-strong">${sp.ttft}s</span>`);
         if (sp.duration != null) parts.push(`<span class="cm-strong">${sp.duration}s</span>`);
         el('cm-ttft-val').innerHTML = parts.join('<span class="cm-sep"> · </span>');
-        ttftEl.title = [
-          sp.ttft != null ? `首字延迟 ${sp.ttft}s` : '',
-          sp.duration != null ? `总耗时 ${sp.duration}s` : '',
-        ]
-          .filter(Boolean)
-          .join(' · ');
       } else {
         ttftEl.hidden = true;
       }
 
-      const outEl = el('cm-out');
-      if (sp && sp.outputTokens > 0) {
-        outEl.hidden = false;
-        el('cm-out-val').textContent = formatTokens(sp.outputTokens);
-        outEl.title =
-          sp.thinkingTokens > 0
-            ? `本轮输出 ${formatFull(sp.outputTokens)} tok（含思考 ${formatFull(sp.thinkingTokens)}）`
-            : `本轮输出 ${formatFull(sp.outputTokens)} tok`;
+      if (d.errorInfo && d.errorInfo.kind !== 'none') {
+        errEl.hidden = false;
+        errTextEl.textContent = d.errorInfo.label;
       } else {
-        outEl.hidden = true;
+        errEl.hidden = true;
       }
     } else {
+      el('cm-tps').hidden = true;
+      el('cm-cache').hidden = true;
+      el('cm-out').hidden = true;
+      el('cm-ttft').hidden = true;
+
       ctxEl.setAttribute('data-level', 'normal');
       ringEl.style.strokeDashoffset = RING_C.toFixed(2);
       usedEl.textContent = '上下文';
       budgetEl.textContent = '';
       pctEl.textContent = '';
-      ctxEl.title = '';
 
       errEl.hidden = false;
       errTextEl.textContent = state.requestError;
-      errEl.title = state.requestError;
+    }
 
-      el('cm-cache').hidden = true;
-      el('cm-tps').hidden = true;
-      el('cm-ttft').hidden = true;
-      el('cm-out').hidden = true;
+    if (state.hoveredItem) {
+      if (state.hoveredItem.hidden) hideTooltip();
+      else updateTooltipContent(state.hoveredItem);
     }
   }
 
@@ -609,7 +806,17 @@
     }
   }
 
-  const onResize = () => dockHost();
+  for (const item of shadow.querySelectorAll('[data-tip]')) {
+    item.addEventListener('mouseenter', () => showTooltip(item));
+    item.addEventListener('mouseleave', () => {
+      if (state.hoveredItem === item) hideTooltip();
+    });
+  }
+
+  const onResize = () => {
+    dockHost();
+    if (state.hoveredItem) positionTooltip(state.hoveredItem);
+  };
   window.addEventListener('resize', onResize);
 
   let themeObs = null;
@@ -632,7 +839,7 @@
   const timer = setInterval(tick, 500);
 
   globalThis.__AGContextMeter = {
-    version: '2.0.0',
+    version: '2.1.0',
     ensureAlive: () => {
       if (state.disposed) return false;
       syncTheme();
