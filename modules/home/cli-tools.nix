@@ -19,7 +19,7 @@
     })
     nh
     nvd
-    nix-update
+    lilya.nix-update
     trash-cli
     udisks
     ripdrag

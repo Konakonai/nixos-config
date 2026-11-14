@@ -50,6 +50,18 @@
   };
   magpie = pkgs.callPackage ./magpie.nix { };
   minecraft-launcher = pkgs.callPackage ./minecraft-launcher.nix { };
+  # Nix 2.35's `nix flake metadata --json` reports the local flake's /nix/store
+  # path without materializing it on disk, causing `nix-instantiate` to fail
+  # with ENOENT. Prefetch `.` first so the store path exists. Drop once
+  # upstream nix-update or Nix fixes this.
+  nix-update = pkgs.nix-update.overridePythonAttrs (previous: {
+    postPatch = (previous.postPatch or "") + ''
+      substituteInPlace nix_update/options.py \
+        --replace-fail \
+          'result = subprocess.run(' \
+          'subprocess.run(["nix", "flake", "prefetch", "."], cwd=import_path, capture_output=True, check=False); result = subprocess.run('
+    '';
+  });
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
   wiiu-downloader = pkgs.callPackage ./wiiu-downloader.nix { };

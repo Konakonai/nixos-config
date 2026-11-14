@@ -34,7 +34,7 @@ let
       pkgs.gh
       pkgs.gnused
       pkgs.jq
-      pkgs.nix-update
+      pkgs.lilya.nix-update
     ];
     text = ''
       cd ${hostProfile.user.nixosConfigPath}
@@ -98,7 +98,7 @@ let
     name = "update-magpie";
     runtimeInputs = [
       pkgs.git
-      pkgs.nix-update
+      pkgs.lilya.nix-update
     ];
     text = ''
       cd ${hostProfile.user.nixosConfigPath}
