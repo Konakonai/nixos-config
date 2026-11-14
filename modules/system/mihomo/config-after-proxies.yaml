@@ -404,6 +404,10 @@ rules:
 - DOMAIN-SUFFIX,crates.io,Developer
 # Chinese domains stay direct even when a service category lists them.
 - DOMAIN-SUFFIX,cn,DIRECT
+# GitHub Release assets and tarball/LFS objects should use Download rather than
+# Developer's fixed-IP coding nodes.
+- DOMAIN-SUFFIX,release-assets.githubusercontent.com,Download
+- DOMAIN-SUFFIX,objects.githubusercontent.com,Download
 - GEOSITE,github,Developer
 - GEOSITE,microsoft,Microsoft
 - DOMAIN-SUFFIX,msauthimages.net,Microsoft
