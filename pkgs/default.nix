@@ -53,4 +53,5 @@
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
   wiiu-downloader = pkgs.callPackage ./wiiu-downloader.nix { };
+  wlroots-bridge = pkgs.callPackage ./wlroots-bridge.nix { };
 }
