@@ -7,9 +7,20 @@ in
   fonts = {
     fontDir.enable = true;
 
+    # The default set (enabled by Plasma) brings back the variable CJK fonts;
+    # its other members are listed below instead.
+    enableDefaultPackages = false;
+
     packages = with pkgs; [
       jetbrainsMapleMono
       maple-mono."Normal-NF"
+
+      # Rest of the NixOS default font set.
+      dejavu_fonts
+      freefont_ttf
+      gyre-fonts
+      liberation_ttf
+      unifont
 
       noto-fonts
       # Static, not the variable CJK fonts: Gecko (Zen, Thunderbird) gets the
