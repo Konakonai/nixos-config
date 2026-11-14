@@ -31,6 +31,8 @@
     :host {
       display: block;
       align-self: flex-start;
+      flex-shrink: 0;
+      width: 100%;
       box-sizing: border-box;
       user-select: none;
       font-family: inherit;
@@ -70,6 +72,7 @@
     * { box-sizing: border-box; }
 
     .cm-strip {
+      width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -237,6 +240,11 @@
         <span>输出 <span id="cm-out-val" class="cm-strong">—</span></span>
       </span>
 
+      <span id="cm-ttft" class="cm-item cm-hide-tight" data-tip="timing" hidden>
+        ${ICONS.clock}
+        <span id="cm-ttft-val">—</span>
+      </span>
+
       <span id="cm-ctx" class="cm-item cm-ctx" data-tip="ctx" data-level="normal">
         <svg class="cm-ring" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
           <circle class="cm-ring-track" cx="7" cy="7" r="${RING_R}" fill="none" stroke-width="1.8"></circle>
@@ -245,11 +253,6 @@
         <span id="cm-used" class="cm-strong">—</span>
         <span id="cm-budget"></span>
         <span id="cm-pct" class="cm-pct"></span>
-      </span>
-
-      <span id="cm-ttft" class="cm-item cm-hide-tight" data-tip="timing" hidden>
-        ${ICONS.clock}
-        <span id="cm-ttft-val">—</span>
       </span>
 
       <span id="cm-err" class="cm-err" data-tip="err" hidden>${ICONS.alert}<span id="cm-err-text"></span></span>
@@ -280,6 +283,8 @@
     generation: 0,
     controllers: new Set(),
     card: null,
+    dockParent: null,
+    dockTarget: null,
     hoveredItem: null,
     disposed: false,
   };
@@ -410,22 +415,25 @@
     return parent ? { parent, beforeNode: target } : null;
   }
 
-  function alignToCard(parent, card) {
-    const cardRect = card.getBoundingClientRect();
+  function alignToTarget(parent, targetNode) {
+    if (!parent?.isConnected || !targetNode?.isConnected) return;
+    const targetRect = targetNode.getBoundingClientRect();
     const parentRect = parent.getBoundingClientRect();
-    if (cardRect.width <= 0 || parentRect.width <= 0) return;
+    if (targetRect.width <= 0 || parentRect.width <= 0) return;
 
     const ps = getComputedStyle(parent);
     const contentLeft =
       parentRect.left + parseFloat(ps.borderLeftWidth || '0') + parseFloat(ps.paddingLeft || '0');
-    const leftOffset = Math.max(0, Math.round(cardRect.left - contentLeft));
+    const leftOffset = Math.max(0, Math.round(targetRect.left - contentLeft));
     const rowGap = parseFloat(ps.rowGap || '0') || 0;
+    const targetWidth = Math.round(targetRect.width);
 
-    host.style.width = `${Math.round(cardRect.width)}px`;
+    host.style.width = `${targetWidth}px`;
+    host.style.minWidth = `${targetWidth}px`;
     host.style.marginLeft = `${leftOffset}px`;
     host.style.marginBottom = `${Math.max(0, Math.round(6 - rowGap))}px`;
 
-    host.setAttribute('data-width', cardRect.width < 360 ? 'tight' : 'full');
+    host.setAttribute('data-width', targetWidth < 360 ? 'tight' : 'full');
   }
 
   function dockHost() {
@@ -433,6 +441,8 @@
     const card = findComposerCard();
     if (!card) {
       state.card = null;
+      state.dockParent = null;
+      state.dockTarget = null;
       host.removeAttribute('data-dock');
       if (host.isConnected) host.hidden = true;
       hideTooltip();
@@ -448,22 +458,25 @@
     }
     host.setAttribute('data-dock', 'composer');
 
-    if (state.card !== card) {
+    if (state.card !== card || state.dockParent !== parent || state.dockTarget !== beforeNode) {
       state.card = card;
+      state.dockParent = parent;
+      state.dockTarget = beforeNode;
       try {
         layoutObserver?.disconnect();
         layoutObserver = new ResizeObserver(() => {
-          if (!state.disposed && state.card && parent.isConnected) {
-            alignToCard(parent, state.card);
+          if (!state.disposed && state.dockParent && state.dockTarget) {
+            alignToTarget(state.dockParent, state.dockTarget);
             if (state.hoveredItem) positionTooltip(state.hoveredItem);
           }
         });
         layoutObserver.observe(card);
+        if (beforeNode !== card) layoutObserver.observe(beforeNode);
         layoutObserver.observe(parent);
       } catch {}
     }
 
-    alignToCard(parent, card);
+    alignToTarget(parent, beforeNode);
   }
 
   function buildTooltipData(kind) {
@@ -631,6 +644,9 @@
     if (!shouldShow) {
       hideTooltip();
       return;
+    }
+    if (state.dockParent && state.dockTarget) {
+      alignToTarget(state.dockParent, state.dockTarget);
     }
 
     const ctxEl = el('cm-ctx');

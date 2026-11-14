@@ -108,7 +108,7 @@ test('renderer and main stay inline and lightweight without history, native titl
   assert.equal(rendererSrc.includes('.title ='), false);
   assert.equal(rendererSrc.includes('justify-content: center'), true);
 
-  const order = ['id="cm-tps"', 'id="cm-cache"', 'id="cm-out"', 'id="cm-ctx"', 'id="cm-ttft"'];
+  const order = ['id="cm-tps"', 'id="cm-cache"', 'id="cm-out"', 'id="cm-ttft"', 'id="cm-ctx"'];
   const indices = order.map((marker) => rendererSrc.indexOf(marker));
   for (let i = 1; i < indices.length; i++) {
     assert.ok(indices[i - 1] >= 0 && indices[i] > indices[i - 1], `expected ${order[i - 1]} before ${order[i]}`);
