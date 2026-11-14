@@ -3,11 +3,9 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const os = require('node:os');
 const path = require('node:path');
 
 const core = require('../core');
-const { collectTokenHistoryAsync } = require('../collector');
 
 test('summarize computes usage, cache hit, speed and TTFT', () => {
   const res = core.summarize({
@@ -99,77 +97,14 @@ test('formatTokens formats compact units cleanly', () => {
   assert.equal(core.formatTokens(1450000), '1.45M');
 });
 
-test('collector reads transcripts read-only, deduplicates, and merges archived baseline', async () => {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ag-cm-test-'));
-  try {
-    const agDir = path.join(tmp, 'antigravity');
-    const agCliDir = path.join(tmp, 'antigravity-cli');
-    const deskLogDir = path.join(agDir, 'brain', 'conv-1', '.system_generated', 'logs');
-    const cliLogDir = path.join(agCliDir, 'brain', 'conv-2', '.system_generated', 'logs');
-    fs.mkdirSync(deskLogDir, { recursive: true });
-    fs.mkdirSync(cliLogDir, { recursive: true });
+test('renderer and main stay inline and lightweight without history or titlebar widgets', () => {
+  const rendererSrc = fs.readFileSync(path.join(__dirname, '..', 'renderer.js'), 'utf8');
+  const mainSrc = fs.readFileSync(path.join(__dirname, '..', 'main.js'), 'utf8');
 
-    fs.writeFileSync(
-      path.join(deskLogDir, 'transcript.jsonl'),
-      [
-        JSON.stringify({
-          step_index: 1,
-          callId: 'c1',
-          created_at: '2026-11-14T08:00:00Z',
-          input_tokens: 100,
-          cache_read_tokens: 900,
-          output_tokens: 50,
-        }),
-        JSON.stringify({
-          step_index: 1,
-          callId: 'c1', // duplicate should be skipped
-          created_at: '2026-11-14T08:00:00Z',
-          input_tokens: 100,
-          cache_read_tokens: 900,
-          output_tokens: 50,
-        }),
-      ].join('\n')
-    );
-
-    fs.writeFileSync(
-      path.join(cliLogDir, 'transcript.jsonl'),
-      JSON.stringify({
-        step_index: 1,
-        callId: 'c2',
-        created_at: '2026-11-14T09:00:00Z',
-        chatModel: { usage: { inputTokens: 200, cacheReadTokens: 0, outputTokens: 100 } },
-      })
-    );
-
-    // Archived day from an older deleted conversation.
-    fs.writeFileSync(
-      path.join(agDir, 'token_usage_archive_v2.json'),
-      JSON.stringify({
-        dailyMapBySource: {
-          desktop: { '2026-11-01': { total: 5000, input: 1000, cache: 3500, output: 500, steps: 2 } },
-          cli: {},
-        },
-      })
-    );
-
-    const res = await collectTokenHistoryAsync({
-      agDir,
-      agCliDir,
-      now: new Date('2026-11-14T16:00:00+08:00'),
-    });
-
-    assert.equal(res.todayKey, '2026-11-14');
-    assert.equal(res.sources.desktop.today, 1050);
-    assert.equal(res.sources.cli.today, 300);
-    assert.equal(res.sources.all.today, 1350);
-    assert.equal(res.sources.all.total, 6350);
-    assert.equal(res.recentDays.length, 14);
-    assert.equal(res.recentDays[13].date, '2026-11-14');
-    assert.equal(res.recentDays[13].all.total, 1350);
-    // Ensure collector remained purely read-only (did not create v1 archive or ledger).
-    assert.equal(fs.existsSync(path.join(agDir, 'pricing_ledger_v1.json')), false);
-    assert.equal(fs.existsSync(path.join(agDir, 'token_usage_archive_v1.json')), false);
-  } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
-  }
+  assert.equal(rendererSrc.includes('titlebar'), false);
+  assert.equal(rendererSrc.includes('实际统计'), false);
+  assert.equal(rendererSrc.includes('历史用量'), false);
+  assert.equal(rendererSrc.includes('contextMeterAPI'), false);
+  assert.equal(mainSrc.includes('ipcMain'), false);
+  assert.equal(mainSrc.includes('collector'), false);
 });

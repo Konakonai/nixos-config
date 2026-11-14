@@ -2,27 +2,11 @@
 
 const fs = require('fs');
 const path = require('path');
-const { ipcMain, app } = require('electron');
-const { collectTokenHistoryAsync } = require('./collector');
+const { app } = require('electron');
 
-let registered = false;
 const boundWindows = new WeakSet();
 const boundWebContents = new WeakSet();
 const injectionTimers = new WeakMap();
-
-function isLocalMainFrameSender(event) {
-  try {
-    const rawUrl = event?.senderFrame?.url || event?.sender?.getURL?.() || '';
-    const url = new URL(rawUrl);
-    if (url.protocol !== 'https:' || url.hostname !== '127.0.0.1') return null;
-    if (event.senderFrame && event.sender?.mainFrame && event.senderFrame !== event.sender.mainFrame) {
-      return null;
-    }
-    return url;
-  } catch {
-    return null;
-  }
-}
 
 function getMeterSource() {
   try {
@@ -32,22 +16,6 @@ function getMeterSource() {
   } catch {
     return '';
   }
-}
-
-function registerIpcOnce() {
-  if (registered) return;
-  registered = true;
-
-  ipcMain.handle('context-meter:token-history', async (event, force) => {
-    if (!isLocalMainFrameSender(event)) {
-      throw new Error('Only allowed from local main frame');
-    }
-    try {
-      return { ok: true, data: await collectTokenHistoryAsync({ force: force === true }) };
-    } catch (e) {
-      return { ok: false, error: e.message };
-    }
-  });
 }
 
 function scheduleRetry(win, options, delays) {
@@ -96,7 +64,6 @@ async function ensureMeterInjected(win, options = {}) {
 }
 
 function installContextMeter(win) {
-  registerIpcOnce();
   if (!win || win.isDestroyed?.()) return;
 
   if (!boundWindows.has(win)) {

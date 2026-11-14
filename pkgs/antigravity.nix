@@ -118,21 +118,15 @@ stdenv.mkDerivation {
           --replace-fail "[SettingKey.RUN_IN_BACKGROUND, process.platform === 'darwin']" \
                          "[SettingKey.RUN_IN_BACKGROUND, true]"
 
-        # Inject host-themed context & token meter directly into app.asar.
-        install -d app/dist/context-meter
-        install -m 644 ${./antigravity-context-meter}/{core,collector,main,renderer}.js app/dist/context-meter/
-        substituteInPlace app/dist/utils.js \
-          --replace-fail "    void win.loadURL(url);" \
-                         $'    require("./context-meter/main").installContextMeter(win);\n    void win.loadURL(url);' \
-          --replace-fail "        wins[0].focus();" \
-                         $'        wins[0].focus();\n        require("./context-meter/main").ensureMeterInjected(wins[0], { force: false });'
-        cat >> app/dist/preload.js <<'EOF'
-
-    electron_1.contextBridge.exposeInMainWorld("contextMeterAPI", {
-      getTokenHistory: (force) => electron_1.ipcRenderer.invoke("context-meter:token-history", force === true),
-    });
-    EOF
-        node --check app/dist/context-meter/*.js app/dist/utils.js app/dist/preload.js
+    # Inject inline host-themed context meter directly into app.asar.
+    install -d app/dist/context-meter
+    install -m 644 ${./antigravity-context-meter}/{core,main,renderer}.js app/dist/context-meter/
+    substituteInPlace app/dist/utils.js \
+      --replace-fail "    void win.loadURL(url);" \
+                     $'    require("./context-meter/main").installContextMeter(win);\n    void win.loadURL(url);' \
+      --replace-fail "        wins[0].focus();" \
+                     $'        wins[0].focus();\n        require("./context-meter/main").ensureMeterInjected(wins[0], { force: false });'
+    node --check app/dist/context-meter/*.js app/dist/utils.js
 
         mkdir -p "$out/share/icons/hicolor/256x256/apps"
         cp app/icon.png "$out/share/icons/hicolor/256x256/apps/antigravity.png"
