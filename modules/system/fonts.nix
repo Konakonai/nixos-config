@@ -12,9 +12,14 @@ in
       maple-mono."Normal-NF"
 
       noto-fonts
-      noto-fonts-cjk-sans
-      noto-fonts-cjk-serif
+      # Static, not the variable CJK fonts: Gecko (Zen, Thunderbird) gets the
+      # advance widths of the variable font's non-Regular weights wrong, so
+      # bold Latin falling back to CJK SC renders crammed and overlapping.
+      noto-fonts-cjk-sans-static
+      noto-fonts-cjk-serif-static
       noto-fonts-color-emoji
+      # Many web pages and emails list Inter first and tune letter-spacing for it.
+      inter
 
       # 霞鹜文楷：GB 字形、TC（繁体字形，阅读器用）、屏幕阅读版。
       lxgw-wenkai
