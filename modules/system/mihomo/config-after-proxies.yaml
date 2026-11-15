@@ -4,9 +4,11 @@
 # that re-address nodes need no edit here:
 #   Fixed          static exit IP per region (US, TW, JP)
 #   Fast/Balancer  cross-region clusters (no geo tag, exit country varies)
+#   <Region>-Balancer  per-region balancer clusters (US, TW, JP)
+#   Download       normal-rate bulk download nodes (replaced US-X1)
 #   X<n>           n-times traffic billing: X1 is the normal rate; the
-#                  JP-Express-X5 nodes are only offered to Google and
-#                  Anna's Archive
+#                  JP/SG-Express-X5 nodes are only offered to Google and
+#                  Anna's Archive (JP only)
 # A filter that stops matching after an upstream rename leaves its group
 # with only COMPATIBLE, which dials DIRECT; check the group list in the
 # dashboard after the subscription changes its node names.
@@ -26,7 +28,7 @@ proxy-groups:
   - DIRECT
   use:
   - glados
-  filter: -Fixed-|^(Fast|Balancer)-
+  filter: -Fixed-|-Balancer-|^(Fast|Balancer)-
 - name: Research + AI
   type: select
   proxies:
@@ -57,7 +59,7 @@ proxy-groups:
   - TW Fixed IP
   use:
   - glados
-  filter: -Fixed-|^JP-Express-X5-
+  filter: -Fixed-|^(JP|SG)-Express-X5-
 # The subscription no longer tags Netflix-unlock nodes.
 - name: Streaming
   type: select
@@ -66,7 +68,7 @@ proxy-groups:
   - Download
   use:
   - glados
-  filter: -Fixed-|^Balancer-
+  filter: -Fixed-|-Balancer-|^Balancer-
 # Deezer's search API answers with empty results from exits outside its
 # markets (TW, HK, CN, and DIRECT all return nothing); album lookups work
 # anywhere. The US/JP exits get full search results, which beets needs when
@@ -110,7 +112,7 @@ proxy-groups:
   - DIRECT
   use:
   - glados
-  filter: ^(Fast|US-X1)-|-Fixed-
+  filter: ^(Fast|Download)-|-Fixed-
 - name: Steam
   type: select
   proxies:
@@ -119,7 +121,7 @@ proxy-groups:
   - Download
   use:
   - glados
-  filter: ^US-X1-
+  filter: ^(Download|US-Balancer)-
 - name: Premium
   type: select
   proxies:
@@ -134,14 +136,14 @@ proxy-groups:
   - DIRECT
   use:
   - glados
-  filter: ^US-X1-
+  filter: ^US-(Balancer|Fixed)-
 - name: Microsoft
   type: select
   proxies:
   - DIRECT
   use:
   - glados
-  filter: ^US-X1-
+  filter: ^US-(Balancer|Fixed)-
 # Probe over HTTPS: unified-delay sends two requests, and nodes that hijack
 # plain HTTP fail the second HEAD ("failed to get the second response"),
 # marking a working node dead.
@@ -158,7 +160,7 @@ proxy-groups:
   hidden: true
   use:
   - glados
-  filter: ^(Balancer|US-X1)-|-Fixed-
+  filter: ^(Balancer|Download)-|-(Balancer|Fixed)-
   url: https://www.gstatic.com/generate_204
   tolerance: 100
 # A group's `url` on provider nodes is only registered as an extra URL on the
@@ -192,7 +194,7 @@ proxy-groups:
   hidden: true
   use:
   - glados
-  filter: ^US-X1-
+  filter: ^US-Balancer-
   url: https://www.gstatic.com/generate_204
 - name: JP Express
   type: url-test
@@ -202,7 +204,7 @@ proxy-groups:
   filter: ^JP-Express-X5-
   url: https://www.gstatic.com/generate_204
   tolerance: 100
-# The subscription's own Download group uses the normal-rate US-X1 nodes.
+# Download-Auto prefers normal-rate US nodes (US-Balancer) before Auto.
 - name: Download-Auto
   type: fallback
   hidden: true
