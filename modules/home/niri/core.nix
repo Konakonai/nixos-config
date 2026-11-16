@@ -142,6 +142,13 @@ in
         draw-border-with-background = false;
         clip-to-geometry = true;
       }
+      # On the 2560-wide external output a half column forces fit-width
+      # scrolling. A full-width column pairs with Okular's facing + fit-page
+      # defaults (desktop/okular.nix) to show two near-paper-size pages.
+      {
+        matches = [ { app-id = "^org\\.kde\\.okular$"; } ];
+        default-column-width.proportion = 1.0;
+      }
     ];
 
     animations.enable = true;
