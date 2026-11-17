@@ -42,6 +42,7 @@ let
       nix-update --flake magpie
       nix-update --flake wiiu-downloader
       nix-update --flake genryumin
+      nix-update --flake gemini-api
       # Brave's feed also carries nightly and beta tags; pin to the latest stable.
       nix-update --flake brave-origin \
         --version "$(gh release view -R brave/brave-browser --json tagName -q '.tagName|ltrimstr("v")')"

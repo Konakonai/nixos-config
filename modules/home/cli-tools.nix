@@ -32,6 +32,7 @@
 
     wl-clipboard
 
+    lilya.gemini-api
     lilya.grok
     inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
