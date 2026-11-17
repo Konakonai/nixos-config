@@ -23,6 +23,7 @@
     ./music-discover.nix
     ./niri
     ./noctalia.nix
+    ./opencli.nix
     ./shell.nix
     ./services
     ./theme

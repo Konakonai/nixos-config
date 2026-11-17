@@ -63,6 +63,7 @@
           'subprocess.run(["nix", "flake", "prefetch", "."], cwd=import_path, capture_output=True, check=False); result = subprocess.run('
     '';
   });
+  opencli = pkgs.callPackage ./opencli.nix { };
   touhou-grub-theme = pkgs.callPackage ./touhou-grub-theme.nix { };
   touhou-plymouth-theme = pkgs.callPackage ./touhou-plymouth-theme.nix { };
   wiiu-downloader = pkgs.callPackage ./wiiu-downloader.nix { };
