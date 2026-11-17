@@ -18,6 +18,7 @@
   computer-use-linux = pkgs.callPackage ./computer-use-linux.nix { };
   gemini-api = pkgs.callPackage ./gemini-api.nix { };
   genryumin = pkgs.callPackage ./genryumin.nix { };
+  google-colab-cli = pkgs.callPackage ./google-colab-cli.nix { };
   grok = pkgs.callPackage ./grok.nix { };
   grok-bot = pkgs.callPackage ./grok-bot.nix { };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };

@@ -33,7 +33,17 @@
     wl-clipboard
 
     lilya.gemini-api
+    lilya.google-colab-cli
     lilya.grok
     inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
+
+  home.file = {
+    ".gemini/config/skills/colab-operator" = {
+      source = "${pkgs.lilya.google-colab-cli}/share/google-colab-cli/skills/colab-operator";
+      recursive = true;
+    };
+    ".pi/agent/skills/colab-operator".source =
+      "${pkgs.lilya.google-colab-cli}/share/google-colab-cli/skills/colab-operator";
+  };
 }
