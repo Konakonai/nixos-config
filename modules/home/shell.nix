@@ -52,7 +52,7 @@ let
       nix-update --flake codex \
         --version "$(gh release view -R openai/codex --json tagName -q '.tagName|ltrimstr("rust-v")')"
       # These vendors publish no listing nix-update can read; ask their updaters.
-      nix-update --flake grok --version "$(curl -fsSL https://x.ai/cli/stable)"
+      nix-update --flake grok --version "$(curl -fsSL --connect-timeout 10 --max-time 30 https://x.ai/cli/stable)"
       # The rest also embed a build ID or commit in the URL, which nix-update
       # cannot derive from the version: rewrite it first, then let nix-update
       # set the version and refetch the hash.
@@ -70,17 +70,17 @@ let
         sed -i -E "s|^(  $2 = \")[^\"]*\"|\1$4\"|" "pkgs/$1.nix"
         nix-update --flake "$1" --version "$3"
       }
-      manifest=$(curl -fsSL https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json)
+      manifest=$(curl -fsSL --connect-timeout 10 --max-time 30 https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json)
       bump_with_id agy buildId \
         "$(jq -er .version <<<"$manifest")" \
         "$(jq -er '.url | capture("/[^/]+-(?<id>[0-9]+)/linux-x64/").id' <<<"$manifest")"
-      release=$(curl -fsSL https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/releases |
+      release=$(curl -fsSL --connect-timeout 10 --max-time 30 https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/releases |
         jq -e 'max_by(.version | split(".") | map(tonumber))')
       bump_with_id antigravity buildId \
         "$(jq -er .version <<<"$release")" "$(jq -er .execution_id <<<"$release")"
       # The feed answers with the latest release, or HTTP 204 with no body
       # when the pinned one is current.
-      feed=$(curl -fsSL "https://api2.cursor.sh/updates/api/update/linux-x64/sand/$(nix eval --raw .#grok-bot.version)/$(sed -nE 's/^  commit = "(.*)";/\1/p' pkgs/grok-bot.nix)/stable")
+      feed=$(curl -fsSL --connect-timeout 10 --max-time 30 "https://api2.cursor.sh/updates/api/update/linux-x64/sand/$(nix eval --raw .#grok-bot.version)/$(sed -nE 's/^  commit = "(.*)";/\1/p' pkgs/grok-bot.nix)/stable")
       if [ -n "$feed" ]; then
         bump_with_id grok-bot commit \
           "$(jq -er .version <<<"$feed")" \

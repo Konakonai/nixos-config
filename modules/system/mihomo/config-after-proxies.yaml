@@ -406,10 +406,11 @@ rules:
 - DOMAIN-SUFFIX,crates.io,Developer
 # Chinese domains stay direct even when a service category lists them.
 - DOMAIN-SUFFIX,cn,DIRECT
-# GitHub Release assets and tarball/LFS objects should use Download rather than
-# Developer's fixed-IP coding nodes.
+# GitHub Release assets, source tarballs, and LFS objects should use Download
+# rather than Developer's fixed-IP coding nodes.
 - DOMAIN-SUFFIX,release-assets.githubusercontent.com,Download
 - DOMAIN-SUFFIX,objects.githubusercontent.com,Download
+- DOMAIN-SUFFIX,codeload.github.com,Download
 - GEOSITE,github,Developer
 - GEOSITE,microsoft,Microsoft
 - DOMAIN-SUFFIX,msauthimages.net,Microsoft
@@ -438,6 +439,7 @@ rules:
 - GEOSITE,huggingface,Download
 - DOMAIN-SUFFIX,s3.amazonaws.com,Download
 - DOMAIN-SUFFIX,cdn.openai.com,Download
+- DOMAIN-SUFFIX,persistent.oaistatic.com,Download
 - GEOSITE,openai,Research + AI
 - DOMAIN-SUFFIX,civitai.com,Download
 - DOMAIN-SUFFIX,replicate.com,Download
@@ -470,6 +472,7 @@ rules:
 - GEOSITE,xai,Grok
 - GEOSITE,category-ai-!cn,Research + AI
 - DOMAIN-SUFFIX,xai.com,Grok
+- DOMAIN-SUFFIX,downloads.cursor.com,Download
 - GEOSITE,cursor,Research + AI
 - DOMAIN-SUFFIX,together.ai,Research + AI
 - DOMAIN-SUFFIX,stability.ai,Research + AI
@@ -670,6 +673,12 @@ rules:
 - DOMAIN-KEYWORD,steamcontent,Steam
 - DOMAIN-KEYWORD,steampowered,Steam
 - DOMAIN-KEYWORD,steamcommunity,Steam
+# Nix binary caches and Snap artifacts would otherwise fall into GEOSITE,fastly
+# (Default Proxy) or MATCH, stalling large rebuild downloads.
+- DOMAIN-SUFFIX,cache.nixos.org,Download
+- DOMAIN-SUFFIX,cachix.org,Download
+- DOMAIN-SUFFIX,api.snapcraft.io,Download
+- DOMAIN-SUFFIX,snapcraftcontent.com,Download
 - GEOSITE,fastly,Default Proxy
 - GEOSITE,cloudflare,Default Proxy
 - GEOSITE,akamai,Default Proxy
