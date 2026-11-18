@@ -5,12 +5,12 @@ pkgs.stdenv.mkDerivation rec {
   # Upstream pushes many alpha tags, some before their assets exist, and they
   # crowd stable releases out of nix-update's tag feed. Pass the stable version:
   #   nix-update --flake codex --version (gh release view -R openai/codex --json tagName -q '.tagName|ltrimstr("rust-v")')
-  version = "0.169.0";
+  version = "0.170.0";
 
   src = pkgs.fetchurl {
     # The single-binary release asset lacks the code-mode host required by Codex Desktop.
     url = "https://github.com/openai/codex/releases/download/rust-v${version}/codex-package-x86_64-unknown-linux-musl.tar.zst";
-    hash = "sha256-bQK6/wUoGOjCrOPiLBvZ7DcjUkaG5Yb8E0LkyqBGiac=";
+    hash = "sha256-4vmhSMhiMzhADSguIzp6ggJLS/c4A8QAw/r3qEFd3Ks=";
   };
 
   sourceRoot = ".";
