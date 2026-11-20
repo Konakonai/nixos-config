@@ -81,6 +81,46 @@ let
       --command=qq \
       com.qq.QQ "$@"
   '';
+
+  # WeChat's Qt 5.15 chat input box places Noto Color Emoji ahead of text
+  # fonts, so NotoColorEmoji.ttf's keycap base cmap entries (space, '#', '*',
+  # and digits 0-9, all with 1.245em emoji advance width) stretch those ASCII
+  # characters in the composer. Strip only those 13 ASCII codepoints from a
+  # WeChat-only copy so text stays normal while color emojis keep working.
+  wechatEmojiFont =
+    pkgs.runCommand "wechat-noto-color-emoji"
+      {
+        nativeBuildInputs = [ (pkgs.python3.withPackages (ps: [ ps.fonttools ])) ];
+      }
+      ''
+        mkdir -p "$out/share/fonts"
+        python3 - "${pkgs.noto-fonts-color-emoji}/share/fonts/noto/NotoColorEmoji.ttf" "$out/share/fonts/NotoColorEmoji-WeChat.ttf" <<'PY'
+        import sys
+        from fontTools.ttLib import TTFont
+
+        font = TTFont(sys.argv[1])
+        drop = {0x20, 0x23, 0x2A, *range(0x30, 0x3A)}
+        for table in font["cmap"].tables:
+            if hasattr(table, "cmap") and isinstance(table.cmap, dict):
+                for cp in drop:
+                    table.cmap.pop(cp, None)
+        font.save(sys.argv[2])
+        PY
+      '';
+
+  wechatFontConfig = pkgs.writeText "wechat-fonts.conf" ''
+    <?xml version="1.0"?>
+    <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+    <fontconfig>
+      <include>/app/etc/fonts/fonts.conf</include>
+      <dir>${wechatEmojiFont}/share/fonts</dir>
+      <selectfont>
+        <rejectfont>
+          <glob>*/NotoColorEmoji.ttf</glob>
+        </rejectfont>
+      </selectfont>
+    </fontconfig>
+  '';
 in
 {
   home.packages = [ qqLauncher ];
@@ -167,15 +207,18 @@ in
         ];
         # Run WeChat's Qt 5.15 UI natively on Wayland so monitor switches between
         # eDP-1 (1.75) and DP-7 (1.5) stay at a constant 2x buffer instead of
-        # triggering xwayland-satellite's Xft/DPI transitions. Omit the x11
-        # socket (upstream's fallback-x11 stays inactive under Wayland; mini-
-        # programs are unused), and use WeChat's bundled
-        # WaylandTextInputV3ContextPlugin so IME uses native text-input-v3
-        # rather than the DBus fcitx plugin.
+        # triggering xwayland-satellite's Xft/DPI transitions. Omitting the x11
+        # socket keeps upstream's fallback-x11 inactive under Wayland (WeChatAppEx
+        # also switches to --ozone-platform=wayland automatically). Use WeChat's
+        # bundled WaylandTextInputV3ContextPlugin so IME uses native text-input-v3
+        # rather than the DBus fcitx plugin, and swap in the ASCII-stripped
+        # NotoColorEmoji via FONTCONFIG_FILE to fix wide digit/space spacing in
+        # the chat input box.
         Environment =
           themeEnv
           // imEnv
           // {
+            FONTCONFIG_FILE = "${wechatFontConfig}";
             QT_QPA_PLATFORM = "wayland";
             QT_IM_MODULE = "text-input-unstable-v3";
             QT_AUTO_SCREEN_SCALE_FACTOR = "1";
