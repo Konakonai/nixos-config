@@ -13,7 +13,7 @@
 # with only COMPATIBLE, which dials DIRECT; check the group list in the
 # dashboard after the subscription changes its node names.
 # `filter` only applies to `use:` members; the static `proxies:` entries
-# (groups, the self-hosted IN-NexIP nodes, DIRECT) always come first.
+# (groups, the self-hosted JP-Azure / IN-NexIP nodes, DIRECT) always come first.
 proxy-groups:
 - name: Default Proxy
   type: select
@@ -23,6 +23,7 @@ proxy-groups:
   - TW Fixed IP
   - US Fixed IP
   - JP Fixed IP
+  - JP-Azure
   - IN-NexIP-Sticky
   - IN-NexIP-Rotating
   - DIRECT
@@ -35,6 +36,7 @@ proxy-groups:
   - US Fixed IP
   - TW Fixed IP
   - JP Fixed IP
+  - JP-Azure
   - IN-NexIP-Sticky
   - IN-NexIP-Rotating
   use:
@@ -57,6 +59,7 @@ proxy-groups:
   - US Fixed IP
   - JP Fixed IP
   - TW Fixed IP
+  - JP-Azure
   use:
   - glados
   filter: -Fixed-|^(JP|SG)-Express-X5-
@@ -97,6 +100,7 @@ proxy-groups:
   proxies:
   - US Fixed IP
   - TW Fixed IP
+  - JP-Azure
   - IN-NexIP-Sticky
   - IN-NexIP-Rotating
   use:
@@ -147,7 +151,7 @@ proxy-groups:
 # Probe over HTTPS: unified-delay sends two requests, and nodes that hijack
 # plain HTTP fail the second HEAD ("failed to get the second response"),
 # marking a working node dead.
-- name: Auto
+- name: Auto-GLaDOS
   type: url-test
   hidden: true
   use:
@@ -155,6 +159,17 @@ proxy-groups:
   filter: ^(Fast|Balancer)-
   url: https://www.gstatic.com/generate_204
   tolerance: 100
+# Auto keeps all normal traffic on GLaDOS (zero Azure bandwidth spent while
+# the subscription works), and falls back to self-hosted JP-Azure automatically
+# if every GLaDOS node goes down at once (also keeping 8.8.8.8#Auto DNS alive).
+- name: Auto
+  type: fallback
+  hidden: true
+  proxies:
+  - Auto-GLaDOS
+  - JP-Azure
+  url: https://www.gstatic.com/generate_204
+  interval: 180
 - name: Express
   type: url-test
   hidden: true
@@ -213,16 +228,17 @@ proxy-groups:
   - Auto
   url: https://www.gstatic.com/generate_204
   interval: 180
-# Subscription pulls prefer Default Proxy when healthy, but fall back to
-# DIRECT (and static IN-NexIP-Sticky) if every provider node breaks at once
-# (e.g. a bad upstream push causing all nodes to EOF). Probe the subscription
-# host itself so DIRECT is marked alive from China; lazy keeps probes quiet
-# between the 12-hour provider refreshes.
+# Subscription pulls prefer Default Proxy when healthy, then fall back to
+# self-hosted JP-Azure, DIRECT, and IN-NexIP-Sticky if every provider node
+# breaks at once (e.g. a bad upstream push causing all nodes to EOF). Probe
+# the subscription host itself so DIRECT is marked alive from China; lazy
+# keeps probes quiet between the 12-hour provider refreshes.
 - name: Subscription
   type: fallback
   hidden: true
   proxies:
   - Default Proxy
+  - JP-Azure
   - DIRECT
   - IN-NexIP-Sticky
   url: https://update.glados-config.com/

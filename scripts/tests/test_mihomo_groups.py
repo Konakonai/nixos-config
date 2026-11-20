@@ -14,7 +14,7 @@ PROVIDER = "glados"
 FIXED_IP_PROVIDER = "glados-fixed-ip"
 BUILTINS = {"DIRECT", "REJECT"}
 # Self-hosted nodes defined statically in the encrypted fragment.
-STATIC_NODES = {"IN-NexIP-Sticky", "IN-NexIP-Rotating"}
+STATIC_NODES = {"JP-Azure", "IN-NexIP-Sticky", "IN-NexIP-Rotating"}
 
 
 class ProxyGroupTest(unittest.TestCase):
@@ -51,9 +51,17 @@ class ProxyGroupTest(unittest.TestCase):
         sub = self.by_name["Subscription"]
         self.assertEqual(sub["type"], "fallback")
         self.assertEqual(sub["proxies"][0], "Default Proxy")
+        self.assertIn("JP-Azure", sub["proxies"])
         self.assertIn("DIRECT", sub["proxies"])
         self.assertNotIn("use", sub)
         self.assertIn("update.glados-config.com", sub["url"])
+
+    def test_auto_keeps_glados_first_and_falls_back_to_azure(self):
+        auto = self.by_name["Auto"]
+        self.assertEqual(auto["type"], "fallback")
+        self.assertEqual(auto["proxies"], ["Auto-GLaDOS", "JP-Azure"])
+        self.assertNotIn("use", auto)
+        self.assertEqual(self.by_name["Auto-GLaDOS"]["type"], "url-test")
 
     def test_google_account_domains_share_one_exit(self):
         # Google binds session tokens to the client IP ("<ip> != <ip>").
