@@ -156,7 +156,6 @@ in
       "com.tencent.WeChat" = {
         Context.sockets = [
           "wayland"
-          "x11"
         ];
         # WeChat's Qt file dialog runs inside the sandbox instead of the
         # portal, so "Save As" and file sending only reach folders listed
@@ -168,10 +167,11 @@ in
         ];
         # Run WeChat's Qt 5.15 UI natively on Wayland so monitor switches between
         # eDP-1 (1.75) and DP-7 (1.5) stay at a constant 2x buffer instead of
-        # triggering xwayland-satellite's Xft/DPI transitions. Keep the x11
-        # socket for WeChatAppEx mini-programs (--ozone-platform=x11), and use
-        # WeChat's bundled WaylandTextInputV3ContextPlugin so IME uses native
-        # text-input-v3 rather than the DBus fcitx plugin.
+        # triggering xwayland-satellite's Xft/DPI transitions. Omit the x11
+        # socket (upstream's fallback-x11 stays inactive under Wayland; mini-
+        # programs are unused), and use WeChat's bundled
+        # WaylandTextInputV3ContextPlugin so IME uses native text-input-v3
+        # rather than the DBus fcitx plugin.
         Environment =
           themeEnv
           // imEnv
