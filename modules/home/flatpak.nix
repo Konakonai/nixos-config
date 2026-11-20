@@ -166,16 +166,18 @@ in
           "xdg-videos"
           "xdg-download"
         ];
-        # Stay on X11: Flathub enabled native Wayland for 4.1.13.9 and
-        # reverted it the same day. Do not set QT_ENABLE_HIGHDPI_SCALING or
-        # QT_SCALE_FACTOR_ROUNDING_POLICY=PassThrough on this xcb path;
-        # those double-scale under niri 1.5 and offset the UI. The bundled
-        # Qt5 fcitx plugin still needs X11 to avoid candidate drift.
+        # Run WeChat's Qt 5.15 UI natively on Wayland so monitor switches between
+        # eDP-1 (1.75) and DP-7 (1.5) stay at a constant 2x buffer instead of
+        # triggering xwayland-satellite's Xft/DPI transitions. Keep the x11
+        # socket for WeChatAppEx mini-programs (--ozone-platform=x11), and use
+        # WeChat's bundled WaylandTextInputV3ContextPlugin so IME uses native
+        # text-input-v3 rather than the DBus fcitx plugin.
         Environment =
           themeEnv
           // imEnv
           // {
-            QT_QPA_PLATFORM = "xcb";
+            QT_QPA_PLATFORM = "wayland";
+            QT_IM_MODULE = "text-input-unstable-v3";
             QT_AUTO_SCREEN_SCALE_FACTOR = "1";
           };
       };
