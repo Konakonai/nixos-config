@@ -47,6 +47,14 @@ class ProxyGroupTest(unittest.TestCase):
     def test_normal_rate_us_nodes_precede_auto_for_downloads(self):
         self.assertEqual(self.by_name["Download-Auto"]["proxies"][0], "US")
 
+    def test_subscription_group_can_fall_back_without_provider_nodes(self):
+        sub = self.by_name["Subscription"]
+        self.assertEqual(sub["type"], "fallback")
+        self.assertEqual(sub["proxies"][0], "Default Proxy")
+        self.assertIn("DIRECT", sub["proxies"])
+        self.assertNotIn("use", sub)
+        self.assertIn("update.glados-config.com", sub["url"])
+
     def test_google_account_domains_share_one_exit(self):
         # Google binds session tokens to the client IP ("<ip> != <ip>").
         # Anonymous bulk downloads may still take a download group.

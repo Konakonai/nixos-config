@@ -38,3 +38,10 @@ class DnsLeakPreventionTest(unittest.TestCase):
             # Plain UDP/53 can be hijacked by an upstream fake-ip gateway.
             self.assertTrue(server.startswith("https://"), server)
             self.assertNotIn("1.1.1.1", server)
+
+    def test_subscription_host_resolves_directly_over_doh(self):
+        servers = self.dns["nameserver-policy"]["update.glados-config.com"]
+        self.assertIn("https://223.5.5.5/dns-query", servers)
+        for server in servers:
+            self.assertTrue(server.startswith("https://"), server)
+            self.assertNotIn("1.1.1.1", server)

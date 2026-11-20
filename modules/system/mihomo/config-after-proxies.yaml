@@ -213,6 +213,21 @@ proxy-groups:
   - Auto
   url: https://www.gstatic.com/generate_204
   interval: 180
+# Subscription pulls prefer Default Proxy when healthy, but fall back to
+# DIRECT (and static IN-NexIP-Sticky) if every provider node breaks at once
+# (e.g. a bad upstream push causing all nodes to EOF). Probe the subscription
+# host itself so DIRECT is marked alive from China; lazy keeps probes quiet
+# between the 12-hour provider refreshes.
+- name: Subscription
+  type: fallback
+  hidden: true
+  proxies:
+  - Default Proxy
+  - DIRECT
+  - IN-NexIP-Sticky
+  url: https://update.glados-config.com/
+  interval: 180
+  lazy: true
 # Same ad blocking as the phone's Box config; switch to DIRECT in the
 # dashboard when a site breaks.
 - name: Ad Block
@@ -273,6 +288,12 @@ dns:
       - https://223.5.5.5/dns-query
       - 223.5.5.5
       - 114.114.114.114
+    # Bootstrap subscription refreshes when every proxy node is broken:
+    # nameserver goes through Default Proxy/Auto, so DIRECT fallback needs
+    # direct DoH (plain UDP/53 can be hijacked by fake-ip hotspots).
+    "update.glados-config.com":
+      - https://223.5.5.5/dns-query
+      - https://1.12.12.12/dns-query
   # DoH by IP: some upstreams (e.g. a phone hotspot running its own fake-ip
   # proxy) hijack plain UDP/53 and hand back 198.18.x for node domains, so the
   # nodes get double-proxied and dials time out.
