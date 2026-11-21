@@ -67,6 +67,7 @@ let
       exec "$@"
     '';
   };
+  nectarlink = inputs.nectarlink.packages.${pkgs.stdenv.hostPlatform.system}.default;
   claude-desktop =
     (inputs.claude-desktop.packages.${pkgs.stdenv.hostPlatform.system}.claude-desktop.override {
       # Upstream v2.2553.x is built against Electron 44; nixpkgs' default
@@ -150,6 +151,7 @@ in
     loupe
     magpie
     mcomix
+    nectarlink
     nemo-with-extensions
     obsidian
     pavucontrol
@@ -167,6 +169,14 @@ in
   # Manage the user entry too, so Magpie cannot replace the wrapped launcher.
   xdg.dataFile."applications/magpie.desktop" = {
     source = "${magpie}/share/applications/magpie.desktop";
+    force = true;
+  };
+
+  # NectarLink rewrites this entry on every start with its own store path
+  # (the unwrapped Qt binary, which lacks the plugin paths). A read-only
+  # symlink makes that write fail harmlessly, keeping the PATH launcher.
+  xdg.dataFile."applications/nectarlink.desktop" = {
+    source = "${nectarlink}/share/applications/nectarlink.desktop";
     force = true;
   };
 

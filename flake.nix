@@ -68,6 +68,14 @@
       inputs.millennium-src.follows = "millennium-src";
     };
 
+    # Phone link (notifications, clipboard, files, mirroring). Upstream ships
+    # its own flake; its nixpkgs is only Qt/Rust toolchain, so follow ours.
+    nectarlink = {
+      url = "github:thtbee/nectarlink";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
+
     spicetify-nix = {
       url = "github:Gerg-L/spicetify-nix";
       inputs.nixpkgs.follows = "nixpkgs";

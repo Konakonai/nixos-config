@@ -156,6 +156,29 @@
         "type": "github"
       }
     },
+    "nectarlink": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795277788,
+        "narHash": "sha256-jFi7yJO5JmBH+ii1qDpUMYfjLkYn1ae3IAdZZIt9zQY=",
+        "owner": "thtbee",
+        "repo": "nectarlink",
+        "rev": "a6656402c77530b84171864275e17ed7d748dc73",
+        "type": "github"
+      },
+      "original": {
+        "owner": "thtbee",
+        "repo": "nectarlink",
+        "type": "github"
+      }
+    },
     "niri": {
       "inputs": {
         "niri-stable": "niri-stable",
@@ -354,6 +377,7 @@
         "home-manager": "home-manager",
         "millennium": "millennium",
         "millennium-src": "millennium-src",
+        "nectarlink": "nectarlink",
         "niri": "niri",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs",

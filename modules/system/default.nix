@@ -12,6 +12,7 @@
     ./localization.nix
     ./memory.nix
     ./mihomo
+    ./nectarlink.nix
     ./networking.nix
     ./nix.nix
     ./packages.nix
