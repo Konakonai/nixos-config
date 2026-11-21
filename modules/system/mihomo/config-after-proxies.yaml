@@ -310,6 +310,21 @@ dns:
     "update.glados-config.com":
       - https://223.5.5.5/dns-query
       - https://1.12.12.12/dns-query
+    # Captive portal probes must resolve via the local DHCP DNS before portal
+    # auth (proxied DoH cannot connect yet). Keep them out of fake-ip-filter:
+    # sniffer is off, so TUN only matches the DOMAIN DIRECT rules via fake-ip.
+    "firefox-portal-detection.com":
+      - system://
+      - 223.5.5.5
+    "detectportal.firefox.com":
+      - system://
+      - 223.5.5.5
+    "nmcheck.gnome.org":
+      - system://
+      - 223.5.5.5
+    "captive.apple.com":
+      - system://
+      - 223.5.5.5
   # DoH by IP: some upstreams (e.g. a phone hotspot running its own fake-ip
   # proxy) hijack plain UDP/53 and hand back 198.18.x for node domains, so the
   # nodes get double-proxied and dials time out.
@@ -332,6 +347,12 @@ tun:
   file-descriptor: 0
   recvmsgx: true
   route-address: []
+  # Bypass TUN for the CUMT Dr.COM portal so it uses the kernel main table
+  # directly even while auto-detect-interface transitions across Wi-Fi/LTE.
+  # Do not exclude all of 10.0.0.0/8: DHCP DNS servers on 10.x networks
+  # (e.g. phone hotspots) must still hit TUN dns-hijack.
+  route-exclude-address:
+  - 10.2.5.251/32
 profile:
   store-selected: true
   store-fake-ip: false
@@ -382,6 +403,13 @@ rules:
 - DOMAIN-KEYWORD,localhost,DIRECT
 - DOMAIN-SUFFIX,test-01-cn.gladns.com,DIRECT
 - DOMAIN-SUFFIX,test-01-cn.gladns.net,DIRECT
+# Captive portal probes must dial DIRECT over plain HTTP so campus/hotel
+# gateways can intercept and 302-redirect them before auth (and stay ahead of
+# GEOSITE,apple / GEOSITE,mozilla).
+- DOMAIN,firefox-portal-detection.com,DIRECT
+- DOMAIN,detectportal.firefox.com,DIRECT
+- DOMAIN,nmcheck.gnome.org,DIRECT
+- DOMAIN,captive.apple.com,DIRECT
 - DOMAIN-SUFFIX,glados.vip,US Fixed IP
 - DOMAIN-SUFFIX,glados.work,TW Fixed IP
 - DOMAIN-SUFFIX,ipinfo.io,Default Proxy

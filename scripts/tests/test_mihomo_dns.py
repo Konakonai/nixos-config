@@ -45,3 +45,27 @@ class DnsLeakPreventionTest(unittest.TestCase):
         for server in servers:
             self.assertTrue(server.startswith("https://"), server)
             self.assertNotIn("1.1.1.1", server)
+
+    def test_captive_portal_probes_resolve_locally_and_bypass_proxy(self):
+        config = yaml.safe_load(AFTER.read_text())
+        policy = config["dns"]["nameserver-policy"]
+        fake_ip_filter = config["dns"]["fake-ip-filter"]
+        rules = config["rules"]
+        first_geosite = next(
+            i for i, r in enumerate(rules) if r.startswith("GEOSITE,") and not r.endswith(",Ad Block")
+        )
+        for host in (
+            "firefox-portal-detection.com",
+            "detectportal.firefox.com",
+            "nmcheck.gnome.org",
+            "captive.apple.com",
+        ):
+            self.assertIn("system://", policy[host], host)
+            self.assertNotIn(host, fake_ip_filter, host)
+            self.assertLess(rules.index(f"DOMAIN,{host},DIRECT"), first_geosite, host)
+
+    def test_campus_portal_excluded_from_tun_without_excluding_rfc1918_dns(self):
+        excluded = yaml.safe_load(AFTER.read_text())["tun"]["route-exclude-address"]
+        self.assertIn("10.2.5.251/32", excluded)
+        for broad in ("10.0.0.0/8", "192.168.0.0/16", "172.16.0.0/12"):
+            self.assertNotIn(broad, excluded)
