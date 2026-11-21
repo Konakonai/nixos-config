@@ -1,8 +1,23 @@
-{ ... }:
+{ pkgs, ... }:
 
 {
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
+
+  # NixOS leaves ModemManager D-Bus-activated only (WantedBy is empty), and
+  # NetworkManager does not trigger D-Bus activation on its own. Without this
+  # rule, plugging in an external USB LTE modem sits idle until an unrelated
+  # client (e.g. KDE Connect) pokes org.freedesktop.ModemManager1.
+  #
+  # Numbered 68- so MTP_NO_PROBE runs ahead of 69-libmtp.rules: the Lenovo
+  # MDM9207 dongle advertises bDeviceClass=00 and "MDM9207-MTP", causing
+  # mtp-probe to scan it twice on every plug-in.
+  services.udev.packages = [
+    (pkgs.writeTextDir "lib/udev/rules.d/68-lte-modem.rules" ''
+      ACTION=="add", SUBSYSTEM=="usbmisc", KERNEL=="cdc-wdm*", TAG+="systemd", ENV{SYSTEMD_WANTS}+="ModemManager.service"
+      ACTION=="add|bind", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="17ef", ATTR{idProduct}=="7240", ENV{MTP_NO_PROBE}="1"
+    '')
+  ];
 
   # NixOS restarts polkit whenever system.path changes, and upstream
   # ModemManager.service has Requires=polkit.service, so every rebuild that
