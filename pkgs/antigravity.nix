@@ -9,14 +9,14 @@
 
 let
   pname = "antigravity";
-  version = "2.33.0";
+  version = "2.34.0";
   # The build ID in the URL comes from the release list (update-pins rewrites it):
   #   curl -fsSL https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/releases
-  buildId = "4731201358004224";
+  buildId = "5887025308631040";
 
   src = fetchurl {
     url = "https://storage.googleapis.com/antigravity-public/antigravity-hub/${version}-${buildId}/linux-x64/Antigravity.tar.gz";
-    hash = "sha256-pzOHsinGsfUoiGBzETPFsm4VM0Dq7ZbYZQMs2KhTUFA=";
+    hash = "sha256-R4xo+Gye9hpQIYWjnpzuxmsSdqalOxkaGbDZzoaYNts=";
   };
 
   runtimeLibs = with pkgs; [
@@ -122,8 +122,8 @@ stdenv.mkDerivation {
     install -d app/dist/context-meter
     install -m 644 ${./antigravity-context-meter}/{core,main,renderer}.js app/dist/context-meter/
     substituteInPlace app/dist/utils.js \
-      --replace-fail "    void win.loadURL(url);" \
-                     $'    require("./context-meter/main").installContextMeter(win);\n    void win.loadURL(url);' \
+      --replace-fail "    void loadHubWindowUrl(win, url, { skipBootstrapMint });" \
+                     $'    require("./context-meter/main").installContextMeter(win);\n    void loadHubWindowUrl(win, url, { skipBootstrapMint });' \
       --replace-fail "        wins[0].focus();" \
                      $'        wins[0].focus();\n        require("./context-meter/main").ensureMeterInjected(wins[0], { force: false });'
     node --check app/dist/context-meter/*.js app/dist/utils.js

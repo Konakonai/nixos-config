@@ -1,5 +1,6 @@
 {
   config,
+  inputs,
   lib,
   lilyaTheme,
   pkgs,
@@ -245,6 +246,18 @@ in
 
   programs.noctalia = {
     enable = true;
+    # Upstream 9213809c ("fetch wpa_supplicant BSSs asynchronously") passes
+    # `const std::optional<sdbus::Error>&` to `uponReplyInvoke`, which does not
+    # match sdbus-cpp 2.2.1's `function_traits<void(std::optional<Error>, ...)>`
+    # specialization (by-value only). Drop once fixed upstream.
+    package = inputs.noctalia.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs (old: {
+      postPatch = (old.postPatch or "") + ''
+        substituteInPlace src/dbus/network/wpa_supplicant_service.cpp \
+          --replace-fail \
+            "const std::optional<sdbus::Error>& error" \
+            "std::optional<sdbus::Error> error"
+      '';
+    });
     settings = noctaliaSettings;
     customPalettes.${paletteName} = ../../assets/noctalia/palettes/catppuccin-lavender-light.json;
   };

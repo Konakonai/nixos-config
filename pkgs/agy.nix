@@ -10,15 +10,15 @@ let
   # The build ID in the URL comes from the release manifest:
   #   curl -fsSL https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json
   # update-pins rewrites it.
-  buildId = "6132547114106880";
+  buildId = "5999302598852608";
 in
 stdenv.mkDerivation rec {
   pname = "agy";
-  version = "1.5.11";
+  version = "1.5.13";
 
   src = fetchurl {
     url = "https://storage.googleapis.com/antigravity-public/antigravity-cli/${version}-${buildId}/linux-x64/cli_linux_x64.tar.gz";
-    hash = "sha256-32UsmP31Gah8AXtOHZLz/bZsNE3hbl5oXFlmN7vSgzQ=";
+    hash = "sha256-f6nMbfDQlWJpPWN8QGqGwbD1KrM2RxSx/S15zGBg1LI=";
   };
 
   sourceRoot = ".";

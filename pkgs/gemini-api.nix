@@ -7,11 +7,11 @@
 
 let
   pname = "gemini-api";
-  version = "0.4.6";
+  version = "0.5.0";
 
   src = fetchurl {
     url = "https://github.com/google-gemini/gemini-api-cli/releases/download/v${version}/gemini-api_Linux_x86_64.tar.gz";
-    hash = "sha256-eIYt3lGdm0ep+3Cx8DQNGfoSRZNNZeg/Di28HRfNL6Y=";
+    hash = "sha256-/OIp3Uguwcr/Fc0Ueik1E/+1pSOQOU5SE2+FtKSXx0I=";
   };
 in
 stdenvNoCC.mkDerivation {
