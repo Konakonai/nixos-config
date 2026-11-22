@@ -1,79 +1,203 @@
-# lilya's NixOS configuration
+<div align="center">
 
-个人 ThinkBook 16p 的 NixOS + Home Manager 配置（Flakes）。默认会话 **Niri + Noctalia**，备用 **Plasma (Wayland)**。自动化修改前先读 [AGENTS.md](AGENTS.md)。
+# ❄️ lilya's NixOS Configuration
 
-## 布局
+Declarative single-host **NixOS + Home Manager** flake for a Lenovo ThinkBook 16p Gen 4<br/>
+running **Niri + Noctalia** (Catppuccin Lavender Light) with **Plasma Wayland** as fallback.
+
+<p>
+  <a href="https://nixos.org/"><img alt="NixOS Unstable" src="https://img.shields.io/badge/NixOS-unstable-7287fd?style=for-the-badge&logo=nixos&logoColor=eff1f5&labelColor=4c4f69"></a>
+  <a href="https://github.com/YaLTeR/niri"><img alt="WM: Niri" src="https://img.shields.io/badge/WM-Niri-8839ef?style=for-the-badge&logo=wayland&logoColor=eff1f5&labelColor=4c4f69"></a>
+  <a href="https://github.com/noctalia-dev/noctalia"><img alt="Shell: Noctalia" src="https://img.shields.io/badge/Shell-Noctalia-1e66f5?style=for-the-badge&logo=linux&logoColor=eff1f5&labelColor=4c4f69"></a>
+  <a href="https://github.com/Konakonai/lilya-tools"><img alt="Companion Tools" src="https://img.shields.io/badge/Tools-lilya--tools-179299?style=for-the-badge&logo=github&logoColor=eff1f5&labelColor=4c4f69"></a>
+</p>
+
+<p>
+  <a href="#hardware--stack">Stack</a> ·
+  <a href="#repository-structure">Structure</a> ·
+  <a href="#highlights">Highlights</a> ·
+  <a href="#usage">Usage</a> ·
+  <a href="#configuration-ownership">Ownership</a> ·
+  <a href="#out-of-git-state--backups">State & Backups</a> ·
+  <a href="#operational-notes">Notes</a> ·
+  <a href="#external-infrastructure">External Docs</a>
+</p>
+
+<img alt="Niri + Noctalia Desktop Preview" src="./assets/desktop-preview.webp" width="92%" />
+
+</div>
+
+> [!NOTE]
+> This is a personal single-machine configuration containing host-specific hardware facts and encrypted secrets—do **not** run `nixos-rebuild switch` directly on another machine. Feel free to browse, borrow modules, or run exported packages.
+> For automated agent conventions and workflow rules, read [AGENTS.md](AGENTS.md) first.
+
+---
+
+## Hardware & Stack
+
+### Host (`hosts/lilya-thinkbook`)
+
+| Spec | Value |
+|---|---|
+| **Machine** | Lenovo ThinkBook 16p Gen 4 (`21J8`) |
+| **CPU / RAM** | Intel Core i9-13900H (6P + 8E) / 32 GiB RAM (+ zram zstd) |
+| **GPUs** | Intel Iris Xe (iGPU) + NVIDIA GeForce RTX 4060 Laptop (PRIME offload, D3 runtime PM on battery) |
+| **Displays** | Internal 16″ `3200×2000 @ 60 Hz` 10-bpc eDP (DSC via HBR2 ×2 link cap) · External Philips `27E2F7901` |
+
+### Software Stack
+
+| Layer | Components |
+|---|---|
+| **OS & Packaging** | NixOS (`nixos-unstable`), Flakes, Home Manager (integrated as NixOS module), `nh` |
+| **Compositor & Shell** | [Niri](https://github.com/YaLTeR/niri) (primary) + [Noctalia](https://github.com/noctalia-dev/noctalia) · KDE Plasma Wayland (fallback via `plasma-manager`) |
+| **Theme** | Catppuccin Lavender Light (`adw-gtk3`, `klassy` Qt6, Colloid icons, synced via Noctalia templates) |
+| **Terminal & CLI** | Fish + Starship, Kitty, Yazi, Fastfetch, `btop`, `ripgrep`, `fd`, `direnv` |
+| **Editor & Browsers** | Zed, Zen Browser (Beta), Brave Origin, Chromium |
+| **Input Method** | Fcitx5 + Rime (`rime-ice`) + patched `fcitx5-configtool` |
+| **Networking & Proxy** | Mihomo TUN (AWAvenue + GEOSITE rules), NetworkManager (Wi-Fi + USB LTE modem), Tailscale |
+| **Phone & Media** | [NectarLink](https://github.com/thtbee/nectarlink) (webcam, uinput, clipboard, Tailscale QUIC), OpenList + rclone + Jellyfin, Beets |
+| **Secrets & Backups** | `agenix` (`secrets/*.age`), daily `restic` to Seoul SFTP + Google Drive |
+| **Companion Repo** | [`Konakonai/lilya-tools`](https://github.com/Konakonai/lilya-tools) (`music-discover`, `beets-zhlyrics`, `claude-token-band`) |
+
+---
+
+## Repository Structure
+
+All imports are explicit—no `lib/` abstraction layer and no directory auto-scanning. Cross-cutting features use **single-file dual-layer modules** (declaring both NixOS and `home-manager.users.<user>` options in one file).
 
 ```text
-flake.nix                    inputs、overlay、nixosConfigurations.nixos、checks、packages、formatter
-configuration.nix / home.nix 系统入口与 Home Manager 底座
-hosts/lilya-thinkbook/       主机事实：用户路径、显示器、GPU、外接 Windows 盘、age 身份路径
-modules/                     按领域组织（跨层功能采用单文件双层：同文件声明系统与 Home Manager）
-  default.nix                顶层显式导入表
-  core/                      系统底座：base、nix、boot、graphics、networking、power、usb-c、backup、virtualization
-  services/                  跨层服务：mihomo、media（OpenList/Jellyfin/rclone）、nectarlink
-  desktop/                   会话与外观：display/、fonts、fcitx5、niri/、noctalia、plasma、theme、mime
-  user/                      工作流与应用：shell、nixos-tools、packages、ai、gaming、music、apps/
-  shared/                    theme-settings.nix，系统与用户共用的主题参数
-pkgs/                        本地包与上游包的局部覆盖，导出为 pkgs.lilya
-scripts/ + scripts/tests/    独立脚本与回归测试
-checks/                      flake checks
-assets/ patches/ secrets/    静态资源、上游补丁、age 密文
-docs/                        仓库之外的手工状态（音乐服务器、宿舍路由器、东京备用 VPS）的记录与重建步骤
+.
+├── flake.nix                    # Inputs, overlays, nixosConfigurations.nixos, checks, packages, formatter
+├── configuration.nix            # System entrypoint
+├── home.nix                     # Minimal Home Manager base + external HM module imports
+├── hosts/lilya-thinkbook/       # Machine facts: paths, displays, GPU PCI, USB devices, VM disk, age key
+├── modules/
+│   ├── default.nix              # Single top-level explicit import manifest
+│   ├── shared/                  # theme-settings.nix (shared palette, fonts, radii)
+│   ├── core/                    # System base: base, nix, boot, graphics, networking, power, usb-c, backup, virtualization
+│   ├── services/                # Dual-layer services: mihomo/, media (OpenList/Jellyfin/rclone), nectarlink
+│   ├── desktop/                 # Session & visuals: display/, fonts, fcitx5, niri/, noctalia, plasma, theme, mime
+│   └── user/                    # Workflows & apps: shell, nixos-tools, packages, ai, gaming, music, apps/
+├── pkgs/                        # Local packages & upstream overrides (exported as pkgs.lilya)
+├── patches/                     # Minimal upstream patches (fcitx5-configtool, noctalia-mihomo-control)
+├── scripts/ + scripts/tests/    # Standalone hardware/ops scripts & regression tests (SYSROOT-injectable)
+├── checks/                      # Flake checks (lint, configuration regressions, niri KDL validation)
+├── assets/ secrets/             # Static assets (wallpapers, templates, preview) & agenix secrets
+└── docs/                        # Out-of-band external machine runbooks (music server, router, backup VPS)
 ```
 
-导入都是显式列出的；没有 `lib/`，没有目录扫描。
+---
 
-## 亮点
+## Highlights
 
-- **两层外观模型**：Nix 只写默认层，GUI 改动留在 Noctalia 的覆盖层，rebuild 不会改回去；调色板经 Noctalia 模板同步到 GTK、Qt、Niri、kitty。
-- **秘密用 agenix**：订阅链接与自建节点、控制 API secret、LAN 认证、GitHub token 全在 `secrets/*.age`。
-- **Mihomo TUN**：规则以 `GEOSITE` 类别为主，最前面是与手机 Box 相同的去广告（AWAvenue + `category-ads-all`，`Ad Block` 组可切 DIRECT），控制 API 同源限制，7890 对局域网开放但需认证，主机 IPv6 开启（Tailscale 直连用），WebRTC 由浏览器策略只暴露 TUN 地址、STUN 强制走代理。
-- **硬件恢复脚本**：USB-C PD 事件后的 mux 复位、电池省电模式下的 CPU/PCIe 限制，失败自动回滚，`SYSROOT` 可注入测试。
-- **外接 Windows 虚拟机**：libvirt 直通 USB 整盘，启动器先确认磁盘未挂载。
-- **音乐**：beets 按 Deezer 整理 `~/Music`，插件 `zhlyrics` 补中文歌词（网易云 + LRCLib，统一简体）；`music-sync` 镜像到上海服务器上的 Navidrome；`music-discover` 每周用网易云「我喜欢的音乐」做种子，汇总网易云、ListenBrainz、YouTube Music 的相似推荐生成发现页（`zhlyrics` 与 `music-discover` 源码在独立仓库 `Konakonai/lilya-tools`，经 flake input 引入）。见 [docs/music-server.md](docs/music-server.md)。
-- **影视**：夸克网盘经 OpenList → rclone 挂到 `~/Mounts/OpenList`，本机 Jellyfin（以用户身份运行）刮削 TMDB，本机用 Jellyfin Desktop 播放；8096 只在 Wi-Fi 网卡（热点或同一 Wi-Fi 下的手机）和 `tailscale0`（手机在外面时）上开放；LTE 是运营商内网地址，无法直连。
-- **Claude Code mod**：`token-band`（源码在 `Konakonai/lilya-tools/claude-token-band`）由 Home Manager 链到 `~/.claude/skills/`，在输入框上方显示 tok/s、TTFT、prompt 缓存命中率与缓存过期倒计时；改源码后在 `~/Projects/lilya-tools` 跑 `claude plugin test claude-token-band`。
-- **后台 Computer Use**：claude-desktop-extra 的「Computer Use on a background display」（Settings → Extra → Community Features）的第二块屏由 `claude-cu-desk` 提供：headless sway，pixman 渲染不唤醒独显，在设置页选它的 `wayland-N`（通常是 `wayland-2`）。开关打开时第二块屏没运行，Computer Use 会直接拒绝，不会回落到主桌面；`claude-cu-desk stop` 停掉它。从 shell 往上面开程序用 `claude-cu-run <命令>`；终端用 foot，kitty 在那里收不到输入。
-- **checks**：脚本单测与 Mihomo 规则可达性、statix/deadnix/nixfmt、Niri KDL 校验。
+- **Two-Layer Appearance Model** — Nix manages the default layer; GUI tweaks live in Noctalia's override layer (`~/.local/state/noctalia/settings.toml`) and survive rebuilds. Palette templates sync automatically to GTK, Qt, Niri, and Kitty.
+- **Hardware & Power Tuning** — Battery-aware `power-profiles-daemon` UPower throttling is disabled (`--disable-upower`) so `balanced` stays responsive on battery, while explicit `power-saver` disables Intel turbo and sets PCIe ASPM to `powersupersave` with automatic rollback; NVIDIA dGPU sleeps in D3 only on battery; eDP link is capped at HBR2 ×2 for 10-bpc DSC (`-0.4 W` idle); USB-C PD mux resets recover stuck ports automatically.
+- **Mihomo TUN + Anti-Leak Networking** — GEOSITE-driven routing fronted by AWAvenue + `category-ads-all` ad blocking, authenticated LAN mixed port (`7890`), host IPv6 enabled for direct Tailscale NAT traversal, and managed browser policies keeping WebRTC bound to the TUN interface with STUN forced over proxy.
+- **Phone Integration (NectarLink)** — Single-file dual-layer setup with `v4l2loopback` virtual webcam, `/dev/uinput` remote input, pinned UDP `7718` QUIC endpoint opened only on Wi-Fi and `tailscale0`, and tray-ready systemd user autostart.
+- **Media & Music Pipelines** — Quark cloud drive mounted via `OpenList → rclone → ~/Mounts/OpenList` for local user-scoped Jellyfin (exposed only on Wi-Fi and `tailscale0`); `beets` + `zhlyrics` organizes `~/Music`, `music-sync` mirrors to Shanghai Navidrome, and `music-discover` builds a weekly discovery page.
+- **External Windows Passthrough VM** — `libvirt`/QEMU whole-disk USB passthrough with udev permissions (`UDISKS_AUTO=0`) and a safe launcher that refuses to boot while the disk is mounted on the host.
+- **AI Toolchain & Background Computer Use** — Consolidated in [modules/user/ai.nix](modules/user/ai.nix): Antigravity (with context-meter injection), Claude Desktop (Electron 44 + `claude-cu-desk` headless Sway display), Codex Desktop (`nix-ld` + `ydotool`), `wlroots-bridge` + `sway-sandbox`, OpenCLI, and `claude-token-band`.
+- **Automated Regression Checks** — `statix`, `deadnix`, `nixfmt`, Python unit tests for hardware/proxy scripts & Mihomo rule reachability, plus `niri validate` on generated KDL.
 
-## 使用
+---
+
+## Usage
+
+### Local Rebuild & Validation
 
 ```bash
 rebuild          # nh os switch
-testbuild        # nh os test，不写引导项
-bootbuild        # nh os boot，下次启动生效；glibc/systemd/PAM 升级时用它代替 rebuild
+testbuild        # nh os test (skip bootloader entry)
+bootbuild        # nh os boot (use instead of rebuild for glibc / systemd / PAM upgrades)
+
 nix fmt
 nix flake check --no-build --no-update-lock-file
 nix build .#checks.x86_64-linux.{configuration,lint,niri-config} --no-link
-update-pins      # flake update + nix-update 手 pin 的包 + flatpak update，改动留给审阅
+
+update-pins      # flake update + nix-update pinned pkgs + flatpak update (leaves diff uncommitted)
+config-drift noctalia|zed   # inspect GUI overrides vs Nix default layer
 ```
 
-## 配置所有权
+### Exported Packages
 
-原则：Nix 提供默认层，GUI 拥有覆盖层，激活不碰覆盖层。
+Local derivations under `pkgs/` are exposed via `packages.x86_64-linux` (including `antigravity`, `codex-desktop`, `computer-use-linux`, `gemini-api`, `google-colab-cli`, `noctalia-mihomo-control`, `opencli`, `wlroots-bridge`, `touhou-grub-theme`, `touhou-plymouth-theme`, etc.):
 
-| 对象 | 方式 |
+```bash
+nix flake show github:Konakonai/nixos-config
+nix build github:Konakonai/nixos-config#<package>
+```
+
+---
+
+## Configuration Ownership
+
+**Rule:** Nix owns the default layer; GUIs own their override layer; activation never clobbers user overrides.
+
+| Target | Ownership Strategy |
 |---|---|
-| Niri、快捷键、显示器、MIME、字体、GTK/Qt 主题文件 | Nix 持续管理 |
-| Noctalia `config.toml` / `settings.toml` | 默认层 / GUI 覆盖层（`~/.local/state/noctalia/`） |
-| Plasma 里 plasma-manager 声明的键 | 每次激活重写；其余由 Plasma 保存 |
-| Zed `settings.json`、LibreOffice 工具栏 | 首次种子，之后由应用保存 |
-| Jellyfin 媒体库与控制台设置 | 运行时状态（`/var/lib/jellyfin`，不在备份范围）；扫描网盘挂载时关掉实时监控、章节图和 trickplay；`fonts/` 是给网页 ASS 渲染用的备用字体（孤独摇滚字体包按字幕用字子集化，原包在夸克） |
-| Flatpak 应用、Noctalia 插件 | 运行时安装，不由 flake.lock 固定 |
+| Niri, keybinds, monitors, MIME, fonts, GTK/Qt theme files | Continuously managed by Nix |
+| Noctalia `config.toml` / `settings.toml` | Nix default layer / GUI delta layer (`~/.local/state/noctalia/`) |
+| Plasma keys declared via `plasma-manager` | Rewritten on activation; all other keys owned by Plasma |
+| Zed `settings.json`, LibreOffice toolbars | Seeded once, then owned by the app |
+| Jellyfin libraries & dashboard settings | Runtime state (`/var/lib/jellyfin`, excluded from backups); disable real-time monitoring, chapter images, and trickplay on cloud mounts |
+| Flatpak apps, Noctalia community plugins | Runtime-installed, not pinned in `flake.lock` (except patched `mihomo-control`) |
 
-`config-drift noctalia|zed` 显示 GUI 相对默认层的差量，想固化时抄进对应模块。Noctalia 模板没生效时运行 `noctalia msg templates-apply`。
+Run `config-drift noctalia|zed` to inspect GUI drift when promoting changes back to Nix. If Noctalia templates fail to refresh, run `noctalia msg templates-apply`.
 
-## 不在 Git 里的状态
+---
 
-`~/.config/age/mihomo.txt`（解密 `secrets/` 的身份，整套秘密的信任根）、`~/.local/state/noctalia/settings.toml`、`~/.config/openlist/`、`~/.config/rclone/rclone.conf`、浏览器 profile、libvirt NVRAM/TPM 与外接 Windows 盘。磁盘未加密是有意的取舍。
+## Out-of-Git State & Backups
 
-`modules/core/backup.nix` 每天用 restic 把其中除浏览器 profile 和 Windows 盘以外的部分，连同 `~/.ssh`、`~/.gnupg`，加密备份到首尔服务器（SFTP，chroot 的 `restic` 账号）和 Google Drive（rclone 远端 `gdrive`，`drive.file` 范围）。restic 密码在 `secrets/` 里，而 `secrets/` 又要靠 age 私钥解密，所以 **age 私钥和 restic 密码必须另存一份在机器之外**，否则备份无法恢复。手动操作用 `sudo restic-seoul …` / `sudo restic-gdrive …`。
+Not tracked in Git: `~/.config/age/mihomo.txt` (age identity and root of trust for all `secrets/*.age`), `~/.local/state/noctalia/settings.toml`, `~/.config/openlist/`, `~/.config/rclone/rclone.conf`, browser profiles, libvirt NVRAM/TPM state, and the external Windows disk. Full-disk encryption is intentionally omitted.
 
-## 备注
+[modules/core/backup.nix](modules/core/backup.nix) runs daily `restic` backups (covering the above except browser profiles and the Windows disk, plus `~/.ssh` and `~/.gnupg`) to two encrypted remotes:
+- **Seoul SFTP** (chrooted `restic` user): `sudo restic-seoul …`
+- **Google Drive** (rclone `gdrive` remote, `drive.file` scope): `sudo restic-gdrive …`
 
-- Mihomo 配置由前片段 + 密文 + 后片段拼接到 `/run/mihomo/config.yaml`，三者任一变化都会重启代理。改规则后 `mihomo -t` 校验，再跑 `configuration` check（含 `scripts/tests/test_mihomo_*.py`）。
-- 订阅节点由密文里的 `glados` proxy-provider 拉取（12 小时一次，经 `Subscription` fallback：优先 `Default Proxy`，全挂时回退自建 `JP-Azure` / `DIRECT` / `IN-NexIP-Sticky`），缓存在 `/var/lib/private/mihomo/proxy_providers/`；`Auto` 也通过 `fallback` 在 GLaDOS 全挂时自动切到 `JP-Azure`（平时零流量，见 [docs/backup-vps.md](docs/backup-vps.md)）；策略组按上游的 `地区-标签-编号` 命名（`US-Fixed-01`、`Fast-B1-1`、`US-Balancer-01` …）用 `filter` 选取，不写死节点名；上游改命名规则时要同步改 filter，否则组变空、退化成直连。换套餐只需更新密文里的 URL。
-- Qt 平台主题等变量只在 Niri 的 `environment {}` 里设置，Plasma 使用标准会话。
-- 合盖不休眠（s2idle 在这台机器上恢复不可靠）。Home Manager 在用户会话允许之后才激活，冷启动后若主题未齐，注销再进一次。
-- 外接 Windows：来宾内先关机再拔盘；宿主运行期间不要挂载该盘；来宾不暴露 VMX。
+> [!WARNING]
+> Restic passwords live in `secrets/*.age`, which are decrypted by `~/.config/age/mihomo.txt`. **Always keep an off-machine copy of both the age private key and the restic password**, or backups cannot be restored.
+
+---
+
+## Operational Notes
+
+<details>
+<summary><b>Mihomo config assembly, subscriptions &amp; fallback routing</b></summary>
+
+- `/run/mihomo/config.yaml` is assembled from `config-before-proxies.yaml` + decrypted `secrets/mihomo-proxies.yaml.age` + `config-after-proxies.yaml`; changing any of the three restarts `mihomo`. Validate rule edits with `mihomo -t` and `.#checks.x86_64-linux.configuration` (`scripts/tests/test_mihomo_*.py`).
+- Subscription nodes come from the encrypted `glados` proxy-provider (refreshed every 12 h via the `Subscription` fallback chain: `Default Proxy` → self-hosted `JP-Azure` / `DIRECT` / `IN-NexIP-Sticky`) and are cached in `/var/lib/private/mihomo/proxy_providers/`.
+- `Auto` falls back to `JP-Azure` (zero idle traffic; see [docs/backup-vps.md](docs/backup-vps.md)) if GLaDOS is completely unreachable.
+- Proxy groups select nodes by regex `filter` against upstream's `Region-Tag-Number` convention (`US-Fixed-01`, `Fast-B1-1`, `US-Balancer-01`, …). If upstream changes naming, update the filters or groups will become empty and fall back to `DIRECT`. Switching subscription plans only requires updating the encrypted URL.
+
+</details>
+
+<details>
+<summary><b>Background Computer Use (<code>claude-cu-desk</code> &amp; <code>sway-sandbox</code>)</b></summary>
+
+- **Claude Desktop background display**: `claude-cu-desk` starts a headless Sway (`WLR_RENDERER=pixman`, never wakes the dGPU) under the user's `$XDG_RUNTIME_DIR` (normally `wayland-2`). Pick it under *Settings → Extra → Community Features*. When enabled while stopped, Computer Use refuses rather than falling back to the main desktop. Stop with `claude-cu-desk stop`; launch apps onto it with `claude-cu-run <cmd>` (use `foot` for terminals—`kitty` does not receive input there).
+- **Isolated agent sandbox**: `sway-sandbox` (`scripts/sway-sandbox.sh`) spins up a fully isolated headless Sway paired with `wlroots-bridge` for stateless Wayland-native screenshots and input without touching the host Niri focus.
+
+</details>
+
+<details>
+<summary><b>Hardware &amp; session quirks</b></summary>
+
+- **Lid switch**: Closing the lid does not suspend (`s2idle` resume is unreliable on this machine; the panel itself turns off).
+- **Qt environment**: `QT_QPA_PLATFORMTHEME=qt6ct` and related decoration vars are scoped strictly to Niri's `environment {}` block so Plasma uses a stock KDE session.
+- **Cold-boot HM activation**: `home-manager-lilya.service` runs after `systemd-user-sessions.service` so SDDM isn't blocked on boot; if themes look incomplete on a cold boot, log out and back in once.
+- **External Windows VM**: Always shut down inside the guest before unplugging the USB drive; never mount it on the host while the VM is running; VMX is intentionally not exposed to the guest.
+
+</details>
+
+---
+
+## External Infrastructure
+
+Manual state for machines outside NixOS management is documented in `docs/` (in Chinese):
+
+| Document / Repo | Scope |
+|---|---|
+| [docs/music-server.md](docs/music-server.md) | Shanghai Navidrome server, `music-sync`, weekly `/discover/` page & Tailscale peer relay |
+| [docs/campus-router.md](docs/campus-router.md) | Dorm OpenWrt router (`AX3000T`) & Dr.COM auto-login script |
+| [docs/backup-vps.md](docs/backup-vps.md) | Tokyo emergency Xray REALITY fallback node (Azure `lab-jp`) |
+| [`Konakonai/lilya-tools`](https://github.com/Konakonai/lilya-tools) | Extracted standalone tools: `music-discover`, `beets-zhlyrics`, `claude-token-band` |

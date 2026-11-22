@@ -30,10 +30,11 @@
 
 ## 编码规范
 
-- **纯声明式**：软件与配置通过 Nix 声明，不用 `nix-env` / `nix profile`。GUI 应用的运行时状态按 README「配置所有权」处理；不要新增 activation 脚本去改用户文件，除非确认没有配置层可用。
-- **就近复用**：直接用 `pkgs` / `lib` / Home Manager / plasma-manager 已有能力，不建 `lib/`，不做目录扫描式导入。修改上游包优先局部 override。
+- **纯声明式**：软件与配置通过 Nix 声明，不用 `nix-env` / `nix profile`。GUI 应用的运行时状态按 README「Configuration Ownership」处理；不要新增 activation 脚本去改用户文件，除非确认没有配置层可用。
+- **按领域组织、单文件双层**：模块归类到 `modules/{core,services,desktop,user}/` 并在 `modules/default.nix` 显式列出；同时涉及系统与 Home Manager 的功能写在同一个 NixOS 模块里（内嵌 `home-manager.users.${hostProfile.user.userName}`），纯用户模块挂到 `modules/default.nix` 的 `home-manager.users.*.imports`。不要再新建 `modules/system/` 或 `modules/home/`。
+- **就近复用**：直接用 `pkgs` / `lib` / Home Manager / plasma-manager 已有能力，不建 `lib/`，不做目录扫描式导入。修改上游包优先局部 override 或最小补丁（`patches/`）；独立演进的自研插件/脚本放到外部仓库 `Konakonai/lilya-tools`（本地 `~/Projects/lilya-tools`）。
 - **新文件先 `git add`**，否则 Flake 看不到。
 - **敏感信息**：密钥、令牌、代理节点只进 `secrets/*.age`，不进日志、注释或提交说明。
 - 每个 workaround 写清"为什么"；没有原因的规则会在下次审计时被删。
-- 改了 README 描述的东西（布局、亮点、所有权、备份范围），同步更新 README。
-- `docs/` 记录不归 Nix 管理的外部机器状态（`music-server.md`：上海 Navidrome；`campus-router.md`：宿舍 OpenWrt 路由器）；改了那边的配置要同步更新文档。
+- 改了 README 描述的东西（布局、硬件/组件栈、亮点、所有权、备份范围），同步更新 README（README 使用英文，本文件与 `docs/` 使用中文）。
+- `docs/` 记录不归 Nix 管理的外部机器状态（`music-server.md`：上海 Navidrome；`campus-router.md`：宿舍 OpenWrt 路由器；`backup-vps.md`：东京应急备用 VPS）；改了那边的配置要同步更新文档。
