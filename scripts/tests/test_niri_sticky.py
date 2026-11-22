@@ -142,93 +142,99 @@ class NiriStickyTests(unittest.TestCase):
         self.assertNotIn(31, state.pinned_ids)
         self.assertNotIn(31, state.unpinned_auto_ids)
 
+    def _start_fake_niri(self, niri_sock: Path, initial_windows_fn):
+        actions = []
+        stream_holder = []
+        stream_events = threading.Condition()
+
+        server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        server.bind(str(niri_sock))
+        server.listen(8)
+
+        def fake_niri():
+            while True:
+                try:
+                    conn, _ = server.accept()
+                except OSError:
+                    break
+                line = conn.makefile("r", encoding="utf-8").readline()
+                if not line:
+                    conn.close()
+                    continue
+                req = json.loads(line)
+                if req == "EventStream":
+                    conn.sendall(b'{"Ok":"Handled"}\n')
+                    conn.sendall(
+                        (
+                            json.dumps(
+                                {
+                                    "WorkspacesChanged": {
+                                        "workspaces": [
+                                            ws(1, "eDP-1", active=True, focused=True),
+                                            ws(2, "eDP-1", active=False),
+                                        ]
+                                    }
+                                }
+                            )
+                            + "\n"
+                        ).encode()
+                    )
+                    conn.sendall(
+                        (
+                            json.dumps(
+                                {"WindowsChanged": {"windows": initial_windows_fn()}}
+                            )
+                            + "\n"
+                        ).encode()
+                    )
+                    with stream_events:
+                        stream_holder.append(conn)
+                        stream_events.notify_all()
+                elif req == "FocusedWindow":
+                    windows = initial_windows_fn()
+                    focused = windows[0] if windows else None
+                    conn.sendall(
+                        (json.dumps({"Ok": {"FocusedWindow": focused}}) + "\n").encode()
+                    )
+                    conn.close()
+                elif isinstance(req, dict) and "Action" in req:
+                    actions.append(req["Action"])
+                    conn.sendall(b'{"Ok":"Handled"}\n')
+                    conn.close()
+
+        thread = threading.Thread(target=fake_niri, daemon=True)
+        thread.start()
+        return server, actions, stream_holder, stream_events
+
     def test_daemon_socket_roundtrip_pin_and_follow(self):
         with tempfile.TemporaryDirectory() as td:
             niri_sock = Path(td) / "niri.sock"
             ctl_sock = Path(td) / "sticky.sock"
 
-            actions = []
-            stream_conn_ready = threading.Event()
-            stream_holder = []
-
-            server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            server.bind(str(niri_sock))
-            server.listen(8)
-
-            def fake_niri():
-                while True:
-                    try:
-                        conn, _ = server.accept()
-                    except OSError:
-                        break
-                    line = conn.makefile("r", encoding="utf-8").readline()
-                    if not line:
-                        conn.close()
-                        continue
-                    req = json.loads(line)
-                    if req == "EventStream":
-                        conn.sendall(b'{"Ok":"Handled"}\n')
-                        conn.sendall(
-                            (
-                                json.dumps(
-                                    {
-                                        "WorkspacesChanged": {
-                                            "workspaces": [
-                                                ws(1, "eDP-1", active=True, focused=True),
-                                                ws(2, "eDP-1", active=False),
-                                            ]
-                                        }
-                                    }
-                                )
-                                + "\n"
-                            ).encode()
-                        )
-                        conn.sendall(
-                            (
-                                json.dumps(
-                                    {
-                                        "WindowsChanged": {
-                                            "windows": [
-                                                win(50, "kitty", "shell", workspace_id=1, is_floating=False)
-                                            ]
-                                        }
-                                    }
-                                )
-                                + "\n"
-                            ).encode()
-                        )
-                        stream_holder.append(conn)
-                        stream_conn_ready.set()
-                    elif req == "FocusedWindow":
-                        conn.sendall(
-                            (
-                                json.dumps(
-                                    {
-                                        "Ok": {
-                                            "FocusedWindow": win(
-                                                50, "kitty", "shell", workspace_id=1, is_floating=False
-                                            )
-                                        }
-                                    }
-                                )
-                                + "\n"
-                            ).encode()
-                        )
-                        conn.close()
-                    elif isinstance(req, dict) and "Action" in req:
-                        actions.append(req["Action"])
-                        conn.sendall(b'{"Ok":"Handled"}\n')
-                        conn.close()
-
-            niri_thread = threading.Thread(target=fake_niri, daemon=True)
-            niri_thread.start()
-
-            daemon_thread = threading.Thread(
-                target=sticky.run_daemon, args=(str(niri_sock), ctl_sock), daemon=True
+            server, actions, stream_holder, stream_events = self._start_fake_niri(
+                niri_sock,
+                lambda: [win(50, "kitty", "shell", workspace_id=1, is_floating=False)],
             )
+            stop_event = threading.Event()
+            rc_box = []
+
+            def run():
+                rc_box.append(
+                    sticky.run_daemon(
+                        str(niri_sock),
+                        ctl_sock,
+                        stop_event=stop_event,
+                        reconnect_delays=(0.02, 0.02),
+                    )
+                )
+
+            daemon_thread = threading.Thread(target=run, daemon=True)
             daemon_thread.start()
 
-            self.assertTrue(stream_conn_ready.wait(timeout=3.0))
+            with stream_events:
+                self.assertTrue(
+                    stream_events.wait_for(lambda: len(stream_holder) >= 1, timeout=3.0)
+                )
             for _ in range(50):
                 if ctl_sock.exists():
                     break
@@ -247,10 +253,12 @@ class NiriStickyTests(unittest.TestCase):
                     break
                 time.sleep(0.02)
 
+            stop_event.set()
+            daemon_thread.join(timeout=3.0)
             stream_holder[0].close()
             server.close()
-            daemon_thread.join(timeout=3.0)
 
+            self.assertEqual(rc_box, [0])
             self.assertEqual(actions[0], {"MoveWindowToFloating": {"id": 50}})
             self.assertEqual(
                 actions[1],
@@ -262,6 +270,124 @@ class NiriStickyTests(unittest.TestCase):
                     }
                 },
             )
+
+    def test_daemon_reconnects_after_event_stream_drop_and_preserves_pins(self):
+        with tempfile.TemporaryDirectory() as td:
+            niri_sock = Path(td) / "niri.sock"
+            ctl_sock = Path(td) / "sticky.sock"
+
+            is_floating = [False]
+            server, actions, stream_holder, stream_events = self._start_fake_niri(
+                niri_sock,
+                lambda: [
+                    win(50, "kitty", "shell", workspace_id=1, is_floating=is_floating[0])
+                ],
+            )
+            stop_event = threading.Event()
+            rc_box = []
+
+            def run():
+                rc_box.append(
+                    sticky.run_daemon(
+                        str(niri_sock),
+                        ctl_sock,
+                        stop_event=stop_event,
+                        reconnect_delays=(0.02, 0.02, 0.02),
+                    )
+                )
+
+            daemon_thread = threading.Thread(target=run, daemon=True)
+            daemon_thread.start()
+
+            with stream_events:
+                self.assertTrue(
+                    stream_events.wait_for(lambda: len(stream_holder) >= 1, timeout=3.0)
+                )
+            for _ in range(50):
+                if ctl_sock.exists():
+                    break
+                time.sleep(0.02)
+
+            # Pin window 50, then reflect its floating state for the post-reconnect snapshot.
+            self.assertEqual(sticky.send_control_command(ctl_sock, "toggle", osd=False), 0)
+            is_floating[0] = True
+
+            # Simulate Niri dropping a slow EventStream client while the compositor stays up.
+            stream_holder[0].close()
+
+            with stream_events:
+                self.assertTrue(
+                    stream_events.wait_for(lambda: len(stream_holder) >= 2, timeout=3.0)
+                )
+            self.assertTrue(ctl_sock.exists())
+
+            # Switching workspace on the new stream must still move the manually pinned window.
+            stream_holder[1].sendall(
+                (json.dumps({"WorkspaceActivated": {"id": 2, "focused": True}}) + "\n").encode()
+            )
+            for _ in range(50):
+                if len(actions) >= 2:
+                    break
+                time.sleep(0.02)
+
+            stop_event.set()
+            daemon_thread.join(timeout=3.0)
+            stream_holder[1].close()
+            server.close()
+
+            self.assertEqual(rc_box, [0])
+            self.assertEqual(
+                actions[1],
+                {
+                    "MoveWindowToWorkspace": {
+                        "window_id": 50,
+                        "reference": {"Id": 2},
+                        "focus": False,
+                    }
+                },
+            )
+
+    def test_daemon_exits_nonzero_when_ipc_disappears(self):
+        with tempfile.TemporaryDirectory() as td:
+            niri_sock = Path(td) / "niri.sock"
+            ctl_sock = Path(td) / "sticky.sock"
+
+            server, _actions, stream_holder, stream_events = self._start_fake_niri(
+                niri_sock,
+                lambda: [win(50, "kitty", "shell", workspace_id=1, is_floating=True)],
+            )
+            rc_box = []
+
+            def run():
+                rc_box.append(
+                    sticky.run_daemon(
+                        str(niri_sock),
+                        ctl_sock,
+                        reconnect_delays=(0.02, 0.02),
+                    )
+                )
+
+            daemon_thread = threading.Thread(target=run, daemon=True)
+            daemon_thread.start()
+
+            with stream_events:
+                self.assertTrue(
+                    stream_events.wait_for(lambda: len(stream_holder) >= 1, timeout=3.0)
+                )
+            for _ in range(50):
+                if ctl_sock.exists():
+                    break
+                time.sleep(0.02)
+
+            # Tear down the listening IPC socket and drop the stream: retries must fail and return 1.
+            server.close()
+            niri_sock.unlink(missing_ok=True)
+            stream_holder[0].close()
+
+            daemon_thread.join(timeout=3.0)
+            self.assertFalse(daemon_thread.is_alive())
+            self.assertEqual(rc_box, [1])
+            self.assertFalse(ctl_sock.exists())
 
 
 if __name__ == "__main__":

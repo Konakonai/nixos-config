@@ -23,6 +23,8 @@ import signal
 import socket
 import subprocess
 import sys
+import threading
+import time
 
 
 @dataclass(frozen=True)
@@ -140,7 +142,7 @@ class StickyState:
             alive = set(self.windows)
             self.pinned_ids &= alive
             self.unpinned_auto_ids &= alive
-            return []
+            return self.pending_moves()
 
         if "WindowOpenedOrChanged" in event:
             win = dict(event["WindowOpenedOrChanged"]["window"])
@@ -205,6 +207,13 @@ class StickyState:
         if self.is_auto_sticky(window):
             self.unpinned_auto_ids.add(wid)
         return "unpinned", False
+
+    def reset_stream_state(self) -> None:
+        """Drop cached Niri snapshots before reconnecting while keeping pin sets."""
+        self.workspaces.clear()
+        self.active_ws_by_output.clear()
+        self.windows.clear()
+        self.overview_open = False
 
 
 def control_socket_path() -> Path:
@@ -304,7 +313,43 @@ def handle_control_command(
     return {"status": status, "id": win["id"], "title": title}
 
 
-def run_daemon(niri_socket: str, ctl_path: Path) -> int:
+DEFAULT_RECONNECT_DELAYS: tuple[float, ...] = (0.2, 0.5, 1.0, 2.0)
+
+
+def _open_event_stream(
+    niri_socket: str, timeout: float = 2.0
+) -> tuple[socket.socket, bytes]:
+    event_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        event_sock.settimeout(timeout)
+        event_sock.connect(niri_socket)
+        event_sock.sendall(b'"EventStream"\n')
+
+        # Read initial Handled reply synchronously before switching to non-blocking.
+        buf = b""
+        while b"\n" not in buf:
+            chunk = event_sock.recv(4096)
+            if not chunk:
+                raise OSError("niri closed event stream before Handled")
+            buf += chunk
+        first_line, buf = buf.split(b"\n", 1)
+        reply = json.loads(first_line.decode("utf-8"))
+        if "Ok" not in reply:
+            raise OSError(f"niri rejected EventStream: {reply}")
+        event_sock.setblocking(False)
+        return event_sock, buf
+    except BaseException:
+        event_sock.close()
+        raise
+
+
+def run_daemon(
+    niri_socket: str,
+    ctl_path: Path,
+    *,
+    stop_event: threading.Event | None = None,
+    reconnect_delays: tuple[float, ...] = DEFAULT_RECONNECT_DELAYS,
+) -> int:
     state = StickyState()
     stop = False
 
@@ -312,42 +357,21 @@ def run_daemon(niri_socket: str, ctl_path: Path) -> int:
         nonlocal stop
         stop = True
 
+    def should_stop() -> bool:
+        return stop or (stop_event is not None and stop_event.is_set())
+
     try:
         signal.signal(signal.SIGTERM, _stop)
         signal.signal(signal.SIGINT, _stop)
     except ValueError:
         pass
 
-    ctl_path.parent.mkdir(parents=True, exist_ok=True)
-    if ctl_path.exists():
-        ctl_path.unlink()
-
-    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    server.bind(str(ctl_path))
-    os.chmod(ctl_path, 0o600)
-    server.listen(8)
-    server.setblocking(False)
-
-    event_sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    event_sock.connect(niri_socket)
-    event_sock.sendall(b'"EventStream"\n')
-
-    # Read initial Handled reply synchronously before switching to non-blocking.
+    select_timeout = 0.05 if stop_event is not None else 1.0
+    server: socket.socket | None = None
+    event_sock: socket.socket | None = None
+    sel: selectors.BaseSelector | None = None
+    ctl_bound = False
     buf = b""
-    while b"\n" not in buf:
-        chunk = event_sock.recv(4096)
-        if not chunk:
-            raise OSError("niri closed event stream before Handled")
-        buf += chunk
-    first_line, buf = buf.split(b"\n", 1)
-    reply = json.loads(first_line.decode("utf-8"))
-    if "Ok" not in reply:
-        raise OSError(f"niri rejected EventStream: {reply}")
-    event_sock.setblocking(False)
-
-    sel = selectors.DefaultSelector()
-    sel.register(event_sock, selectors.EVENT_READ, "events")
-    sel.register(server, selectors.EVENT_READ, "control")
 
     def process_lines() -> None:
         nonlocal buf
@@ -370,48 +394,129 @@ def run_daemon(niri_socket: str, ctl_path: Path) -> int:
                         file=sys.stderr,
                     )
 
-    try:
-        process_lines()
-        while not stop:
+    def handle_control() -> None:
+        assert server is not None
+        try:
+            conn, _ = server.accept()
+        except BlockingIOError:
+            return
+        with conn:
+            conn.settimeout(2.0)
             try:
-                ready = sel.select(timeout=1.0)
+                req = conn.recv(4096).decode("utf-8").strip()
+                cmd = json.loads(req).get("cmd", "") if req else ""
+                resp = handle_control_command(state, niri_socket, cmd)
+            except (OSError, ValueError) as err:
+                resp = {"status": "error", "error": str(err)}
+            try:
+                conn.sendall((json.dumps(resp) + "\n").encode("utf-8"))
+            except OSError:
+                pass
+
+    def reconnect_event_stream() -> bool:
+        nonlocal event_sock, buf
+        assert sel is not None
+        if event_sock is not None:
+            try:
+                sel.unregister(event_sock)
+            except KeyError:
+                pass
+            event_sock.close()
+            event_sock = None
+        buf = b""
+        state.reset_stream_state()
+
+        for delay in reconnect_delays:
+            deadline = time.monotonic() + delay
+            while not should_stop():
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                try:
+                    ready = sel.select(timeout=min(remaining, select_timeout))
+                except InterruptedError:
+                    continue
+                for key, _ in ready:
+                    if key.data == "control":
+                        handle_control()
+            if should_stop():
+                return False
+            try:
+                event_sock, buf = _open_event_stream(niri_socket)
+                sel.register(event_sock, selectors.EVENT_READ, "events")
+                print("niri-sticky: reconnected to niri event stream", file=sys.stderr)
+                process_lines()
+                return True
+            except (OSError, ValueError) as err:
+                print(f"niri-sticky: reconnect failed: {err}", file=sys.stderr)
+
+        print("niri-sticky: event stream unavailable, exiting", file=sys.stderr)
+        return False
+
+    try:
+        ctl_path.parent.mkdir(parents=True, exist_ok=True)
+        if ctl_path.exists():
+            ctl_path.unlink()
+
+        server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        server.bind(str(ctl_path))
+        ctl_bound = True
+        os.chmod(ctl_path, 0o600)
+        server.listen(8)
+        server.setblocking(False)
+
+        try:
+            event_sock, buf = _open_event_stream(niri_socket)
+        except (OSError, ValueError) as err:
+            print(f"niri-sticky: failed to connect event stream: {err}", file=sys.stderr)
+            return 1
+
+        sel = selectors.DefaultSelector()
+        sel.register(event_sock, selectors.EVENT_READ, "events")
+        sel.register(server, selectors.EVENT_READ, "control")
+
+        process_lines()
+        while not should_stop():
+            try:
+                ready = sel.select(timeout=select_timeout)
             except InterruptedError:
                 continue
             for key, _ in ready:
                 if key.data == "events":
+                    assert event_sock is not None
+                    disconnect_reason: str | None = None
                     try:
                         chunk = event_sock.recv(65536)
                     except BlockingIOError:
                         continue
+                    except OSError as err:
+                        disconnect_reason = str(err)
+                        chunk = b""
                     if not chunk:
-                        return 0
+                        reason = disconnect_reason or "EOF"
+                        print(
+                            f"niri-sticky: event stream closed ({reason}), reconnecting...",
+                            file=sys.stderr,
+                        )
+                        if not reconnect_event_stream():
+                            return 0 if should_stop() else 1
+                        break
                     buf += chunk
                     process_lines()
                 elif key.data == "control":
-                    try:
-                        conn, _ = server.accept()
-                    except BlockingIOError:
-                        continue
-                    with conn:
-                        conn.settimeout(2.0)
-                        try:
-                            req = conn.recv(4096).decode("utf-8").strip()
-                            cmd = json.loads(req).get("cmd", "") if req else ""
-                            resp = handle_control_command(state, niri_socket, cmd)
-                        except (OSError, ValueError) as err:
-                            resp = {"status": "error", "error": str(err)}
-                        try:
-                            conn.sendall((json.dumps(resp) + "\n").encode("utf-8"))
-                        except OSError:
-                            pass
+                    handle_control()
     finally:
-        sel.close()
-        event_sock.close()
-        server.close()
-        try:
-            ctl_path.unlink(missing_ok=True)
-        except OSError:
-            pass
+        if sel is not None:
+            sel.close()
+        if event_sock is not None:
+            event_sock.close()
+        if server is not None:
+            server.close()
+        if ctl_bound:
+            try:
+                ctl_path.unlink(missing_ok=True)
+            except OSError:
+                pass
     return 0
 
 
