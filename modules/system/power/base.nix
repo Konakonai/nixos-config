@@ -1,4 +1,8 @@
-{ pkgs, ... }:
+{
+  config,
+  pkgs,
+  ...
+}:
 
 let
   thermalProfile = pkgs.writeShellScriptBin "thermal-profile" ''
@@ -76,6 +80,16 @@ in
 
   services.upower.enable = true;
   services.power-profiles-daemon.enable = true;
+  # power-profiles-daemon's battery-aware mode drops intel_pstate EPP from
+  # balance_performance to balance_power while on battery in balanced mode,
+  # capping the i9-13900H at <=2.2 GHz and making interactive bursts sluggish.
+  # Disabling UPower integration keeps balanced responsive on battery while
+  # leaving explicit power-saver (and power-saver-cpu.py, which talks to UPower
+  # directly) intact.
+  systemd.services.power-profiles-daemon.serviceConfig.ExecStart = [
+    ""
+    "${config.services.power-profiles-daemon.package}/libexec/power-profiles-daemon --disable-upower"
+  ];
   services.thermald.enable = true;
 
   services.logind.settings.Login = {
