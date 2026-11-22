@@ -6,7 +6,27 @@
 }:
 
 let
-  nectarlink = inputs.nectarlink.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  # The decoders (webcam, mirroring) are dlopen()ed, not linked. Upstream's
+  # flake adds them to the RUNPATH in preFixup, but fixup's patchelf
+  # --shrink-rpath then drops them as unused, so the webcam fails with "no
+  # native Linux video decoder". Re-add them after fixup, on the real binary
+  # behind the Qt wrapper. ffmpeg_8: the app only knows libavcodec <= 62, and
+  # nixpkgs' default ffmpeg 9 ships 63.
+  nectarlink =
+    inputs.nectarlink.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
+      (old: {
+        nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.patchelf ];
+        postFixup = (old.postFixup or "") + ''
+          patchelf --add-rpath ${
+            lib.makeLibraryPath [
+              pkgs.ffmpeg_8
+              pkgs.openh264
+              pkgs.lame
+              pkgs.libxtst
+            ]
+          } $out/bin/.nectarlink-desktop-wrapped
+        '';
+      });
 
   # Same race as Bitwarden: autostart runs in parallel with the shell, so wait
   # for the StatusNotifierWatcher (Noctalia under niri, kded under Plasma)
