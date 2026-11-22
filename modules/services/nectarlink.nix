@@ -12,12 +12,16 @@ let
   # flake adds them to the RUNPATH in preFixup, but fixup's patchelf
   # --shrink-rpath then drops them as unused, so the webcam fails with "no
   # native Linux video decoder". Re-add them after fixup, on the real binary
-  # behind the Qt wrapper. ffmpeg_8: the app only knows libavcodec <= 62, and
-  # nixpkgs' default ffmpeg 9 ships 63.
+  # behind the Qt wrapper. ffmpeg_8 for both the RUNPATH and buildInputs:
+  # h264.rs only knows libavcodec <= 62 (nixpkgs' default ffmpeg 9 ships 63),
+  # and linux_video_codec.cpp (hardware encode/decode) dlopen()s the major of
+  # the headers it was compiled against, so ffmpeg 9 headers made it look for
+  # .so.63 and fall back to software. Drop with upstream PR thtbee/nectarlink#512.
   nectarlink =
     inputs.nectarlink.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
       (old: {
         nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.patchelf ];
+        buildInputs = map (p: if p == pkgs.ffmpeg then pkgs.ffmpeg_8 else p) old.buildInputs;
         postFixup = (old.postFixup or "") + ''
           patchelf --add-rpath ${
             lib.makeLibraryPath [
