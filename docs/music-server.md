@@ -8,8 +8,8 @@
 | 入口 | `https://106.14.0.229:8443`（nginx TLS → `127.0.0.1:4533`），账号 `lilya`，密码在 Bitwarden；`/discover/` 是每周的音乐发现页（静态，不设密码） |
 | 曲库 | `/srv/music`：mergerfs 合并系统盘的 `/srv/music-sys` 与数据盘的 `/mnt/data/music`（root 所有，navidrome 只读） |
 | 数据 | `/var/lib/navidrome`（SQLite、缓存） |
-| 同机其他服务 | `trial-run` 容器占 80 端口（nginx 默认站点），与本服务无关，只借用它的 `/.well-known/acme-challenge/` |
-| 安全组 | 放行 22、80、443、8443 |
+| 同机其他服务 | `trial-run` 容器占 80 端口（nginx 默认站点），与本服务无关，只借用它的 `/.well-known/acme-challenge/`；Tailscale 节点 `shanghai-relay`（`100.82.32.65`）兼 peer relay，见下文 |
+| 安全组 | 放行 22、80、443、8443，以及 UDP 40000（Tailscale peer relay） |
 
 ## 日常
 
@@ -211,6 +211,36 @@ nginx -t && systemctl reload nginx
 ```
 
 然后在本机 `music-sync`。
+
+## Tailscale peer relay
+
+校园网和手机的移动数据都是对称 NAT，Tailscale 打不了洞，原来只能绕旧金山/西雅图的 DERP（400–600ms）。这台机器有公网 IP，开 peer relay 后电脑↔手机经上海中转，约 60–130ms（NectarLink 在外面用的就是这条路）。中继只在直连失败时使用，流量计入轻量服务器的月流量包。
+
+重建：
+
+```sh
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg -o /usr/share/keyrings/tailscale-archive-keyring.gpg
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list -o /etc/apt/sources.list.d/tailscale.list
+apt-get update && apt-get install -y tailscale
+tailscale up --hostname=shanghai-relay --accept-dns=false --accept-routes=false   # 打开输出的链接登录
+# 实例在 1:1 NAT 后（eth0 是 172.24.23.226），自己发现不了公网地址，要显式公布
+tailscale set --relay-server-port=40000 --relay-server-static-endpoints="106.14.0.229:40000"
+```
+
+还要：
+
+- 阿里云控制台 → 防火墙放行 UDP 40000（本机 ufw 未启用）。
+- Tailscale 管理后台 Access controls 的 `grants` 里有一条（电脑、手机 → 本机，只授予中继能力）：
+  `{"src": ["100.83.187.102", "100.121.227.28"], "dst": ["100.82.32.65"], "app": {"tailscale.com/cap/relay": []}}`
+  重建后本机 Tailscale IP 会变，记得改 `dst`。
+
+验证：本机 `tailscale ping 100.121.227.28`（手机在移动数据下）应显示 `via peer-relay(106.14.0.229:40000:…)`。
+
+手机（Xiaomi 12S Pro，KernelSU，tailscale-root 模块）一侧要两处改动，否则它的 UDP 根本出不去、永远走 DERP：
+
+- `/data/adb/service.d/tailscale_bypass_route.sh`：开机加 `ip rule add pref 5240 fwmark 0x80000/0xff0000 goto 29998`（v4/v6）。tailscaled 自发的 UDP 带 0x80000 标记、按 Linux 惯例查 `main` 表，Android 的 `main` 没有默认路由，于是全部 `network is unreachable`（netcheck `UDP: false`）；跳到 netd 维护的默认网络规则（29998）后跟随当前上行。
+- Box for Root 的 `tun.route-exclude-address` 加了 `106.14.0.229/32`（备份 `config.yaml.bak.20261122-before-relay-exclude`）。有了上面的规则后已非必需，留作保险。
+- 手机 adb 固定在 TCP 5555（`persist.adb.tcp.port`），可从电脑经 Tailscale `adb connect 100.121.227.28:5555`。
 
 ## 容量
 
