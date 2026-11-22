@@ -100,6 +100,11 @@ let
       # struts do not apply to them (see layout in niri/core.nix).
       reserve_space = true;
       capsule = false;
+      # The bar is transparent (`background_opacity = 0.0`) with an open center;
+      # restrict its Wayland input region to actual widgets so floating islands
+      # (e.g. SPlayer-Next Dynamic Island) sitting in that gap remain clickable
+      # and draggable instead of being blocked by the bar's Layer::Top surface.
+      dead_zone.click_through = true;
       start = [
         "launcher"
         "network"

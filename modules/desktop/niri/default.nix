@@ -259,7 +259,9 @@ in
       )
       # SPlayer-Next Dynamic Island and Desktop Lyric are transparent frameless
       # Electron overlays; float them without chrome and let niri-sticky keep
-      # them following across workspaces.
+      # them following across workspaces. Negative y seats the island inside
+      # Noctalia's empty transparent top-bar center (clickable via
+      # `bar.main.dead_zone.click_through = true`).
       (
         framelessOverlay
         // {
@@ -271,7 +273,7 @@ in
           ];
           default-floating-position = {
             x = 0;
-            y = 6;
+            y = -34;
             relative-to = "top";
           };
         }
