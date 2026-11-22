@@ -8,24 +8,35 @@
 }:
 
 let
+  # ffmpeg 8 without NVIDIA support. 8: h264.rs only knows libavcodec <= 62
+  # (nixpkgs' default ffmpeg 9 ships 63), and linux_video_codec.cpp (hardware
+  # encode/decode) dlopen()s the major of the headers it was compiled
+  # against, so ffmpeg 9 headers made it look for .so.63 and fall back to
+  # software. No NVIDIA: with it the hardware decoder picks CUDA first and its
+  # startup HEVC probe keeps the dGPU awake (on battery too); VA-API on the
+  # iGPU (LIBVA_DRIVER_NAME=iHD) stays the only hardware path.
+  ffmpeg = pkgs.ffmpeg_8.override {
+    withCuda = false;
+    withCudaLLVM = false;
+    withNvcodec = false;
+    withNvdec = false;
+    withNvenc = false;
+  };
   # The decoders (webcam, mirroring) are dlopen()ed, not linked. Upstream's
   # flake adds them to the RUNPATH in preFixup, but fixup's patchelf
   # --shrink-rpath then drops them as unused, so the webcam fails with "no
   # native Linux video decoder". Re-add them after fixup, on the real binary
-  # behind the Qt wrapper. ffmpeg_8 for both the RUNPATH and buildInputs:
-  # h264.rs only knows libavcodec <= 62 (nixpkgs' default ffmpeg 9 ships 63),
-  # and linux_video_codec.cpp (hardware encode/decode) dlopen()s the major of
-  # the headers it was compiled against, so ffmpeg 9 headers made it look for
-  # .so.63 and fall back to software. Drop with upstream PR thtbee/nectarlink#512.
+  # behind the Qt wrapper, and build against the same ffmpeg. The RUNPATH
+  # part can go once upstream PR thtbee/nectarlink#512 is in.
   nectarlink =
     inputs.nectarlink.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
       (old: {
         nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.patchelf ];
-        buildInputs = map (p: if p == pkgs.ffmpeg then pkgs.ffmpeg_8 else p) old.buildInputs;
+        buildInputs = map (p: if p == pkgs.ffmpeg then ffmpeg else p) old.buildInputs;
         postFixup = (old.postFixup or "") + ''
           patchelf --add-rpath ${
             lib.makeLibraryPath [
-              pkgs.ffmpeg_8
+              ffmpeg
               pkgs.openh264
               pkgs.lame
               pkgs.libxtst
