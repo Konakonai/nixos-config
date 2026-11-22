@@ -170,132 +170,133 @@ in
   };
 
   # Fastfetch
+  # Omit `logo.height` with kitty-direct: setting both columns and rows lets
+  # Kitty stretch the PNG across non-square terminal cells instead of preserving
+  # the hexagon's 2:sqrt(3) aspect ratio. Keeping width=26 and compact lines
+  # also prevents wrapping inside niri's default half-screen column.
   xdg.configFile."fastfetch/config.jsonc".text = builtins.toJSON {
     "$schema" = "https://github.com/fastfetch-cli/fastfetch/raw/master/doc/json_schema.json";
 
     logo = {
       type = "kitty-direct";
       source = "${logoPng}";
-      width = 48;
-      height = 18;
+      width = 26;
       preserveAspectRatio = true;
       padding = {
-        top = 0;
-        right = 4;
+        top = 1;
+        left = 2;
+        right = 3;
       };
     };
 
     display = {
       separator = "  ";
-      brightColor = true;
-      color = {
-        keys = "blue";
-        title = "cyan";
-        separator = "blue";
-      };
       key = {
-        width = 14;
+        width = 12;
       };
-      constants = [
-        "fg:${lilyaTheme.palette.text}"
-        "accent:${lilyaTheme.palette.accent}"
-      ];
     };
 
     modules = [
       {
         type = "title";
-        format = "{user-name-colored}{at-symbol-colored}{host-name-colored}";
+        color = {
+          user = "magenta";
+          at = "cyan";
+          host = "blue";
+        };
       }
       {
         type = "separator";
-        string = "┄";
-        times = 22;
-        outputColor = "blue";
+        string = "─";
+        outputColor = "bright_black";
       }
       {
         type = "os";
-        key = "╭ OS";
+        key = "󱄅  OS";
+        keyColor = "blue";
+        format = "{pretty-name}";
       }
       {
         type = "host";
-        key = "├ Host";
+        key = "󰌢  Host";
+        keyColor = "blue";
+        format = "{version}";
       }
       {
         type = "kernel";
-        key = "├ Kernel";
+        key = "  Kernel";
+        keyColor = "blue";
+        format = "{sysname} {release}";
       }
       {
         type = "uptime";
-        key = "├ Uptime";
+        key = "󰅐  Uptime";
+        keyColor = "blue";
       }
       {
         type = "packages";
-        key = "╰ Packages";
-        combined = false;
+        key = "󰏗  Pkgs";
+        keyColor = "blue";
+        combined = true;
         disabled = [ "winget" ];
       }
       {
-        type = "separator";
-        string = "┄";
-        times = 22;
-        outputColor = "blue";
-      }
-      {
         type = "wm";
-        key = "╭ WM";
+        key = "  WM";
+        keyColor = "cyan";
+        format = "{pretty-name} ({protocol-name})";
       }
       {
         type = "display";
-        key = "├ Displays";
+        key = "󰍹  Display";
+        keyColor = "cyan";
         compactType = "original";
       }
       {
-        type = "theme";
-        key = "├ Theme";
+        type = "shell";
+        key = "  Shell";
+        keyColor = "cyan";
       }
       {
         type = "terminal";
-        key = "├ Terminal";
-      }
-      {
-        type = "shell";
-        key = "╰ Shell";
-      }
-      {
-        type = "separator";
-        string = "┄";
-        times = 22;
-        outputColor = "blue";
+        key = "  Term";
+        keyColor = "cyan";
       }
       {
         type = "cpu";
-        key = "╭ CPU";
+        key = "  CPU";
+        keyColor = "magenta";
+        format = "{name} ({cores-logical})";
       }
       {
         type = "gpu";
-        key = "├ GPU";
+        key = "󰢮  GPU";
+        keyColor = "magenta";
+        format = "{name}";
       }
       {
         type = "memory";
-        key = "├ Memory";
-        format = "{used} / {total} ({percentage})";
-      }
-      {
-        type = "swap";
-        key = "├ Swap";
+        key = "  Memory";
+        keyColor = "magenta";
         format = "{used} / {total} ({percentage})";
       }
       {
         type = "disk";
-        key = "├ Root";
+        key = "󰋊  Disk";
+        keyColor = "magenta";
         folders = "/";
-        format = "{size-used} / {size-total} ({size-percentage}) - {filesystem}";
+        format = "{size-used} / {size-total} ({size-percentage})";
       }
       {
         type = "localip";
-        key = "╰ Network";
+        key = "󰩟  IP";
+        keyColor = "magenta";
         compact = true;
+      }
+      "break"
+      {
+        type = "colors";
+        symbol = "circle";
       }
     ];
   };
