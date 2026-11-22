@@ -5,22 +5,17 @@
 }:
 
 {
-  agy = pkgs.callPackage ./agy.nix { };
   antigravity = pkgs.callPackage ./antigravity.nix { };
-  brave-origin = pkgs.callPackage ./brave-origin.nix { };
   celluloid-gl = pkgs.celluloid.overrideAttrs (previous: {
     preFixup = (previous.preFixup or "") + ''
       gappsWrapperArgs+=(--set GSK_RENDERER gl)
     '';
   });
-  codex = pkgs.callPackage ./codex.nix { };
   codex-desktop = pkgs.callPackage ./codex-desktop.nix { inherit inputs; };
   computer-use-linux = pkgs.callPackage ./computer-use-linux.nix { };
   gemini-api = pkgs.callPackage ./gemini-api.nix { };
   genryumin = pkgs.callPackage ./genryumin.nix { };
   google-colab-cli = pkgs.callPackage ./google-colab-cli.nix { };
-  grok = pkgs.callPackage ./grok.nix { };
-  grok-bot = pkgs.callPackage ./grok-bot.nix { };
   jetbrains-maple-mono = pkgs.callPackage ./jetbrains-maple-mono.nix { };
   localsend-no-csd = pkgs.symlinkJoin {
     name = "${pkgs.localsend.name}-no-csd";
@@ -39,7 +34,6 @@
     '';
     meta = pkgs.localsend.meta;
   };
-  magpie = pkgs.callPackage ./magpie.nix { };
   minecraft-launcher = pkgs.callPackage ./minecraft-launcher.nix { };
   # Nix 2.35's `nix flake metadata --json` reports the local flake's /nix/store
   # path without materializing it on disk, causing `nix-instantiate` to fail

@@ -7,7 +7,7 @@
 
 let
   system = pkgs.stdenv.hostPlatform.system;
-  codexCli = pkgs.lilya.codex;
+  codexCli = pkgs.codex;
 
   codexDesktopFlake = (import "${inputs.codex-desktop-linux}/flake.nix").outputs {
     self = {

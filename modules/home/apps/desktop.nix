@@ -7,11 +7,8 @@
 
 let
   inherit (pkgs.lilya)
-    agy
     antigravity
-    grok-bot
     localsend-no-csd
-    magpie
     ;
   # Display 2 for claude-desktop-extra's "Computer Use on a background
   # display": Claude clicks and types there through the bundled bridge without
@@ -131,7 +128,6 @@ let
 in
 {
   home.packages = with pkgs; [
-    agy
     antigravity
     calibre
     claude-cu-desk
@@ -142,13 +138,11 @@ in
     foot
     gimp
     gnome-font-viewer
-    grok-bot
     hyprpicker
     jellyfin-desktop
     kdePackages.okular
     localsend-no-csd
     loupe
-    magpie
     mcomix
     nemo-with-extensions
     obsidian
@@ -161,33 +155,6 @@ in
     }))
     thunderbird
   ];
-
-  # Magpie registers its unwrapped store executable in a user desktop file,
-  # which shadows the packaged launcher and stays on an old version after updates.
-  # Manage the user entry too, so Magpie cannot replace the wrapped launcher.
-  xdg.dataFile."applications/magpie.desktop" = {
-    source = "${magpie}/share/applications/magpie.desktop";
-    force = true;
-  };
-
-  # Magpie's "launch at login" writes the same kind of pinned path into its
-  # autostart entry, so every login brought back the tray of whatever version
-  # was installed when the toggle was flipped, and later launches only focused
-  # that instance. Own the entry and point it at the wrapped launcher. If Home
-  # Manager ever moves a replaced entry aside, delete the .backup copy:
-  # systemd's xdg-autostart generator still starts it.
-  xdg.configFile."autostart/magpie.desktop" = {
-    text = ''
-      [Desktop Entry]
-      Type=Application
-      Name=Magpie
-      Exec=${lib.getExe magpie} tray
-      Icon=magpie
-      Terminal=false
-      X-GNOME-Autostart-enabled=true
-    '';
-    force = true;
-  };
 
   xdg.desktopEntries = {
     # The system vim package ships upstream launcher entries. vim is only used

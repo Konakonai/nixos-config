@@ -31,7 +31,6 @@ let
     runtimeInputs = [
       pkgs.curl
       pkgs.flatpak
-      pkgs.gh
       pkgs.gnused
       pkgs.jq
       pkgs.lilya.nix-update
@@ -39,23 +38,14 @@ let
     text = ''
       cd ${hostProfile.user.nixosConfigPath}
       nix flake update
-      nix-update --flake magpie
       nix-update --flake wiiu-downloader
       nix-update --flake genryumin
       nix-update --flake gemini-api
       nix-update --flake google-colab-cli
       nix-update --flake opencli
-      # Brave's feed also carries nightly and beta tags; pin to the latest stable.
-      nix-update --flake brave-origin \
-        --version "$(gh release view -R brave/brave-browser --json tagName -q '.tagName|ltrimstr("v")')"
-      # Upstream's alpha tags crowd stable releases out of nix-update's feed.
-      nix-update --flake codex \
-        --version "$(gh release view -R openai/codex --json tagName -q '.tagName|ltrimstr("rust-v")')"
-      # These vendors publish no listing nix-update can read; ask their updaters.
-      nix-update --flake grok --version "$(curl -fsSL --connect-timeout 10 --max-time 30 https://x.ai/cli/stable)"
-      # The rest also embed a build ID or commit in the URL, which nix-update
-      # cannot derive from the version: rewrite it first, then let nix-update
-      # set the version and refetch the hash.
+      # Antigravity embeds a build ID in the URL, which nix-update cannot
+      # derive from the version: rewrite it first, then let nix-update set
+      # the version and refetch the hash.
       bump_with_id() { # <attr> <id binding> <version> <id>
         # Empty when the endpoint changed shape; command substitutions in
         # arguments do not trip errexit, so check here.
@@ -70,55 +60,14 @@ let
         sed -i -E "s|^(  $2 = \")[^\"]*\"|\1$4\"|" "pkgs/$1.nix"
         nix-update --flake "$1" --version "$3"
       }
-      manifest=$(curl -fsSL --connect-timeout 10 --max-time 30 https://antigravity-cli-auto-updater-974169037036.us-central1.run.app/manifests/linux_amd64.json)
-      bump_with_id agy buildId \
-        "$(jq -er .version <<<"$manifest")" \
-        "$(jq -er '.url | capture("/[^/]+-(?<id>[0-9]+)/linux-x64/").id' <<<"$manifest")"
       release=$(curl -fsSL --connect-timeout 10 --max-time 30 https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/releases |
         jq -e 'max_by(.version | split(".") | map(tonumber))')
       bump_with_id antigravity buildId \
         "$(jq -er .version <<<"$release")" "$(jq -er .execution_id <<<"$release")"
-      # The feed answers with the latest release, or HTTP 204 with no body
-      # when the pinned one is current.
-      feed=$(curl -fsSL --connect-timeout 10 --max-time 30 "https://api2.cursor.sh/updates/api/update/linux-x64/sand/$(nix eval --raw .#grok-bot.version)/$(sed -nE 's/^  commit = "(.*)";/\1/p' pkgs/grok-bot.nix)/stable")
-      if [ -n "$feed" ]; then
-        bump_with_id grok-bot commit \
-          "$(jq -er .version <<<"$feed")" \
-          "$(jq -er '.url | capture("/stable/(?<id>[0-9a-f]{40})/").id' <<<"$feed")"
-      else
-        echo "grok-bot: current"
-      fi
       flatpak update --user --noninteractive
       echo
       echo "Bump by hand: jetbrains-maple-mono"
       git status --short
-    '';
-  };
-  # Magpie releases several times a week and its own updater cannot write to
-  # the store. Bump only Magpie, leaving flake.lock alone so no glibc-sized
-  # change rides along, and commit it straight to main for the next rebuild.
-  update-magpie = pkgs.writeShellApplication {
-    name = "update-magpie";
-    runtimeInputs = [
-      pkgs.git
-      pkgs.lilya.nix-update
-    ];
-    text = ''
-      cd ${hostProfile.user.nixosConfigPath}
-      if [ "$(git branch --show-current)" != main ] || ! git diff --quiet HEAD -- pkgs/magpie.nix; then
-        echo "update-magpie: needs main checked out with pkgs/magpie.nix unchanged" >&2
-        exit 1
-      fi
-      old=$(nix eval --raw .#magpie.version)
-      nix-update --flake magpie
-      new=$(nix eval --raw .#magpie.version)
-      if [ "$old" = "$new" ]; then
-        echo "magpie $old is already the latest"
-        exit 0
-      fi
-      nix build .#magpie --no-link
-      git commit -m "update magpie to $new" -- pkgs/magpie.nix
-      echo "magpie $old -> $new committed; run rebuild"
     '';
   };
 in
@@ -129,7 +78,6 @@ in
     testbuild
     bootbuild
     update-pins
-    update-magpie
   ];
 
   # Fish Shell 配置

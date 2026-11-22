@@ -34,7 +34,6 @@
 
     lilya.gemini-api
     lilya.google-colab-cli
-    lilya.grok
     inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default
   ];
 

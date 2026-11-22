@@ -24,7 +24,6 @@
     brightnessctl
     imagemagick
 
-    lilya.codex
     officecli
     zoom-us
 
