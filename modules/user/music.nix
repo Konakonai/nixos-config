@@ -1,6 +1,7 @@
 {
   config,
   hostProfile,
+  inputs,
   lib,
   pkgs,
   ...
@@ -18,7 +19,7 @@ in
   # NetEase web login (the MUSIC_U cookie) for music-discover, which runs as
   # the user. It expires every few months.
   age.secrets.netease-cookie = {
-    file = ../../../secrets/netease-cookie.age;
+    file = ../../secrets/netease-cookie.age;
     owner = hostProfile.user.userName;
     group = hostProfile.user.group;
     mode = "0400";
@@ -133,7 +134,7 @@ in
           rsync
         ];
         text = ''
-          ${discoverPython}/bin/python3 ${../../../scripts/music-discover.py} \
+          ${discoverPython}/bin/python3 ${inputs.lilya-tools}/music-discover/music-discover.py \
             --playlist ${likedPlaylist} \
             --library-db ${hmConfig.programs.beets.settings.library} \
             --state ${stateDir} \
@@ -174,7 +175,7 @@ in
           # streaming server only ships audio, art and nothing machine-local.
           library = "${hmConfig.xdg.dataHome}/beets/library.db";
 
-          pluginpath = [ "${./plugins}" ];
+          pluginpath = [ "${inputs.lilya-tools}/beets-zhlyrics" ];
           plugins = [
             "musicbrainz"
             "deezer"

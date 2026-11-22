@@ -114,6 +114,26 @@
         "type": "github"
       }
     },
+    "lilya-tools": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795312781,
+        "narHash": "sha256-oQEf90GveCGiML9ufly8FJf6z8bDcpAYyD/lKSNGYug=",
+        "owner": "Konakonai",
+        "repo": "lilya-tools",
+        "rev": "517145149d67c10af1b0f752c02cee15d79ecc0f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Konakonai",
+        "repo": "lilya-tools",
+        "type": "github"
+      }
+    },
     "millennium": {
       "inputs": {
         "millennium-src": [
@@ -375,6 +395,7 @@
         "codex-desktop-linux": "codex-desktop-linux",
         "flake-utils": "flake-utils_2",
         "home-manager": "home-manager",
+        "lilya-tools": "lilya-tools",
         "millennium": "millennium",
         "millennium-src": "millennium-src",
         "nectarlink": "nectarlink",

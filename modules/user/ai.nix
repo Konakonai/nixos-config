@@ -107,7 +107,7 @@ let
       pkgs.util-linux
       wlroots-bridge
     ];
-    text = builtins.readFile ../../../scripts/sway-sandbox.sh;
+    text = builtins.readFile ../../scripts/sway-sandbox.sh;
   };
 
   wlrootsBridgeSkill = ''
@@ -225,7 +225,7 @@ in
       # tab alike. The folder is linked whole, not file by file (`recursive`): the
       # engine resolves each hook module's real path and refuses one that lands
       # outside the plugin folder, which per-file store links always do.
-      ".claude/skills/token-band".source = ./token-band;
+      ".claude/skills/token-band".source = "${inputs.lilya-tools}/claude-token-band";
 
       # Colab operator skill
       ".gemini/config/skills/colab-operator" = {

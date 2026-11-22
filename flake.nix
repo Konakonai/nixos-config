@@ -86,6 +86,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
+
+    lilya-tools = {
+      url = "github:Konakonai/lilya-tools";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =

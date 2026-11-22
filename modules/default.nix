@@ -26,9 +26,9 @@
     ./desktop/fcitx5.nix
 
     # User workflows (dual-layer)
-    ./user/ai
+    ./user/ai.nix
     ./user/gaming.nix
-    ./user/music
+    ./user/music.nix
   ];
 
   home-manager.users.${hostProfile.user.userName}.imports = [

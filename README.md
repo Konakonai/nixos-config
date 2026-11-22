@@ -13,7 +13,7 @@ modules/                     按领域组织（跨层功能采用单文件双层
   core/                      系统底座：base、nix、boot、graphics、networking、power、usb-c、backup、virtualization
   services/                  跨层服务：mihomo、media（OpenList/Jellyfin/rclone）、nectarlink
   desktop/                   会话与外观：display/、fonts、fcitx5、niri/、noctalia、plasma、theme、mime
-  user/                      工作流与应用：shell、nixos-tools、packages、ai/、gaming、music/、apps/
+  user/                      工作流与应用：shell、nixos-tools、packages、ai、gaming、music、apps/
   shared/                    theme-settings.nix，系统与用户共用的主题参数
 pkgs/                        本地包与上游包的局部覆盖，导出为 pkgs.lilya
 scripts/ + scripts/tests/    独立脚本与回归测试
@@ -31,9 +31,9 @@ docs/                        仓库之外的手工状态（音乐服务器、宿
 - **Mihomo TUN**：规则以 `GEOSITE` 类别为主，最前面是与手机 Box 相同的去广告（AWAvenue + `category-ads-all`，`Ad Block` 组可切 DIRECT），控制 API 同源限制，7890 对局域网开放但需认证，主机 IPv6 开启（Tailscale 直连用），WebRTC 由浏览器策略只暴露 TUN 地址、STUN 强制走代理。
 - **硬件恢复脚本**：USB-C PD 事件后的 mux 复位、电池省电模式下的 CPU/PCIe 限制，失败自动回滚，`SYSROOT` 可注入测试。
 - **外接 Windows 虚拟机**：libvirt 直通 USB 整盘，启动器先确认磁盘未挂载。
-- **音乐**：beets 按 Deezer 整理 `~/Music`，本地插件 `zhlyrics` 补中文歌词（网易云 + LRCLib，统一简体）；`music-sync` 镜像到上海服务器上的 Navidrome；`music-discover` 每周用网易云「我喜欢的音乐」做种子，汇总网易云、ListenBrainz、YouTube Music 的相似推荐生成发现页。见 [docs/music-server.md](docs/music-server.md)。
+- **音乐**：beets 按 Deezer 整理 `~/Music`，插件 `zhlyrics` 补中文歌词（网易云 + LRCLib，统一简体）；`music-sync` 镜像到上海服务器上的 Navidrome；`music-discover` 每周用网易云「我喜欢的音乐」做种子，汇总网易云、ListenBrainz、YouTube Music 的相似推荐生成发现页（`zhlyrics` 与 `music-discover` 源码在独立仓库 `Konakonai/lilya-tools`，经 flake input 引入）。见 [docs/music-server.md](docs/music-server.md)。
 - **影视**：夸克网盘经 OpenList → rclone 挂到 `~/Mounts/OpenList`，本机 Jellyfin（以用户身份运行）刮削 TMDB，本机用 Jellyfin Desktop 播放；8096 只在 Wi-Fi 网卡（热点或同一 Wi-Fi 下的手机）和 `tailscale0`（手机在外面时）上开放；LTE 是运营商内网地址，无法直连。
-- **Claude Code mod**：`modules/user/ai/token-band` 由 Home Manager 链到 `~/.claude/skills/`，在输入框上方显示 tok/s、TTFT、prompt 缓存命中率与缓存过期倒计时；改源码后在仓库目录跑 `claude plugin test modules/user/ai/token-band`。
+- **Claude Code mod**：`token-band`（源码在 `Konakonai/lilya-tools/claude-token-band`）由 Home Manager 链到 `~/.claude/skills/`，在输入框上方显示 tok/s、TTFT、prompt 缓存命中率与缓存过期倒计时；改源码后在 `~/Projects/lilya-tools` 跑 `claude plugin test claude-token-band`。
 - **后台 Computer Use**：claude-desktop-extra 的「Computer Use on a background display」（Settings → Extra → Community Features）的第二块屏由 `claude-cu-desk` 提供：headless sway，pixman 渲染不唤醒独显，在设置页选它的 `wayland-N`（通常是 `wayland-2`）。开关打开时第二块屏没运行，Computer Use 会直接拒绝，不会回落到主桌面；`claude-cu-desk stop` 停掉它。从 shell 往上面开程序用 `claude-cu-run <命令>`；终端用 foot，kitty 在那里收不到输入。
 - **checks**：脚本单测与 Mihomo 规则可达性、statix/deadnix/nixfmt、Niri KDL 校验。
 
