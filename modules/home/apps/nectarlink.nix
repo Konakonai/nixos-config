@@ -57,6 +57,16 @@ in
     force = true;
   };
 
+  # The QUIC endpoint takes a random UDP port on first start and keeps it in
+  # this file (the core only binds a fixed port when embedders set one; the
+  # desktop app never does). Pin it so the firewall rules in
+  # modules/system/nectarlink.nix match. Read-only: if 7718 is ever taken,
+  # the app binds another port and only fails to save it.
+  xdg.dataFile."Nectarlink/port" = {
+    text = "7718";
+    force = true;
+  };
+
   # Replaces the app's "Start with computer". That setting writes an XDG
   # autostart entry pinned to one store path, and while it is off (the default
   # for a copy outside /usr or /opt) the app deletes any entry at that path on

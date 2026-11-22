@@ -22,14 +22,24 @@
   hardware.uinput.enable = true;
   users.users.${hostProfile.user.userName}.extraGroups = [ "uinput" ];
 
-  # 7718: NectarLink data channel; 5353/udp: its own mDNS discovery (no
-  # avahi here). LocalSend interop (53317) is already open in networking.nix.
-  # Wi-Fi only, for the same reason as the other LAN services there.
-  networking.firewall.interfaces.wlp0s20f3 = {
-    allowedTCPPorts = [ 7718 ];
-    allowedUDPPorts = [
-      5353
-      7718
-    ];
+  # 7718/udp: NectarLink's QUIC endpoint, pinned in
+  # modules/home/apps/nectarlink.nix (upstream's installer also opens TCP,
+  # which nothing listens on). 5353/udp: its own mDNS discovery (no avahi
+  # here). LocalSend interop (53317) is already open in networking.nix.
+  # Opened on Wi-Fi, not on every interface, for the same reason as the
+  # other LAN services there.
+  #
+  # Also on tailscale0: NectarLink treats tailnet addresses as local, so the
+  # phone reaches the PC directly through Tailscale away from home, with
+  # "Connect over mobile data" (iroh relays) left off. mDNS does not cross
+  # the tailnet; the address comes from pairing or a session on the LAN.
+  networking.firewall.interfaces = {
+    wlp0s20f3 = {
+      allowedUDPPorts = [
+        5353
+        7718
+      ];
+    };
+    tailscale0.allowedUDPPorts = [ 7718 ];
   };
 }

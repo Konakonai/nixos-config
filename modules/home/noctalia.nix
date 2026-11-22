@@ -130,6 +130,10 @@ let
         match = "org.kde.kdeconnect.daemon";
         play_sound = false;
       };
+      filter.nectarlink = {
+        match = "nectarlink";
+        play_sound = false;
+      };
     };
 
     osd = {
