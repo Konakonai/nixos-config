@@ -240,9 +240,8 @@ in
   };
 
   # The local drop-in takes precedence over Noctalia's auto-updated community
-  # copy, preserving the wider proxy-group layout across plugin updates.
-  xdg.dataFile."noctalia/plugins/mihomo-control".source =
-    ../../assets/noctalia/plugins/mihomo-control;
+  # copy, preserving our layout and hidden-group patches across plugin updates.
+  xdg.dataFile."noctalia/plugins/mihomo-control".source = pkgs.lilya.noctalia-mihomo-control;
 
   programs.noctalia = {
     enable = true;
