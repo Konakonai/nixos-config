@@ -28,11 +28,21 @@ let
   # native Linux video decoder". Re-add them after fixup, on the real binary
   # behind the Qt wrapper, and build against the same ffmpeg. The RUNPATH
   # part can go once upstream PR thtbee/nectarlink#512 is in.
+  #
+  # Layer-shell patch: upstream creates IslandWindow, ShelfWindow, and
+  # LaserOverlay as ordinary xdg_toplevel windows on Wayland, so tiling
+  # compositors like Niri tile or isolate them per workspace. Promoting those
+  # three overlays to wlr-layer-shell via layer-shell-qt lets Nectar Island sit
+  # natively in the top bar across all workspaces without taking focus or
+  # appearing in Overview, while leaving MainWindow and MirrorWindow untouched.
   nectarlink =
     inputs.nectarlink.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
       (old: {
+        patches = (old.patches or [ ]) ++ [ ../../patches/nectarlink-wayland-layer-shell.patch ];
         nativeBuildInputs = old.nativeBuildInputs ++ [ pkgs.patchelf ];
-        buildInputs = map (p: if p == pkgs.ffmpeg then ffmpeg else p) old.buildInputs;
+        buildInputs = (map (p: if p == pkgs.ffmpeg then ffmpeg else p) old.buildInputs) ++ [
+          pkgs.kdePackages.layer-shell-qt
+        ];
         postFixup = (old.postFixup or "") + ''
           patchelf --add-rpath ${
             lib.makeLibraryPath [

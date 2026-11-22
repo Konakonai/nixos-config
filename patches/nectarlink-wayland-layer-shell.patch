@@ -1,0 +1,326 @@
+--- a/desktop/app/build.rs
++++ b/desktop/app/build.rs
+@@ -443,6 +443,7 @@
+     } else if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("linux") {
+         println!("cargo:rustc-link-lib=Qt6Quick");
+         println!("cargo:rustc-link-lib=Qt6Widgets");
++        println!("cargo:rustc-link-lib=LayerShellQtInterface");
+         println!(
+             "cargo:rustc-link-arg=-Wl,-rpath,$ORIGIN:$ORIGIN/lib:$ORIGIN/../lib:$ORIGIN/../lib/nectarlink/lib"
+         );
+--- a/desktop/app/cpp/app_helpers.h
++++ b/desktop/app/cpp/app_helpers.h
+@@ -27,6 +27,9 @@
+ // Keeps the app running with no windows open (it lives in the tray).
+ void keep_running_without_windows();
+ 
++// Promotes Wayland overlay windows (Island, Shelf, Laser) to wlr-layer-shell.
++void linux_attach_layer_shell_overlays();
++
+ // Asks the session manager not to restart the app at the next login (Linux).
+ void stay_out_of_session_restore();
+ 
+--- a/desktop/app/cpp/app_helpers.cpp
++++ b/desktop/app/cpp/app_helpers.cpp
+@@ -53,6 +53,15 @@
+ #include <vector>
+ #endif
+ 
++#ifdef __linux__
++#include <LayerShellQt/window.h>
++#include <QtGui/QRegion>
++#include <QtGui/QWindow>
++#include <QtQuick/QQuickWindow>
++#include <algorithm>
++#include <memory>
++#endif
++
+ #ifdef __APPLE__
+ #include <QtGui/QWindow>
+ #include <algorithm>
+@@ -759,7 +768,167 @@
+     return args;
+ }
+ } // namespace
++
++#ifdef __linux__
++namespace {
++struct IslandLayerState {
++    QString position;
++    bool expanded = false;
++    int width = 0;
++    bool initialized = false;
++};
++
++void syncIslandLayer(QWindow *win, LayerShellQt::Window *ls, IslandLayerState &state, bool force)
++{
++    if (!win || !ls)
++        return;
++
++    const QString pos = win->property("position").toString();
++    const bool expanded = win->property("expanded").toBool();
++    const int winW = std::max(win->width(), 400);
++    if (!force && state.initialized && state.position == pos && state.expanded == expanded && state.width == winW)
++        return;
++
++    state.position = pos;
++    state.expanded = expanded;
++    state.width = winW;
++    state.initialized = true;
++
++    // Align vertically with a top bar (exclusiveZone = -1 lets the island sit in
++    // an empty top-center bar slot without pushing tiled windows down).
++    constexpr int kTopMargin = 7;
++    if (pos == QLatin1String("left")) {
++        ls->setAnchors(LayerShellQt::Window::Anchors(
++            LayerShellQt::Window::AnchorTop | LayerShellQt::Window::AnchorLeft));
++        ls->setMargins(QMargins(10, kTopMargin, 0, 0));
++    } else if (pos == QLatin1String("right")) {
++        ls->setAnchors(LayerShellQt::Window::Anchors(
++            LayerShellQt::Window::AnchorTop | LayerShellQt::Window::AnchorRight));
++        ls->setMargins(QMargins(0, kTopMargin, 10, 0));
++    } else {
++        ls->setAnchors(LayerShellQt::Window::Anchors(LayerShellQt::Window::AnchorTop));
++        ls->setMargins(QMargins(0, kTopMargin, 0, 0));
++    }
++
++    // Restrict Wayland input region to the visible pill + ambient halo so the
++    // transparent lower half of the 400x104 canvas stays click-through when
++    // collapsed.
++    const int pillW = expanded ? 380 : 340;
++    const int pillH = expanded ? 88 : 40;
++    constexpr int kPad = 4;
++    int pillX = (winW - pillW) / 2;
++    if (pos == QLatin1String("left"))
++        pillX = 10;
++    else if (pos == QLatin1String("right"))
++        pillX = std::max(0, winW - 10 - pillW);
++
++    const int rx = std::max(0, pillX - kPad);
++    const int rw = std::min(winW - rx, pillW + kPad * 2);
++    const int rh = pillH + 2 + kPad;
++    win->setMask(QRegion(rx, 0, rw, rh));
++}
++
++// Promotes NectarLink's overlay windows (Island, Shelf, Laser) to native
++// wlr-layer-shell surfaces on Wayland compositors that support it (such as
++// Niri and KWin), keeping MainWindow and MirrorWindow as regular xdg_toplevels.
++void attachLayerShellOverlay(QWindow *win)
++{
++    if (!win || win->property("_nl_ls_attached").toBool())
++        return;
++
++    const QString name = win->objectName();
++    const bool isIsland = name == QLatin1String("nectarIsland");
++    const bool isShelf = name == QLatin1String("nectarShelf");
++    const bool isLaser = name == QLatin1String("nectarLaser");
++    if (!isIsland && !isShelf && !isLaser)
++        return;
++
++    // LayerShellQt::Window must be attached before the QWindow becomes visible;
++    // if a window slipped through already visible, tear down its xdg surface
++    // once and re-show it as a layer surface.
++    const bool wasVisible = win->isVisible();
++    if (wasVisible) {
++        win->hide();
++        win->destroy();
++    }
++
++    auto *ls = LayerShellQt::Window::get(win);
++    ls->setExclusiveZone(-1);
++    ls->setActivateOnShow(false);
++    ls->setWantsToBeOnActiveScreen(true);
++
++    if (isIsland) {
++        ls->setLayer(LayerShellQt::Window::LayerTop);
++        ls->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityNone);
++        ls->setScope(QStringLiteral("nectarlink-island"));
++        win->setProperty("layerShellActive", true);
++        win->setProperty("_nl_ls_attached", true);
++
++        auto state = std::make_shared<IslandLayerState>();
++        syncIslandLayer(win, ls, *state, true);
++        if (auto *qw = qobject_cast<QQuickWindow *>(win)) {
++            QObject::connect(qw, &QQuickWindow::afterAnimating, qw, [win, ls, state]() {
++                if (win->isVisible())
++                    syncIslandLayer(win, ls, *state, false);
++            });
++        }
++    } else if (isShelf) {
++        ls->setLayer(LayerShellQt::Window::LayerTop);
++        ls->setAnchors(LayerShellQt::Window::Anchors(LayerShellQt::Window::AnchorRight));
++        ls->setMargins(QMargins(0, 0, 12, 0));
++        ls->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
++        ls->setScope(QStringLiteral("nectarlink-shelf"));
++        win->setProperty("_nl_ls_attached", true);
++    } else if (isLaser) {
++        ls->setLayer(LayerShellQt::Window::LayerOverlay);
++        ls->setAnchors(LayerShellQt::Window::Anchors(
++            LayerShellQt::Window::AnchorTop | LayerShellQt::Window::AnchorLeft));
++        ls->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityNone);
++        ls->setScope(QStringLiteral("nectarlink-laser"));
++        win->setProperty("_nl_ls_attached", true);
++        auto syncLaser = [win, ls]() {
++            ls->setMargins(QMargins(std::max(0, win->x()), std::max(0, win->y()), 0, 0));
++        };
++        syncLaser();
++        QObject::connect(win, &QWindow::xChanged, win, syncLaser);
++        QObject::connect(win, &QWindow::yChanged, win, syncLaser);
++    }
++
++    if (wasVisible)
++        win->show();
++}
++
++class WaylandLayerShellFilter final : public QObject {
++public:
++    using QObject::QObject;
++
++protected:
++    bool eventFilter(QObject *watched, QEvent *event) override
++    {
++        if (event->type() == QEvent::Show) {
++            if (auto *win = qobject_cast<QWindow *>(watched)) {
++                if (win->objectName() == QLatin1String("nectarIsland") && win->property("_nl_ls_attached").toBool()) {
++                    IslandLayerState tmp;
++                    syncIslandLayer(win, LayerShellQt::Window::get(win), tmp, true);
++                }
++            }
++        }
++        return QObject::eventFilter(watched, event);
++    }
++};
++} // namespace
++#endif
++#endif
++
++void linux_attach_layer_shell_overlays()
++{
++#ifdef __linux__
++    if (!QGuiApplication::platformName().startsWith(QLatin1String("wayland")))
++        return;
++    for (QWindow *win : QGuiApplication::topLevelWindows())
++        attachLayerShellOverlay(win);
+ #endif
++}
+ 
+ std::unique_ptr<QGuiApplication> create_qt_app()
+ {
+@@ -779,6 +948,9 @@
+ #ifdef __linux__
+     // On Wayland this is the app id, which is how the dock finds our icon and name.
+     QGuiApplication::setDesktopFileName(QStringLiteral("nectarlink"));
++    if (QGuiApplication::platformName().startsWith(QLatin1String("wayland"))) {
++        app->installEventFilter(new WaylandLayerShellFilter(app.get()));
++    }
+ #endif
+     QObject::connect(app.get(), &QCoreApplication::aboutToQuit, app.get(), []() {
+         qtEventLoopRunning().store(false, std::memory_order_release);
+--- a/desktop/app/src/bridge/native.rs
++++ b/desktop/app/src/bridge/native.rs
+@@ -39,6 +39,8 @@
+         fn add_app_icon_image(size: i32, rgba: &[u8]);
+         fn apply_app_icon();
+         fn keep_running_without_windows();
++        #[allow(dead_code)]
++        fn linux_attach_layer_shell_overlays();
+         /// Asks the desktop's session manager not to start the app again at
+         /// the next login: Start at login does that (Linux).
+         fn stay_out_of_session_restore();
+--- a/desktop/app/src/bridge/app.rs
++++ b/desktop/app/src/bridge/app.rs
+@@ -2259,6 +2259,8 @@
+     }
+ 
+     pub fn style_shelf_window(&self) {
++        #[cfg(target_os = "linux")]
++        super::native::ffi::linux_attach_layer_shell_overlays();
+         win::tray::apply_no_activate_style_by_title("NectarLink Shelf");
+         win::tray::apply_no_activate_style_by_title("Nectar Island");
+     }
+--- a/desktop/app/qml/IslandWindow.qml
++++ b/desktop/app/qml/IslandWindow.qml
+@@ -12,6 +12,8 @@
+ //   3. Active media playback on Phone or PC (album art + scrolling song title + Play/Pause & Next)
+ Window {
+     id: islandWin
++    objectName: "nectarIsland"
++    property bool layerShellActive: false
+ 
+     // GNOME on Wayland lets no app keep its own window on top. The "PiP on top"
+     // extension does it for windows titled like this, for those who have it.
+@@ -288,13 +290,19 @@
+     // letting clicks through, for a while: a song paused and played again keeps
+     // its spot. Then it hides, out of the window switcher.
+     property bool keptForMinutes: false
++    onLayerShellActiveChanged: {
++        if (layerShellActive) {
++            keepTimer.stop()
++            keptForMinutes = false
++        }
++    }
+     onHasActivityChanged: {
+         if (hasActivity) {
+             keepTimer.stop()
+             // Coming back while kept: the window is already up, so drop in here.
+             if (keptForMinutes && visible && !Theme.reduceMotion)
+                 dropInAnim.restart()
+-            keptForMinutes = onWayland
++            keptForMinutes = onWayland && !layerShellActive
+         } else if (keptForMinutes) {
+             keepTimer.restart()
+         }
+@@ -321,6 +329,7 @@
+     }
+ 
+     Component.onCompleted: {
++        AppController.styleShelfWindow()
+         lastNotificationCount = NotificationList.count
+         Qt.callLater(() => {
+             recomputeMedia()
+@@ -574,7 +583,7 @@
+             // Wayland ignores where we ask to put the window, so let it be dragged.
+             DragHandler {
+                 target: null
+-                enabled: Qt.platform.pluginName === "wayland"
++                enabled: Qt.platform.pluginName === "wayland" && !islandWin.layerShellActive
+                 onActiveChanged: if (active) islandWin.startSystemMove()
+             }
+ 
+--- a/desktop/app/qml/LaserOverlay.qml
++++ b/desktop/app/qml/LaserOverlay.qml
+@@ -7,6 +7,8 @@
+ // in presentation mode (docs/protocol/remote.md).
+ Window {
+     id: overlay
++    objectName: "nectarLaser"
++    Component.onCompleted: AppController.styleShelfWindow()
+ 
+     flags: Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+         | Qt.WindowTransparentForInput | Qt.WindowDoesNotAcceptFocus
+--- a/desktop/app/qml/ShelfWindow.qml
++++ b/desktop/app/qml/ShelfWindow.qml
+@@ -12,11 +12,12 @@
+ // true so nothing runs while hidden.
+ Window {
+     id: shelfWin
++    objectName: "nectarShelf"
+ 
+     title: qsTr("NectarLink Shelf")
+     flags: Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowDoesNotAcceptFocus
+     color: "transparent"
+-    visible: true
++    visible: false
+ 
+     readonly property int availW: Screen.desktopAvailableWidth > 0 ? Screen.desktopAvailableWidth : 1920
+     readonly property int availH: Screen.desktopAvailableHeight > 0 ? Screen.desktopAvailableHeight : 1080
+@@ -164,7 +165,8 @@
+     }
+ 
+     Component.onCompleted: {
+-        Qt.callLater(() => AppController.styleShelfWindow())
++        AppController.styleShelfWindow()
++        visible = true
+         if (!Theme.reduceMotion) {
+             slideAnim.restart()
+         }

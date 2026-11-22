@@ -1,12 +1,37 @@
 {
   config,
   hostProfile,
+  lib,
   lilyaTheme,
   pkgs,
   ...
 }:
 
 let
+  niriSticky = pkgs.writeShellApplication {
+    name = "niri-sticky";
+    runtimeInputs = [ pkgs.python3 ];
+    text = ''
+      exec python3 ${../../../scripts/niri-sticky.py} "$@"
+    '';
+  };
+
+  # Transparent frameless overlays draw their own pill/shadow; niri's default
+  # focus ring, shadow, and corner clipping would outline their invisible host
+  # rectangle instead.
+  framelessOverlay = {
+    open-floating = true;
+    open-focused = false;
+    on-xdg-activate = "ignore";
+    focus-ring.enable = false;
+    border.enable = false;
+    shadow.enable = false;
+    geometry-corner-radius = 0.0;
+    clip-to-geometry = false;
+  };
+
+  splayerAppId = "^(top\\.imsyy\\.splayer_next|[Ss][Pp]layer-[Nn]ext)$";
+
   xwaylandCoreFonts = pkgs.writeShellScript "xwayland-core-fonts" ''
     set -euo pipefail
 
@@ -37,6 +62,25 @@ in
   imports = [
     ./binds.nix
   ];
+
+  home.packages = [ niriSticky ];
+
+  systemd.user.services.niri-sticky = {
+    Unit = {
+      Description = "Sticky floating windows for Niri";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+      ConditionEnvironment = "NIRI_SOCKET";
+    };
+
+    Service = {
+      ExecStart = "${lib.getExe niriSticky} daemon";
+      Restart = "on-failure";
+      RestartSec = 2;
+    };
+
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
 
   programs.niri.settings = {
     # niri-flake treats non-store include paths as optional by default.
@@ -161,6 +205,111 @@ in
       {
         matches = [ { app-id = "^org\\.kde\\.okular$"; } ];
         default-column-width.proportion = 1.0;
+      }
+      # NectarLink phone screen and individual Android app windows use " · " in
+      # their titles ("<App> · <Phone>", "手机屏幕 · NectarLink"), while the
+      # main window is plain "NectarLink". Keep them floating so Qt preserves
+      # the phone's aspect ratio instead of stretching into a half-width column.
+      {
+        matches = [
+          {
+            app-id = "^nectarlink$";
+            title = " · ";
+          }
+        ];
+        open-floating = true;
+        default-floating-position = {
+          x = 24;
+          y = 24;
+          relative-to = "bottom-right";
+        };
+      }
+      # Fallback rules for NectarLink Island & Shelf if layer-shell is inactive.
+      (
+        framelessOverlay
+        // {
+          matches = [
+            {
+              app-id = "^nectarlink$";
+              title = "^(Nectar Island|Nectar 岛)";
+            }
+          ];
+          default-floating-position = {
+            x = 0;
+            y = 8;
+            relative-to = "top";
+          };
+        }
+      )
+      (
+        framelessOverlay
+        // {
+          matches = [
+            {
+              app-id = "^nectarlink$";
+              title = "^NectarLink (Shelf|收纳架)$";
+            }
+          ];
+          default-floating-position = {
+            x = 12;
+            y = 0;
+            relative-to = "right";
+          };
+        }
+      )
+      # SPlayer-Next Dynamic Island and Desktop Lyric are transparent frameless
+      # Electron overlays; float them without chrome and let niri-sticky keep
+      # them following across workspaces.
+      (
+        framelessOverlay
+        // {
+          matches = [
+            {
+              app-id = splayerAppId;
+              title = "^Dynamic Island$";
+            }
+          ];
+          default-floating-position = {
+            x = 0;
+            y = 6;
+            relative-to = "top";
+          };
+        }
+      )
+      (
+        framelessOverlay
+        // {
+          matches = [
+            {
+              app-id = splayerAppId;
+              title = "^SPlayer-Next - Desktop Lyric$";
+            }
+          ];
+          default-floating-position = {
+            x = 0;
+            y = 24;
+            relative-to = "bottom";
+          };
+        }
+      )
+      # Browser Picture-in-Picture windows (Zen / Firefox / Chromium / Brave).
+      {
+        matches = [ { title = "^(Picture-in-Picture|画中画)$"; } ];
+        open-floating = true;
+        open-focused = false;
+        on-xdg-activate = "set-urgent";
+        default-floating-position = {
+          x = 24;
+          y = 24;
+          relative-to = "bottom-right";
+        };
+      }
+      # Compact audio mixer utility window.
+      {
+        matches = [ { app-id = "^org\\.pulseaudio\\.pavucontrol$"; } ];
+        open-floating = true;
+        default-column-width.fixed = 760;
+        default-window-height.fixed = 540;
       }
     ];
 

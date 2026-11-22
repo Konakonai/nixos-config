@@ -59,6 +59,10 @@ in
     "Mod+Ctrl+F".action.expand-column-to-available-width = [ ];
     "Mod+V".action.toggle-window-floating = [ ];
     "Mod+Shift+V".action.switch-focus-between-floating-and-tiling = [ ];
+    "Mod+P".action.spawn = [
+      "niri-sticky"
+      "toggle"
+    ];
     "Mod+W".action.toggle-column-tabbed-display = [ ];
     "Mod+Comma".action.consume-window-into-column = [ ];
     "Mod+Period".action.expel-window-from-column = [ ];
