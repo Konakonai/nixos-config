@@ -126,10 +126,6 @@ let
       offset_y = 12;
       # Mirrored phone notifications already chime on the phone; with the
       # earbuds connected to both devices, a second chime here doubles every one.
-      filter.kdeconnect = {
-        match = "org.kde.kdeconnect.daemon";
-        play_sound = false;
-      };
       filter.nectarlink = {
         match = "nectarlink";
         play_sound = false;

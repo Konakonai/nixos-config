@@ -8,21 +8,6 @@
 let
   askPass = lib.getExe' pkgs.kdePackages.ksshaskpass "ksshaskpass";
   userName = hostProfile.user.userName;
-  # Only re-arms the timer below and returns: the dispatcher runs its scripts
-  # one event at a time, and a connect fires several of these events in a row.
-  kdeconnectNmHook = pkgs.writeShellScript "kdeconnect-nm-refresh" ''
-    case "''${2:-}" in
-      up|vpn-up|connectivity-change|dhcp4-change|dhcp6-change) ;;
-      *) exit 0 ;;
-    esac
-    exec ${pkgs.systemd}/bin/systemctl restart --no-block kdeconnect-nm-refresh.timer
-  '';
-  kdeconnectNmRefresh = pkgs.writeShellScript "kdeconnect-nm-refresh-run" ''
-    runtime="/run/user/$(${pkgs.coreutils}/bin/id -u)"
-    [ -S "$runtime/bus" ] || exit 0
-    export XDG_RUNTIME_DIR="$runtime" DBUS_SESSION_BUS_ADDRESS="unix:path=$runtime/bus"
-    exec ${lib.getExe pkgs.lilya.kdeconnect-refresh} always
-  '';
 in
 {
   hardware.xpadneo.enable = true;
@@ -42,33 +27,6 @@ in
   programs.gamescope = {
     enable = true;
     capSysNice = true;
-  };
-  programs.kdeconnect.enable = true;
-
-  # Computer network changes are not always delivered through Qt's
-  # QNetworkInformation (sleep/resume, VPN, interface swap). Tell kdeconnectd
-  # immediately instead of waiting for the unreachable-device timer.
-  networking.networkmanager.dispatcherScripts = [
-    {
-      source = kdeconnectNmHook;
-      type = "basic";
-    }
-  ];
-  # Each event restarts the timer, so a burst of them ends in one refresh. The
-  # 2 s also covers DHCP/Wi-Fi association finishing before the phone is
-  # reachable again.
-  systemd.timers.kdeconnect-nm-refresh.timerConfig = {
-    OnActiveSec = "2s";
-    AccuracySec = "100ms";
-    RemainAfterElapse = false;
-  };
-  systemd.services.kdeconnect-nm-refresh = {
-    description = "Refresh KDE Connect discovery after a network change";
-    serviceConfig = {
-      Type = "oneshot";
-      User = userName;
-      ExecStart = kdeconnectNmRefresh;
-    };
   };
   programs.fish.enable = true;
   programs.vim = {

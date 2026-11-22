@@ -7,7 +7,7 @@
   # NixOS leaves ModemManager D-Bus-activated only (WantedBy is empty), and
   # NetworkManager does not trigger D-Bus activation on its own. Without this
   # rule, plugging in an external USB LTE modem sits idle until an unrelated
-  # client (e.g. KDE Connect) pokes org.freedesktop.ModemManager1.
+  # client pokes org.freedesktop.ModemManager1.
   #
   # Numbered 68- so MTP_NO_PROBE runs ahead of 69-libmtp.rules: the Lenovo
   # MDM9207 dongle advertises bDeviceClass=00 and "MDM9207-MTP", causing
@@ -58,9 +58,8 @@
     # address (see above), so a globally allowed port is reachable from the
     # internet there. LAN services are listed under the Wi-Fi interface below.
 
-    # programs.kdeconnect owns its TCP/UDP port ranges.
-
-    # Only Jellyfin is opened to the tailnet, for the phone away from home.
+    # Jellyfin is opened to the tailnet for the phone away from home
+    # (NectarLink adds its port in nectarlink.nix).
     interfaces.tailscale0.allowedTCPPorts = [ 8096 ];
 
     # NetworkManager Wi-Fi hotspot (shared mode, LTE uplink): its dnsmasq

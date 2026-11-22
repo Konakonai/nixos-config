@@ -18,7 +18,6 @@ in
       "x-scheme-handler/magpie" = "magpie.desktop";
       "x-scheme-handler/grokbot" = "grok-bot.desktop";
       "x-scheme-handler/sand" = "grok-bot.desktop";
-      "x-scheme-handler/kdeconnect" = "kdeconnect-browser.desktop";
       "x-scheme-handler/http" = "zen-beta.desktop";
       "x-scheme-handler/https" = "zen-beta.desktop";
       "x-scheme-handler/chrome" = "zen-beta.desktop";
