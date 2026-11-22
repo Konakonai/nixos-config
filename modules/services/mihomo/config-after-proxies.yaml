@@ -381,6 +381,11 @@ rules:
 - DOMAIN,click.mz.simba.taobao.com,DIRECT
 - RULE-SET,awavenue-ads,Ad Block
 - GEOSITE,category-ads-all,Ad Block
+# Antigravity 2.34.0's language_server has a runaway Clearcut telemetry upload
+# loop against play.googleapis.com/log (measured ~18-19 MiB in 7 min, ~5x the
+# LLM API traffic). Route through Ad Block (REJECT by default, toggleable to
+# DIRECT in the dashboard) until upstream fixes the bug.
+- DOMAIN,play.googleapis.com,Ad Block
 # CN STUN servers (bilibili/miwifi/qq) are otherwise DIRECT and reflect the
 # real WAN IP into WebRTC srflx candidates.
 - DOMAIN-KEYWORD,stun,Default Proxy
