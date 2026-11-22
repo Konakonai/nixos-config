@@ -7,7 +7,7 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[2]
-AFTER = ROOT / "modules/system/mihomo/config-after-proxies.yaml"
+AFTER = ROOT / "modules/services/mihomo/config-after-proxies.yaml"
 
 
 class StunProxyOrderTest(unittest.TestCase):

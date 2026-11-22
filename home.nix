@@ -1,8 +1,12 @@
-{ hostProfile, ... }:
+{ hostProfile, inputs, ... }:
 
 {
   imports = [
-    ./modules/home
+    inputs.zen-browser.homeModules.beta
+    inputs.noctalia.homeModules.default
+    inputs.nix-flatpak.homeManagerModules.nix-flatpak
+    inputs.plasma-manager.homeModules.plasma-manager
+    inputs.spicetify-nix.homeManagerModules.spicetify
   ];
 
   home = {

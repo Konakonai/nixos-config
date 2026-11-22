@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 class ConfigurationTest(unittest.TestCase):
     def test_proxy_rules_remain_reachable(self):
-        config = yaml.safe_load((ROOT / "modules/system/mihomo/config-after-proxies.yaml").read_text())
+        config = yaml.safe_load((ROOT / "modules/services/mihomo/config-after-proxies.yaml").read_text())
         groups = {group["name"] for group in config["proxy-groups"]} | {"DIRECT", "REJECT"}
         preceding = []
         for text in config["rules"]:
@@ -25,7 +25,7 @@ class ConfigurationTest(unittest.TestCase):
             preceding.append(rule)
 
     def test_geosite_categories_sit_between_pins_and_fallbacks(self):
-        config = yaml.safe_load((ROOT / "modules/system/mihomo/config-after-proxies.yaml").read_text())
+        config = yaml.safe_load((ROOT / "modules/services/mihomo/config-after-proxies.yaml").read_text())
         rules = config["rules"]
         # Ad blocking deliberately precedes every pin, after its exceptions.
         self.assertEqual(rules[0], "DOMAIN,click.mz.simba.taobao.com,DIRECT")

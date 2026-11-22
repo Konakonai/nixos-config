@@ -3,7 +3,7 @@
 {
   imports = [
     hostProfile.hardwareConfiguration
-    ./modules/system
+    ./modules
   ];
 
   system.stateVersion = "26.05";

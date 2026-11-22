@@ -42,7 +42,7 @@ assert
           root = ../.;
           fileset = pkgs.lib.fileset.unions [
             ../scripts
-            ../modules/system/mihomo
+            ../modules/services/mihomo
           ];
         };
       }

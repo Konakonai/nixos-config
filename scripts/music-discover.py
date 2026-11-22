@@ -282,7 +282,7 @@ class NetEase(Paced):
         self.blocked = False
         self.headers = dict(self.HEADERS)
         if cookie:
-            # MUSIC_U is the web login session (see modules/home/music-discover.nix).
+            # MUSIC_U is the web login session (see modules/user/music/default.nix).
             value = cookie.strip().removeprefix("MUSIC_U=").strip()
             self.headers["Cookie"] = f"MUSIC_U={value}"
 

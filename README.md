@@ -6,11 +6,15 @@
 
 ```text
 flake.nix                    inputs、overlay、nixosConfigurations.nixos、checks、packages、formatter
-configuration.nix / home.nix 系统与 Home Manager 入口
+configuration.nix / home.nix 系统入口与 Home Manager 底座
 hosts/lilya-thinkbook/       主机事实：用户路径、显示器、GPU、外接 Windows 盘、age 身份路径
-modules/system/              NixOS：boot、display、power、usb-c、mihomo、virtualization …
-modules/home/                用户环境：apps、desktop、niri、theme、flatpak、services …
-modules/shared/              theme-settings.nix，系统与用户共用的主题参数
+modules/                     按领域组织（跨层功能采用单文件双层：同文件声明系统与 Home Manager）
+  default.nix                顶层显式导入表
+  core/                      系统底座：base、nix、boot、graphics、networking、power、usb-c、backup、virtualization
+  services/                  跨层服务：mihomo、media（OpenList/Jellyfin/rclone）、nectarlink
+  desktop/                   会话与外观：display/、fonts、fcitx5、niri/、noctalia、plasma、theme、mime
+  user/                      工作流与应用：shell、nixos-tools、packages、ai/、gaming、music/、apps/
+  shared/                    theme-settings.nix，系统与用户共用的主题参数
 pkgs/                        本地包与上游包的局部覆盖，导出为 pkgs.lilya
 scripts/ + scripts/tests/    独立脚本与回归测试
 checks/                      flake checks
@@ -29,7 +33,7 @@ docs/                        仓库之外的手工状态（音乐服务器、宿
 - **外接 Windows 虚拟机**：libvirt 直通 USB 整盘，启动器先确认磁盘未挂载。
 - **音乐**：beets 按 Deezer 整理 `~/Music`，本地插件 `zhlyrics` 补中文歌词（网易云 + LRCLib，统一简体）；`music-sync` 镜像到上海服务器上的 Navidrome；`music-discover` 每周用网易云「我喜欢的音乐」做种子，汇总网易云、ListenBrainz、YouTube Music 的相似推荐生成发现页。见 [docs/music-server.md](docs/music-server.md)。
 - **影视**：夸克网盘经 OpenList → rclone 挂到 `~/Mounts/OpenList`，本机 Jellyfin（以用户身份运行）刮削 TMDB，本机用 Jellyfin Desktop 播放；8096 只在 Wi-Fi 网卡（热点或同一 Wi-Fi 下的手机）和 `tailscale0`（手机在外面时）上开放；LTE 是运营商内网地址，无法直连。
-- **Claude Code mod**：`modules/home/claude-code/token-band` 由 Home Manager 链到 `~/.claude/skills/`，在输入框上方显示 tok/s、TTFT、prompt 缓存命中率与缓存过期倒计时；改源码后在仓库目录跑 `claude plugin test modules/home/claude-code/token-band`。
+- **Claude Code mod**：`modules/user/ai/token-band` 由 Home Manager 链到 `~/.claude/skills/`，在输入框上方显示 tok/s、TTFT、prompt 缓存命中率与缓存过期倒计时；改源码后在仓库目录跑 `claude plugin test modules/user/ai/token-band`。
 - **后台 Computer Use**：claude-desktop-extra 的「Computer Use on a background display」（Settings → Extra → Community Features）的第二块屏由 `claude-cu-desk` 提供：headless sway，pixman 渲染不唤醒独显，在设置页选它的 `wayland-N`（通常是 `wayland-2`）。开关打开时第二块屏没运行，Computer Use 会直接拒绝，不会回落到主桌面；`claude-cu-desk stop` 停掉它。从 shell 往上面开程序用 `claude-cu-run <命令>`；终端用 foot，kitty 在那里收不到输入。
 - **checks**：脚本单测与 Mihomo 规则可达性、statix/deadnix/nixfmt、Niri KDL 校验。
 
@@ -64,7 +68,7 @@ update-pins      # flake update + nix-update 手 pin 的包 + flatpak update，�
 
 `~/.config/age/mihomo.txt`（解密 `secrets/` 的身份，整套秘密的信任根）、`~/.local/state/noctalia/settings.toml`、`~/.config/openlist/`、`~/.config/rclone/rclone.conf`、浏览器 profile、libvirt NVRAM/TPM 与外接 Windows 盘。磁盘未加密是有意的取舍。
 
-`modules/system/backup.nix` 每天用 restic 把其中除浏览器 profile 和 Windows 盘以外的部分，连同 `~/.ssh`、`~/.gnupg`，加密备份到首尔服务器（SFTP，chroot 的 `restic` 账号）和 Google Drive（rclone 远端 `gdrive`，`drive.file` 范围）。restic 密码在 `secrets/` 里，而 `secrets/` 又要靠 age 私钥解密，所以 **age 私钥和 restic 密码必须另存一份在机器之外**，否则备份无法恢复。手动操作用 `sudo restic-seoul …` / `sudo restic-gdrive …`。
+`modules/core/backup.nix` 每天用 restic 把其中除浏览器 profile 和 Windows 盘以外的部分，连同 `~/.ssh`、`~/.gnupg`，加密备份到首尔服务器（SFTP，chroot 的 `restic` 账号）和 Google Drive（rclone 远端 `gdrive`，`drive.file` 范围）。restic 密码在 `secrets/` 里，而 `secrets/` 又要靠 age 私钥解密，所以 **age 私钥和 restic 密码必须另存一份在机器之外**，否则备份无法恢复。手动操作用 `sudo restic-seoul …` / `sudo restic-gdrive …`。
 
 ## 备注
 
