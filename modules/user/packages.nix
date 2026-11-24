@@ -67,6 +67,7 @@ in
     lua
     git-lfs
     android-tools
+    google-cloud-sdk
 
     # Browsers
     chromium
