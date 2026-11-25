@@ -57,6 +57,22 @@
         "type": "github"
       }
     },
+    "demolab": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794315692,
+        "narHash": "sha256-w/7mhlEZCkCakNpHFPfGrGHr/Q8ZTsdIZRIDmOTxH7s=",
+        "owner": "google-gemini",
+        "repo": "demolab",
+        "rev": "cd0c1f8540c0186ec9592af972a0700fa20909d4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "google-gemini",
+        "repo": "demolab",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -393,6 +409,7 @@
         "agenix": "agenix",
         "claude-desktop": "claude-desktop",
         "codex-desktop-linux": "codex-desktop-linux",
+        "demolab": "demolab",
         "flake-utils": "flake-utils_2",
         "home-manager": "home-manager",
         "lilya-tools": "lilya-tools",

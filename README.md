@@ -96,7 +96,7 @@ All imports are explicit—no `lib/` abstraction layer and no directory auto-sca
 - **Phone Integration (NectarLink)** — Single-file dual-layer setup with `v4l2loopback` virtual webcam, `/dev/uinput` remote input, pinned UDP `7718` QUIC endpoint opened only on Wi-Fi and `tailscale0`, and tray-ready systemd user autostart.
 - **Media & Music Pipelines** — Quark cloud drive mounted via `OpenList → rclone → ~/Mounts/OpenList` for local user-scoped Jellyfin (exposed only on Wi-Fi and `tailscale0`); `beets` + `zhlyrics` organizes `~/Music`, `music-sync` mirrors to Shanghai Navidrome, and `music-discover` builds a weekly discovery page.
 - **External Windows Passthrough VM** — `libvirt`/QEMU whole-disk USB passthrough with udev permissions (`UDISKS_AUTO=0`) and a safe launcher that refuses to boot while the disk is mounted on the host.
-- **AI Toolchain & Background Computer Use** — Consolidated in [modules/user/ai.nix](modules/user/ai.nix): Antigravity (with context-meter injection), Claude Desktop (Electron 44 + `claude-cu-desk` headless Sway display), Codex Desktop (`nix-ld` + `ydotool`), `wlroots-bridge` + `sway-sandbox`, OpenCLI, and `claude-token-band`.
+- **AI Toolchain & Background Computer Use** — Consolidated in [modules/user/ai.nix](modules/user/ai.nix): Antigravity (with context-meter injection), Claude Desktop (Electron 44 + `claude-cu-desk` headless Sway display), Codex Desktop (`nix-ld` + `ydotool`), `wlroots-bridge` + `sway-sandbox`, OpenCLI, `claude-token-band`, and the `gemini-frontend-design` skill (Claude Code + Antigravity).
 - **Automated Regression Checks** — `statix`, `deadnix`, `nixfmt`, Python unit tests for hardware/proxy scripts & Mihomo rule reachability, plus `niri validate` on generated KDL.
 
 ---

@@ -163,6 +163,8 @@ let
   cuPackageDir = "${computer-use-linux}/share/computer-use-linux";
   cuSkillsDir = "${cuPackageDir}/skills/computer-use-linux";
 
+  frontendDesignSkill = "${inputs.demolab}/skills/gemini-frontend-design";
+
   opencliSkillsDir = "${opencli}/share/opencli/skills";
   opencliSkillNames = [
     "opencli-adapter-author"
@@ -226,6 +228,13 @@ in
       # engine resolves each hook module's real path and refuses one that lands
       # outside the plugin folder, which per-file store links always do.
       ".claude/skills/token-band".source = "${inputs.lilya-tools}/claude-token-band";
+
+      # Frontend design skill from google-gemini/demolab.
+      ".claude/skills/gemini-frontend-design".source = frontendDesignSkill;
+      ".gemini/config/skills/gemini-frontend-design" = {
+        source = frontendDesignSkill;
+        recursive = true;
+      };
 
       # Colab operator skill
       ".gemini/config/skills/colab-operator" = {

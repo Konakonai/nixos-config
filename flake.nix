@@ -91,6 +91,13 @@
       url = "github:Konakonai/lilya-tools";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Gemini team's agent skills (gemini-frontend-design), shared by Claude
+    # Code and Antigravity.
+    demolab = {
+      url = "github:google-gemini/demolab";
+      flake = false;
+    };
   };
 
   outputs =
