@@ -137,11 +137,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1795312781,
-        "narHash": "sha256-oQEf90GveCGiML9ufly8FJf6z8bDcpAYyD/lKSNGYug=",
+        "lastModified": 1795717499,
+        "narHash": "sha256-rfTbPI/Zrl7vA30lL5KmbxbPyXuGozqxX3L0WFNoifI=",
         "owner": "Konakonai",
         "repo": "lilya-tools",
-        "rev": "517145149d67c10af1b0f752c02cee15d79ecc0f",
+        "rev": "bf48854e4d25a8d280df22abb57e49aff1473dae",
         "type": "github"
       },
       "original": {

@@ -208,6 +208,7 @@ in
       opencli
       swaySandbox
       wlroots-bridge
+      inputs.lilya-tools.packages.${pkgs.stdenv.hostPlatform.system}.kestrel
       inputs.pi.packages.${pkgs.stdenv.hostPlatform.system}.default
     ];
 
