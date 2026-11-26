@@ -300,6 +300,13 @@ dns:
     "geosite:private":
       - system://
       - 223.5.5.5
+    # Must stay ahead of geosite:cn: split-horizon campus intranet hosts
+    # (e.g. bysj.cumt.edu.cn) only exist on campus DHCP DNS (202.119.203.4)
+    # and return NXDOMAIN from public resolvers. Use system:// alone so a
+    # parallel 223.5.5.5 NXDOMAIN cannot win the race; /etc/resolv.conf
+    # already falls back to public DNS off-campus.
+    "+.cumt.edu.cn":
+      - system://
     "geosite:cn":
       - https://223.5.5.5/dns-query
       - 223.5.5.5

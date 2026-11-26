@@ -69,3 +69,9 @@ class DnsLeakPreventionTest(unittest.TestCase):
         self.assertIn("10.2.5.251/32", excluded)
         for broad in ("10.0.0.0/8", "192.168.0.0/16", "172.16.0.0/12"):
             self.assertNotIn(broad, excluded)
+
+    def test_cumt_intranet_domains_resolve_via_local_campus_dns(self):
+        policy = self.dns["nameserver-policy"]
+        keys = list(policy)
+        self.assertLess(keys.index("+.cumt.edu.cn"), keys.index("geosite:cn"))
+        self.assertEqual(policy["+.cumt.edu.cn"], ["system://"])
