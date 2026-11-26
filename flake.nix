@@ -92,6 +92,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    lanner = {
+      url = "github:Konakonai/lanner";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Gemini team's agent skills (gemini-frontend-design), shared by Claude
     # Code and Antigravity.
     demolab = {

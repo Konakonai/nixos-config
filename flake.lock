@@ -130,6 +130,26 @@
         "type": "github"
       }
     },
+    "lanner": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795723306,
+        "narHash": "sha256-nqAGLgjk2A6ax4j9Tie9dJPaKl+jPaR7HD7ApZBwtzE=",
+        "owner": "Konakonai",
+        "repo": "lanner",
+        "rev": "fe7978f4b4a6cc8d0e028c6f40979ea9b67b4d7e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Konakonai",
+        "repo": "lanner",
+        "type": "github"
+      }
+    },
     "lilya-tools": {
       "inputs": {
         "nixpkgs": [
@@ -412,6 +432,7 @@
         "demolab": "demolab",
         "flake-utils": "flake-utils_2",
         "home-manager": "home-manager",
+        "lanner": "lanner",
         "lilya-tools": "lilya-tools",
         "millennium": "millennium",
         "millennium-src": "millennium-src",

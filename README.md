@@ -57,7 +57,7 @@ running **Niri + Noctalia** (Catppuccin Lavender Light) with **Plasma Wayland** 
 | **Networking & Proxy** | Mihomo TUN (AWAvenue + GEOSITE rules), NetworkManager (Wi-Fi + USB LTE modem), Tailscale |
 | **Phone & Media** | [NectarLink](https://github.com/thtbee/nectarlink) (webcam, uinput, clipboard, Tailscale QUIC), OpenList + rclone + Jellyfin, Beets |
 | **Secrets & Backups** | `agenix` (`secrets/*.age`), daily `restic` to Seoul SFTP + Google Drive |
-| **Companion Repo** | [`Konakonai/lilya-tools`](https://github.com/Konakonai/lilya-tools) (`kestrel`, `music-discover`, `beets-zhlyrics`, `claude-token-band`) |
+| **Companion Repos** | [`Konakonai/lilya-tools`](https://github.com/Konakonai/lilya-tools) (`music-discover`, `beets-zhlyrics`, `claude-token-band`), [`Konakonai/lanner`](https://github.com/Konakonai/lanner) |
 
 ---
 
@@ -96,7 +96,7 @@ All imports are explicit—no `lib/` abstraction layer and no directory auto-sca
 - **Phone Integration (NectarLink)** — Single-file dual-layer setup with `v4l2loopback` virtual webcam, `/dev/uinput` remote input, pinned UDP `7718` QUIC endpoint opened only on Wi-Fi and `tailscale0`, and tray-ready systemd user autostart.
 - **Media & Music Pipelines** — Quark cloud drive mounted via `OpenList → rclone → ~/Mounts/OpenList` for local user-scoped Jellyfin (exposed only on Wi-Fi and `tailscale0`); `beets` + `zhlyrics` organizes `~/Music`, `music-sync` mirrors to Shanghai Navidrome, and `music-discover` builds a weekly discovery page.
 - **External Windows Passthrough VM** — `libvirt`/QEMU whole-disk USB passthrough with udev permissions (`UDISKS_AUTO=0`) and a safe launcher that refuses to boot while the disk is mounted on the host.
-- **AI Toolchain & Background Computer Use** — Consolidated in [modules/user/ai.nix](modules/user/ai.nix): Antigravity (with context-meter injection), Claude Desktop (Electron 44 + `claude-cu-desk` headless Sway display), Codex Desktop (`nix-ld` + `ydotool`), `wlroots-bridge` + `sway-sandbox`, OpenCLI, `claude-token-band`, the Kestrel usage monitor (token cost, speed and quota across agents), and the `gemini-frontend-design` skill (Claude Code + Antigravity).
+- **AI Toolchain & Background Computer Use** — Consolidated in [modules/user/ai.nix](modules/user/ai.nix): Antigravity (with context-meter injection), Claude Desktop (Electron 44 + `claude-cu-desk` headless Sway display), Codex Desktop (`nix-ld` + `ydotool`), `wlroots-bridge` + `sway-sandbox`, OpenCLI, `claude-token-band`, the [Lanner](https://github.com/Konakonai/lanner) usage monitor (token cost, speed and quota across agents), and the `gemini-frontend-design` skill (Claude Code + Antigravity).
 - **Automated Regression Checks** — `statix`, `deadnix`, `nixfmt`, Python unit tests for hardware/proxy scripts & Mihomo rule reachability, plus `niri validate` on generated KDL.
 
 ---
@@ -200,4 +200,5 @@ Manual state for machines outside NixOS management is documented in `docs/` (in 
 | [docs/music-server.md](docs/music-server.md) | Shanghai Navidrome server, `music-sync`, weekly `/discover/` page & Tailscale peer relay |
 | [docs/campus-router.md](docs/campus-router.md) | Dorm OpenWrt router (`AX3000T`) & Dr.COM auto-login script |
 | [docs/backup-vps.md](docs/backup-vps.md) | Tokyo emergency Xray REALITY fallback node (Azure `lab-jp`) |
-| [`Konakonai/lilya-tools`](https://github.com/Konakonai/lilya-tools) | Extracted standalone tools: `kestrel`, `music-discover`, `beets-zhlyrics`, `claude-token-band` |
+| [`Konakonai/lilya-tools`](https://github.com/Konakonai/lilya-tools) | Extracted standalone tools: `music-discover`, `beets-zhlyrics`, `claude-token-band` |
+| [`Konakonai/lanner`](https://github.com/Konakonai/lanner) | Lanner, the GTK monitor for AI coding agent usage, cost and speed |
