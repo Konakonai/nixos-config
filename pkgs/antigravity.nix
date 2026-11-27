@@ -151,6 +151,9 @@ stdenv.mkDerivation {
     gappsWrapperArgs+=(
       --set GTK_USE_PORTAL 1
       --set CHROME_DEVEL_SANDBOX "$out/opt/antigravity/chrome-sandbox"
+      # Antigravity 2.33+ requires explicit opt-in for the loopback CDP bridge
+      # (127.0.0.1 ephemeral port) used by UI plugins such as Obsidian Prism.
+      --add-flags "--remote-debugging-port=0"
     )
   '';
 
