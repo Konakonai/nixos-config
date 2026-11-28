@@ -229,14 +229,14 @@
          fn stay_out_of_session_restore();
 --- a/desktop/app/src/bridge/app.rs
 +++ b/desktop/app/src/bridge/app.rs
-@@ -2259,6 +2259,8 @@
+@@ -2353,6 +2353,8 @@
      }
  
      pub fn style_shelf_window(&self) {
 +        #[cfg(target_os = "linux")]
 +        super::native::ffi::linux_attach_layer_shell_overlays();
-         win::tray::apply_no_activate_style_by_title("NectarLink Shelf");
-         win::tray::apply_no_activate_style_by_title("Nectar Island");
+         win::tray::apply_no_activate_style_by_title(&shelf_title());
+         win::tray::apply_no_activate_style_by_title(&crate::i18n::translate("IslandWindow", "Nectar Island"));
      }
 --- a/desktop/app/qml/IslandWindow.qml
 +++ b/desktop/app/qml/IslandWindow.qml

@@ -9,14 +9,14 @@
 
 let
   pname = "antigravity";
-  version = "2.35.2";
+  version = "2.36.0";
   # The build ID in the URL comes from the release list (update-pins rewrites it):
   #   curl -fsSL https://antigravity-hub-auto-updater-974169037036.us-central1.run.app/releases
-  buildId = "4585983447007232";
+  buildId = "5596661662220288";
 
   src = fetchurl {
     url = "https://storage.googleapis.com/antigravity-public/antigravity-hub/${version}-${buildId}/linux-x64/Antigravity.tar.gz";
-    hash = "sha256-LTPbKCsemzx1gsFA2rnoaEjxs3oFv6Sh3/f0TeG/ME8=";
+    hash = "sha256-b+QY8I52DAt/KXXfna7262y8R8ZRYSUTSeDOJVxgj7Y=";
   };
 
   runtimeLibs = with pkgs; [
